@@ -1,0 +1,82 @@
+/**
+ * Admin styles for the WP CPT REST API plugin
+ */
+
+.cpt-rest-api-field-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+/* Tooltip container */
+.tooltip {
+    position: relative;
+    display: inline-block;
+    margin-left: 10px;
+    cursor: help;
+}
+
+/* Tooltip icon */
+.tooltip .dashicons {
+    color: #0073aa;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+}
+
+/* Tooltip text */
+.tooltip .tooltip-text {
+    visibility: hidden;
+    width: 300px;
+    background-color: #333;
+    color: #fff;
+    text-align: left;
+    border-radius: 4px;
+    padding: 10px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -150px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+/* Tooltip arrow */
+.tooltip .tooltip-text::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #333 transparent transparent transparent;
+}
+
+/* Show the tooltip text when hovering */
+.tooltip:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Style for the REST API URL preview */
+#rest-api-preview {
+    background-color: #f0f0f1;
+    padding: 5px 8px;
+    font-size: 13px;
+    border-radius: 3px;
+    word-break: break-all;
+}
+
+/* Error styling for the input field */
+input.error {
+    border-color: #d63638;
+}
+
+/* Success message styling */
+.settings-error.updated {
+    border-left-color: #00a32a;
+}
