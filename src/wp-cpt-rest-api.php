@@ -30,6 +30,11 @@ define( 'WP_CPT_RESTAPI_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
  */
 function activate_wp_cpt_restapi() {
     // Activation code here
+    
+    // Initialize API Keys option
+    if ( ! get_option( 'cpt_rest_api_keys' ) ) {
+        add_option( 'cpt_rest_api_keys', array() );
+    }
 }
 
 /**

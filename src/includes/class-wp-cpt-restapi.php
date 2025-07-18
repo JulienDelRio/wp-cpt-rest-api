@@ -30,6 +30,15 @@ class WP_CPT_RestAPI {
     protected $loader;
 
     /**
+     * The API Keys manager instance.
+     *
+     * @since    1.0.0
+     * @access   protected
+     * @var      WP_CPT_RestAPI_API_Keys    $api_keys    Handles API key management.
+     */
+    protected $api_keys;
+
+    /**
      * Define the core functionality of the plugin.
      *
      * Set the plugin name and the plugin version that can be used throughout the plugin.
@@ -73,7 +82,13 @@ class WP_CPT_RestAPI {
          */
         require_once WP_CPT_RESTAPI_PLUGIN_DIR . 'rest-api/class-wp-cpt-restapi-rest.php';
 
+        /**
+         * The class responsible for API key management.
+         */
+        require_once WP_CPT_RESTAPI_PLUGIN_DIR . 'includes/class-wp-cpt-restapi-api-keys.php';
+
         $this->loader = new WP_CPT_RestAPI_Loader();
+        $this->api_keys = new WP_CPT_RestAPI_API_Keys();
     }
 
     /**

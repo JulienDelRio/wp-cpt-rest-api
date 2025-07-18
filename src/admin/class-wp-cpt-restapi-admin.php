@@ -36,6 +36,15 @@ class WP_CPT_RestAPI_Admin {
      * @var      string    $default_segment    The default value for the REST API base segment.
      */
     private $default_segment = 'cpt';
+    
+    /**
+     * The API Keys manager instance.
+     *
+     * @since    1.0.0
+     * @access   private
+     * @var      WP_CPT_RestAPI_API_Keys    $api_keys    Handles API key management.
+     */
+    private $api_keys;
 
     /**
      * Initialize the class and set its properties.
@@ -43,7 +52,12 @@ class WP_CPT_RestAPI_Admin {
      * @since    1.0.0
      */
     public function __construct() {
-        // Constructor code
+        // Initialize API Keys manager
+        $this->api_keys = new WP_CPT_RestAPI_API_Keys();
+        
+        // Add AJAX handlers for API key management
+        add_action( 'wp_ajax_cpt_rest_api_add_key', array( $this, 'ajax_add_key' ) );
+        add_action( 'wp_ajax_cpt_rest_api_delete_key', array( $this, 'ajax_delete_key' ) );
     }
 
     /**
@@ -86,6 +100,24 @@ class WP_CPT_RestAPI_Admin {
             WP_CPT_RESTAPI_VERSION,
             false
         );
+        
+        // Localize the script with data for AJAX operations
+        wp_localize_script(
+            'wp-cpt-restapi-admin',
+            'cptRestApiAdmin',
+            array(
+                'nonce'  => wp_create_nonce( 'cpt_rest_api' ),
+                'i18n'   => array(
+                    'emptyLabel'   => __( 'Please enter a label for the API key.', 'wp-cpt-restapi' ),
+                    'generating'   => __( 'Generating...', 'wp-cpt-restapi' ),
+                    'generateKey'  => __( 'Generate API Key', 'wp-cpt-restapi' ),
+                    'copy'         => __( 'Copy', 'wp-cpt-restapi' ),
+                    'copied'       => __( 'Copied!', 'wp-cpt-restapi' ),
+                    'copyFailed'   => __( 'Failed to copy. Please try again.', 'wp-cpt-restapi' ),
+                    'ajaxError'    => __( 'An error occurred. Please try again.', 'wp-cpt-restapi' ),
+                ),
+            )
+        );
     }
 
     /**
@@ -117,7 +149,7 @@ class WP_CPT_RestAPI_Admin {
             array( $this, 'validate_base_segment' )   // Sanitize callback
         );
 
-        // Add settings section
+        // Add settings section for REST API configuration
         add_settings_section(
             'cpt_rest_api_section',                   // ID
             __( 'REST API Settings', 'wp-cpt-restapi' ), // Title
@@ -125,13 +157,30 @@ class WP_CPT_RestAPI_Admin {
             'cpt-rest-api'                            // Page
         );
 
-        // Add settings field
+        // Add settings field for base segment
         add_settings_field(
             'cpt_rest_api_base_segment',              // ID
             __( 'API Base Segment', 'wp-cpt-restapi' ), // Title
             array( $this, 'base_segment_field_callback' ), // Callback
             'cpt-rest-api',                           // Page
             'cpt_rest_api_section'                    // Section
+        );
+        
+        // Add settings section for API Keys
+        add_settings_section(
+            'cpt_rest_api_keys_section',              // ID
+            __( 'API Keys', 'wp-cpt-restapi' ),       // Title
+            array( $this, 'api_keys_section_callback' ), // Callback
+            'cpt-rest-api'                            // Page
+        );
+        
+        // Add settings field for API Keys management
+        add_settings_field(
+            'cpt_rest_api_keys_management',           // ID
+            __( 'Manage API Keys', 'wp-cpt-restapi' ), // Title
+            array( $this, 'api_keys_field_callback' ), // Callback
+            'cpt-rest-api',                           // Page
+            'cpt_rest_api_keys_section'               // Section
         );
     }
 
@@ -262,5 +311,173 @@ class WP_CPT_RestAPI_Admin {
             </form>
         </div>
         <?php
+    }
+    
+    /**
+     * Render the API Keys section description.
+     *
+     * @since    1.0.0
+     */
+    public function api_keys_section_callback() {
+        echo '<p>' . esc_html__( 'Create and manage API keys for accessing the REST API endpoints.', 'wp-cpt-restapi' ) . '</p>';
+        echo '<p>' . esc_html__( 'API keys can be used to authenticate requests to the REST API using the Bearer authentication method.', 'wp-cpt-restapi' ) . '</p>';
+    }
+    
+    /**
+     * Render the API Keys management field.
+     *
+     * @since    1.0.0
+     */
+    public function api_keys_field_callback() {
+        // Get all API keys
+        $keys = $this->api_keys->get_keys();
+        
+        ?>
+        <div class="cpt-rest-api-keys-container">
+            <!-- API Keys List -->
+            <div class="cpt-rest-api-keys-list">
+                <h3><?php echo esc_html__( 'Your API Keys', 'wp-cpt-restapi' ); ?></h3>
+                
+                <?php if ( empty( $keys ) ) : ?>
+                    <p class="cpt-rest-api-no-keys"><?php echo esc_html__( 'No API keys found. Create your first key below.', 'wp-cpt-restapi' ); ?></p>
+                <?php else : ?>
+                    <table class="widefat striped">
+                        <thead>
+                            <tr>
+                                <th><?php echo esc_html__( 'Label', 'wp-cpt-restapi' ); ?></th>
+                                <th><?php echo esc_html__( 'API Key', 'wp-cpt-restapi' ); ?></th>
+                                <th><?php echo esc_html__( 'Created', 'wp-cpt-restapi' ); ?></th>
+                                <th><?php echo esc_html__( 'Actions', 'wp-cpt-restapi' ); ?></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ( $keys as $key ) : ?>
+                                <tr>
+                                    <td><?php echo esc_html( $key['label'] ); ?></td>
+                                    <td>
+                                        <code class="api-key-code"><?php echo esc_html( $key['key'] ); ?></code>
+                                    </td>
+                                    <td><?php echo esc_html( date_i18n( get_option( 'date_format' ), strtotime( $key['created_at'] ) ) ); ?></td>
+                                    <td>
+                                        <button
+                                            type="button"
+                                            class="button button-small cpt-rest-api-delete-key"
+                                            data-id="<?php echo esc_attr( $key['id'] ); ?>"
+                                            data-confirm="<?php echo esc_attr__( 'Are you sure you want to delete this API key? This action cannot be undone.', 'wp-cpt-restapi' ); ?>"
+                                        >
+                                            <?php echo esc_html__( 'Delete', 'wp-cpt-restapi' ); ?>
+                                        </button>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                <?php endif; ?>
+            </div>
+            
+            <!-- Create New API Key Form -->
+            <div class="cpt-rest-api-create-key">
+                <h3><?php echo esc_html__( 'Create a New API Key', 'wp-cpt-restapi' ); ?></h3>
+                
+                <div class="cpt-rest-api-create-key-form">
+                    <label for="cpt_rest_api_key_label"><?php echo esc_html__( 'Label', 'wp-cpt-restapi' ); ?></label>
+                    <input
+                        type="text"
+                        id="cpt_rest_api_key_label"
+                        name="cpt_rest_api_key_label"
+                        placeholder="<?php echo esc_attr__( 'Enter a label for your API key', 'wp-cpt-restapi' ); ?>"
+                        required
+                    />
+                    <p class="description">
+                        <?php echo esc_html__( 'A descriptive name to help you identify this key.', 'wp-cpt-restapi' ); ?>
+                    </p>
+                    
+                    <button type="button" class="button button-primary cpt-rest-api-generate-key">
+                        <?php echo esc_html__( 'Generate API Key', 'wp-cpt-restapi' ); ?>
+                    </button>
+                </div>
+                
+                <div class="cpt-rest-api-key-generated" style="display: none;">
+                    <h4><?php echo esc_html__( 'API Key Generated', 'wp-cpt-restapi' ); ?></h4>
+                    <p class="description">
+                        <?php echo esc_html__( 'Make sure to copy your API key now. You won\'t be able to see it again!', 'wp-cpt-restapi' ); ?>
+                    </p>
+                    <div class="cpt-rest-api-key-display">
+                        <code id="cpt_rest_api_new_key"></code>
+                        <button type="button" class="button cpt-rest-api-copy-key">
+                            <?php echo esc_html__( 'Copy', 'wp-cpt-restapi' ); ?>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php
+    }
+    
+    /**
+     * AJAX handler for adding a new API key.
+     *
+     * @since    1.0.0
+     */
+    public function ajax_add_key() {
+        // Check nonce
+        check_ajax_referer( 'cpt_rest_api', 'nonce' );
+        
+        // Check user capabilities
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( array( 'message' => __( 'You do not have permission to perform this action.', 'wp-cpt-restapi' ) ) );
+        }
+        
+        // Get the label from the request
+        $label = isset( $_POST['label'] ) ? sanitize_text_field( wp_unslash( $_POST['label'] ) ) : '';
+        
+        // Validate the label
+        if ( empty( $label ) ) {
+            wp_send_json_error( array( 'message' => __( 'Label is required.', 'wp-cpt-restapi' ) ) );
+        }
+        
+        // Add the new key
+        $new_key = $this->api_keys->add_key( $label );
+        
+        if ( $new_key ) {
+            wp_send_json_success( array(
+                'key' => $new_key,
+                'message' => __( 'API key created successfully.', 'wp-cpt-restapi' ),
+            ) );
+        } else {
+            wp_send_json_error( array( 'message' => __( 'Failed to create API key.', 'wp-cpt-restapi' ) ) );
+        }
+    }
+    
+    /**
+     * AJAX handler for deleting an API key.
+     *
+     * @since    1.0.0
+     */
+    public function ajax_delete_key() {
+        // Check nonce
+        check_ajax_referer( 'cpt_rest_api', 'nonce' );
+        
+        // Check user capabilities
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( array( 'message' => __( 'You do not have permission to perform this action.', 'wp-cpt-restapi' ) ) );
+        }
+        
+        // Get the key ID from the request
+        $key_id = isset( $_POST['id'] ) ? sanitize_text_field( wp_unslash( $_POST['id'] ) ) : '';
+        
+        // Validate the key ID
+        if ( empty( $key_id ) ) {
+            wp_send_json_error( array( 'message' => __( 'Key ID is required.', 'wp-cpt-restapi' ) ) );
+        }
+        
+        // Delete the key
+        $deleted = $this->api_keys->delete_key( $key_id );
+        
+        if ( $deleted ) {
+            wp_send_json_success( array( 'message' => __( 'API key deleted successfully.', 'wp-cpt-restapi' ) ) );
+        } else {
+            wp_send_json_error( array( 'message' => __( 'Failed to delete API key.', 'wp-cpt-restapi' ) ) );
+        }
     }
 }

@@ -54,5 +54,119 @@
         baseSegmentField.on('input', function() {
             $(this).removeClass('error');
         });
+        // API Keys Management
+        
+        // Generate API Key
+        $('.cpt-rest-api-generate-key').on('click', function() {
+            const label = $('#cpt_rest_api_key_label').val();
+            
+            if (!label) {
+                alert(cptRestApiAdmin.i18n.emptyLabel);
+                return;
+            }
+            
+            $.ajax({
+                url: ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'cpt_rest_api_add_key',
+                    nonce: cptRestApiAdmin.nonce,
+                    label: label
+                },
+                beforeSend: function() {
+                    $('.cpt-rest-api-generate-key').prop('disabled', true).text(cptRestApiAdmin.i18n.generating);
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Display the new key
+                        $('#cpt_rest_api_new_key').text(response.data.key.key);
+                        $('.cpt-rest-api-key-generated').show();
+                        
+                        // Clear the label field
+                        $('#cpt_rest_api_key_label').val('');
+                        
+                        // Reload the page after a delay to show the updated list
+                        setTimeout(function() {
+                            location.reload();
+                        }, 5000);
+                    } else {
+                        alert(response.data.message);
+                    }
+                },
+                error: function() {
+                    alert(cptRestApiAdmin.i18n.ajaxError);
+                },
+                complete: function() {
+                    $('.cpt-rest-api-generate-key').prop('disabled', false).text(cptRestApiAdmin.i18n.generateKey);
+                }
+            });
+        });
+        
+        // Copy API Key to Clipboard
+        $('.cpt-rest-api-copy-key').on('click', function() {
+            const keyText = $('#cpt_rest_api_new_key').text();
+            
+            // Create a temporary textarea element to copy from
+            const textarea = document.createElement('textarea');
+            textarea.value = keyText;
+            document.body.appendChild(textarea);
+            textarea.select();
+            
+            try {
+                // Execute the copy command
+                document.execCommand('copy');
+                $(this).text(cptRestApiAdmin.i18n.copied);
+                
+                // Reset the button text after a delay
+                setTimeout(() => {
+                    $(this).text(cptRestApiAdmin.i18n.copy);
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy text: ', err);
+                alert(cptRestApiAdmin.i18n.copyFailed);
+            }
+            
+            // Remove the temporary textarea
+            document.body.removeChild(textarea);
+        });
+        
+        // Delete API Key
+        $('.cpt-rest-api-delete-key').on('click', function() {
+            const keyId = $(this).data('id');
+            const confirmMessage = $(this).data('confirm');
+            
+            if (!confirm(confirmMessage)) {
+                return;
+            }
+            
+            $.ajax({
+                url: ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'cpt_rest_api_delete_key',
+                    nonce: cptRestApiAdmin.nonce,
+                    id: keyId
+                },
+                beforeSend: function() {
+                    // Disable the button
+                    $('.cpt-rest-api-delete-key[data-id="' + keyId + '"]').prop('disabled', true);
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Reload the page to show the updated list
+                        location.reload();
+                    } else {
+                        alert(response.data.message);
+                        // Re-enable the button
+                        $('.cpt-rest-api-delete-key[data-id="' + keyId + '"]').prop('disabled', false);
+                    }
+                },
+                error: function() {
+                    alert(cptRestApiAdmin.i18n.ajaxError);
+                    // Re-enable the button
+                    $('.cpt-rest-api-delete-key[data-id="' + keyId + '"]').prop('disabled', false);
+                }
+            });
+        });
     });
 })(jQuery);
