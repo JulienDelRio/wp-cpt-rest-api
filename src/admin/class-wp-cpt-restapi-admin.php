@@ -165,13 +165,13 @@ class WP_CPT_RestAPI_Admin {
                    value="<?php echo esc_attr( $value ); ?>" 
                    class="regular-text" 
                    required
-                   pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[_-])[a-zA-Z0-9_-]{20}$"
-                   title="<?php echo esc_attr__( 'Must be exactly 20 characters long and contain at least one lowercase letter, one uppercase letter, one digit, one underscore, and one dash.', 'wp-cpt-restapi' ); ?>"
+                   pattern="^[a-z0-9-]{1,120}$"
+                   title="<?php echo esc_attr__( 'Must be between 1 and 120 characters long and can only contain lowercase letters, digits, and hyphens.', 'wp-cpt-restapi' ); ?>"
             />
             <span class="tooltip">
                 <span class="dashicons dashicons-editor-help"></span>
                 <span class="tooltip-text">
-                    <?php echo esc_html__( 'The base segment defines the namespace for your REST API endpoints. It must be exactly 20 characters long and contain at least one lowercase letter, one uppercase letter, one digit, one underscore, and one dash.', 'wp-cpt-restapi' ); ?>
+                    <?php echo esc_html__( 'The base segment defines the namespace for your REST API endpoints. It must be between 1 and 120 characters long and can only contain lowercase letters (a-z), digits (0-9), and hyphens (-).', 'wp-cpt-restapi' ); ?>
                 </span>
             </span>
         </div>
@@ -199,91 +199,28 @@ class WP_CPT_RestAPI_Admin {
                 'error'
             );
             return get_option( $this->option_name, $this->default_segment );
-
         }
 
-        // Check if the input is exactly 20 characters long
-        if ( strlen( $input ) !== 20 ) {
+        // Check if the input length is between 1 and 120 characters
+        if ( strlen( $input ) < 1 || strlen( $input ) > 120 ) {
             add_settings_error(
                 $this->option_name,
                 'length_error',
-                __( 'The base segment must be exactly 20 characters long.', 'wp-cpt-restapi' ),
+                __( 'The base segment must be between 1 and 120 characters long.', 'wp-cpt-restapi' ),
                 'error'
             );
             return get_option( $this->option_name, $this->default_segment );
-
         }
 
-        // Check if the input contains at least one lowercase letter
-        if ( ! preg_match( '/[a-z]/', $input ) ) {
-            add_settings_error(
-                $this->option_name,
-                'lowercase_error',
-                __( 'The base segment must contain at least one lowercase letter.', 'wp-cpt-restapi' ),
-                'error'
-            );
-            return get_option( $this->option_name, $this->default_segment );
-
-        }
-
-        // Check if the input contains at least one uppercase letter
-        if ( ! preg_match( '/[A-Z]/', $input ) ) {
-            add_settings_error(
-                $this->option_name,
-                'uppercase_error',
-                __( 'The base segment must contain at least one uppercase letter.', 'wp-cpt-restapi' ),
-                'error'
-            );
-            return get_option( $this->option_name, $this->default_segment );
-
-        }
-
-        // Check if the input contains at least one digit
-        if ( ! preg_match( '/\d/', $input ) ) {
-            add_settings_error(
-                $this->option_name,
-                'digit_error',
-                __( 'The base segment must contain at least one digit.', 'wp-cpt-restapi' ),
-                'error'
-            );
-            return get_option( $this->option_name, $this->default_segment );
-
-        }
-
-        // Check if the input contains at least one underscore
-        if ( ! preg_match( '/_/', $input ) ) {
-            add_settings_error(
-                $this->option_name,
-                'underscore_error',
-                __( 'The base segment must contain at least one underscore.', 'wp-cpt-restapi' ),
-                'error'
-            );
-            return get_option( $this->option_name, $this->default_segment );
-
-        }
-
-        // Check if the input contains at least one dash
-        if ( ! preg_match( '/-/', $input ) ) {
-            add_settings_error(
-                $this->option_name,
-                'dash_error',
-                __( 'The base segment must contain at least one dash.', 'wp-cpt-restapi' ),
-                'error'
-            );
-            return get_option( $this->option_name, $this->default_segment );
-
-        }
-
-        // Check if the input contains only allowed characters
-        if ( ! preg_match( '/^[a-zA-Z0-9_-]+$/', $input ) ) {
+        // Check if the input contains only allowed characters (lowercase letters, digits, and hyphens)
+        if ( ! preg_match( '/^[a-z0-9-]+$/', $input ) ) {
             add_settings_error(
                 $this->option_name,
                 'invalid_chars',
-                __( 'The base segment can only contain letters, numbers, underscores, and dashes.', 'wp-cpt-restapi' ),
+                __( 'The base segment can only contain lowercase letters, digits, and hyphens.', 'wp-cpt-restapi' ),
                 'error'
             );
             return get_option( $this->option_name, $this->default_segment );
-
         }
 
         // If all validations pass, add a success message

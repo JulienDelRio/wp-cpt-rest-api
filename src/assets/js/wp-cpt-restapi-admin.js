@@ -32,50 +32,15 @@
                 return false;
             }
             
-            // Check if the field is exactly 20 characters long
-            if (baseSegment.length !== 20) {
+            // Check if the field length is between 1 and 120 characters
+            if (baseSegment.length < 1 || baseSegment.length > 120) {
                 e.preventDefault();
                 baseSegmentField.addClass('error');
                 return false;
             }
             
-            // Check if the field contains at least one lowercase letter
-            if (!/[a-z]/.test(baseSegment)) {
-                e.preventDefault();
-                baseSegmentField.addClass('error');
-                return false;
-            }
-            
-            // Check if the field contains at least one uppercase letter
-            if (!/[A-Z]/.test(baseSegment)) {
-                e.preventDefault();
-                baseSegmentField.addClass('error');
-                return false;
-            }
-            
-            // Check if the field contains at least one digit
-            if (!/\d/.test(baseSegment)) {
-                e.preventDefault();
-                baseSegmentField.addClass('error');
-                return false;
-            }
-            
-            // Check if the field contains at least one underscore
-            if (!/_/.test(baseSegment)) {
-                e.preventDefault();
-                baseSegmentField.addClass('error');
-                return false;
-            }
-            
-            // Check if the field contains at least one dash
-            if (!/-/.test(baseSegment)) {
-                e.preventDefault();
-                baseSegmentField.addClass('error');
-                return false;
-            }
-            
-            // Check if the field contains only allowed characters
-            if (!/^[a-zA-Z0-9_-]+$/.test(baseSegment)) {
+            // Check if the field contains only allowed characters (lowercase letters, digits, and hyphens)
+            if (!/^[a-z0-9-]+$/.test(baseSegment)) {
                 e.preventDefault();
                 baseSegmentField.addClass('error');
                 return false;
