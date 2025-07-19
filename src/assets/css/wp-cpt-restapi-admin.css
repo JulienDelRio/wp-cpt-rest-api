@@ -155,3 +155,15 @@ input.error {
 .settings-error.updated {
     border-left-color: #00a32a;
 }
+
+/* Styling for separated sections */
+.cpt-rest-api-section-separator {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #dcdcde;
+}
+
+/* Ensure proper spacing for the API Keys section when separated */
+.cpt-rest-api-keys-container {
+    margin-top: 0;
+}

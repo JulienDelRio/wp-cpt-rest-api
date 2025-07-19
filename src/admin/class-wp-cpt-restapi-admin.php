@@ -297,20 +297,64 @@ class WP_CPT_RestAPI_Admin {
         ?>
         <div class="wrap">
             <h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
+            
+            <!-- REST API Settings Form -->
             <form action="options.php" method="post">
                 <?php
                 // Output security fields
                 settings_fields( 'cpt_rest_api_settings' );
                 
-                // Output setting sections and their fields
-                do_settings_sections( 'cpt-rest-api' );
+                // Output only the REST API settings section
+                $this->output_settings_section( 'cpt_rest_api_section' );
                 
-                // Output save settings button
+                // Output save settings button immediately after API Base Segment
                 submit_button( __( 'Save Settings', 'wp-cpt-restapi' ) );
                 ?>
             </form>
+            
+            <!-- API Keys Management Section (separate from form) -->
+            <div class="cpt-rest-api-section-separator">
+                <?php
+                // Output the API Keys section separately
+                $this->output_settings_section( 'cpt_rest_api_keys_section' );
+                ?>
+            </div>
         </div>
         <?php
+    }
+    
+    /**
+     * Output a specific settings section and its fields.
+     *
+     * @since    1.0.0
+     * @param    string    $section_id    The section ID to output.
+     */
+    private function output_settings_section( $section_id ) {
+        global $wp_settings_sections, $wp_settings_fields;
+        
+        if ( ! isset( $wp_settings_sections['cpt-rest-api'][$section_id] ) ) {
+            return;
+        }
+        
+        $section = $wp_settings_sections['cpt-rest-api'][$section_id];
+        
+        // Output section title and callback
+        if ( $section['title'] ) {
+            echo "<h2>{$section['title']}</h2>\n";
+        }
+        
+        if ( $section['callback'] ) {
+            call_user_func( $section['callback'], $section );
+        }
+        
+        // Output section fields
+        if ( ! isset( $wp_settings_fields['cpt-rest-api'][$section_id] ) ) {
+            return;
+        }
+        
+        echo '<table class="form-table" role="presentation">';
+        do_settings_fields( 'cpt-rest-api', $section_id );
+        echo '</table>';
     }
     
     /**
