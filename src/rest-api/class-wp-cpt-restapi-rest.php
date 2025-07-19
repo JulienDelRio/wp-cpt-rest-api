@@ -29,6 +29,15 @@ class WP_CPT_RestAPI_REST {
     private $option_name = 'cpt_rest_api_base_segment';
 
     /**
+     * The option name for the active CPTs.
+     *
+     * @since    1.0.0
+     * @access   private
+     * @var      string    $cpt_option_name    The option name for the active CPTs.
+     */
+    private $cpt_option_name = 'cpt_rest_api_active_cpts';
+
+    /**
      * The default value for the REST API base segment.
      *
      * @since    1.0.0
@@ -113,10 +122,9 @@ class WP_CPT_RestAPI_REST {
     }
 
     /**
-     * Register the REST API namespace.
+     * Register the REST API namespace and CPT endpoints.
      *
-     * This function registers the REST API namespace based on the configured segment.
-     * It does not create any endpoints, but prepares the namespace for future route declarations.
+     * This function registers the REST API namespace and creates endpoints for active CPTs.
      *
      * @since    1.0.0
      */
@@ -124,7 +132,7 @@ class WP_CPT_RestAPI_REST {
         // Get the configured base segment or use the default
         $base_segment = get_option( $this->option_name, $this->default_segment );
         
-        // Register the REST API namespace
+        // Register the REST API namespace info endpoint
         register_rest_route(
             $base_segment . '/v1',
             '/',
@@ -134,6 +142,220 @@ class WP_CPT_RestAPI_REST {
                 'permission_callback' => '__return_true',
             )
         );
+        
+        // Register endpoints for active CPTs
+        $this->register_cpt_endpoints();
+    }
+
+    /**
+     * Register REST API endpoints for active CPTs.
+     *
+     * @since    1.0.0
+     */
+    private function register_cpt_endpoints() {
+        // Get the configured base segment
+        $base_segment = get_option( $this->option_name, $this->default_segment );
+        
+        // Get active CPTs
+        $active_cpts = $this->get_active_cpts();
+        
+        foreach ( $active_cpts as $cpt_name ) {
+            // Register endpoint for listing CPT posts
+            register_rest_route(
+                $base_segment . '/v1',
+                '/' . $cpt_name,
+                array(
+                    'methods'  => 'GET',
+                    'callback' => array( $this, 'get_cpt_posts' ),
+                    'args'     => array(
+                        'cpt' => array(
+                            'default' => $cpt_name,
+                            'sanitize_callback' => 'sanitize_text_field',
+                        ),
+                        'per_page' => array(
+                            'default' => 10,
+                            'sanitize_callback' => 'absint',
+                        ),
+                        'page' => array(
+                            'default' => 1,
+                            'sanitize_callback' => 'absint',
+                        ),
+                    ),
+                    'permission_callback' => '__return_true',
+                )
+            );
+            
+            // Register endpoint for getting a specific CPT post
+            register_rest_route(
+                $base_segment . '/v1',
+                '/' . $cpt_name . '/(?P<id>\d+)',
+                array(
+                    'methods'  => 'GET',
+                    'callback' => array( $this, 'get_cpt_post' ),
+                    'args'     => array(
+                        'cpt' => array(
+                            'default' => $cpt_name,
+                            'sanitize_callback' => 'sanitize_text_field',
+                        ),
+                        'id' => array(
+                            'required' => true,
+                            'sanitize_callback' => 'absint',
+                        ),
+                    ),
+                    'permission_callback' => '__return_true',
+                )
+            );
+        }
+    }
+
+    /**
+     * Get active CPTs from the admin settings.
+     *
+     * @since    1.0.0
+     * @return   array    Array of active CPT names.
+     */
+    private function get_active_cpts() {
+        $active_cpts = get_option( $this->cpt_option_name, array() );
+        
+        // Ensure it's an array
+        if ( ! is_array( $active_cpts ) ) {
+            return array();
+        }
+        
+        // Validate that the CPTs still exist
+        $available_cpts = get_post_types( array( 'public' => true ), 'names' );
+        $core_types = array( 'post', 'page', 'attachment' );
+        
+        // Remove core types from available CPTs
+        foreach ( $core_types as $core_type ) {
+            unset( $available_cpts[ $core_type ] );
+        }
+        
+        // Only return CPTs that are both active and still available
+        return array_intersect( $active_cpts, array_keys( $available_cpts ) );
+    }
+
+    /**
+     * Get posts for a specific CPT.
+     *
+     * @since    1.0.0
+     * @param    WP_REST_Request    $request    The REST request object.
+     * @return   WP_REST_Response|WP_Error      The response or error.
+     */
+    public function get_cpt_posts( $request ) {
+        $cpt = $request->get_param( 'cpt' );
+        $per_page = $request->get_param( 'per_page' );
+        $page = $request->get_param( 'page' );
+        
+        // Validate CPT is active
+        $active_cpts = $this->get_active_cpts();
+        if ( ! in_array( $cpt, $active_cpts, true ) ) {
+            return new WP_Error(
+                'rest_forbidden',
+                __( 'This Custom Post Type is not available via the API.', 'wp-cpt-restapi' ),
+                array( 'status' => 403 )
+            );
+        }
+        
+        // Query posts
+        $args = array(
+            'post_type'      => $cpt,
+            'post_status'    => 'publish',
+            'posts_per_page' => min( $per_page, 100 ), // Limit to 100 posts per page
+            'paged'          => $page,
+            'orderby'        => 'date',
+            'order'          => 'DESC',
+        );
+        
+        $query = new WP_Query( $args );
+        
+        $posts = array();
+        foreach ( $query->posts as $post ) {
+            $posts[] = $this->prepare_post_data( $post );
+        }
+        
+        $response = array(
+            'posts' => $posts,
+            'pagination' => array(
+                'total' => $query->found_posts,
+                'pages' => $query->max_num_pages,
+                'current_page' => $page,
+                'per_page' => $per_page,
+            ),
+        );
+        
+        return rest_ensure_response( $response );
+    }
+
+    /**
+     * Get a specific post from a CPT.
+     *
+     * @since    1.0.0
+     * @param    WP_REST_Request    $request    The REST request object.
+     * @return   WP_REST_Response|WP_Error      The response or error.
+     */
+    public function get_cpt_post( $request ) {
+        $cpt = $request->get_param( 'cpt' );
+        $id = $request->get_param( 'id' );
+        
+        // Validate CPT is active
+        $active_cpts = $this->get_active_cpts();
+        if ( ! in_array( $cpt, $active_cpts, true ) ) {
+            return new WP_Error(
+                'rest_forbidden',
+                __( 'This Custom Post Type is not available via the API.', 'wp-cpt-restapi' ),
+                array( 'status' => 403 )
+            );
+        }
+        
+        // Get the post
+        $post = get_post( $id );
+        
+        if ( ! $post || $post->post_type !== $cpt || $post->post_status !== 'publish' ) {
+            return new WP_Error(
+                'rest_post_invalid_id',
+                __( 'Invalid post ID.', 'wp-cpt-restapi' ),
+                array( 'status' => 404 )
+            );
+        }
+        
+        return rest_ensure_response( $this->prepare_post_data( $post ) );
+    }
+
+    /**
+     * Prepare post data for API response.
+     *
+     * @since    1.0.0
+     * @param    WP_Post    $post    The post object.
+     * @return   array               The prepared post data.
+     */
+    private function prepare_post_data( $post ) {
+        $data = array(
+            'id' => $post->ID,
+            'title' => $post->post_title,
+            'content' => $post->post_content,
+            'excerpt' => $post->post_excerpt,
+            'slug' => $post->post_name,
+            'status' => $post->post_status,
+            'type' => $post->post_type,
+            'date' => $post->post_date,
+            'modified' => $post->post_modified,
+            'author' => $post->post_author,
+            'featured_media' => get_post_thumbnail_id( $post->ID ),
+        );
+        
+        // Add custom fields (meta)
+        $meta = get_post_meta( $post->ID );
+        $data['meta'] = array();
+        
+        foreach ( $meta as $key => $value ) {
+            // Skip private meta fields (starting with _)
+            if ( strpos( $key, '_' ) !== 0 ) {
+                $data['meta'][ $key ] = is_array( $value ) && count( $value ) === 1 ? $value[0] : $value;
+            }
+        }
+        
+        return $data;
     }
 
     /**

@@ -167,3 +167,128 @@ input.error {
 .cpt-rest-api-keys-container {
     margin-top: 0;
 }
+
+/* CPT Management Styles */
+.cpt-rest-api-cpts-container {
+    margin-top: 20px;
+}
+
+.cpt-rest-api-cpts-table {
+    margin-bottom: 20px;
+}
+
+.cpt-rest-api-cpts-table th {
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.cpt-rest-api-cpts-table td {
+    vertical-align: middle;
+}
+
+.cpt-rest-api-cpts-table .description {
+    color: #646970;
+    font-style: italic;
+    margin: 0;
+}
+
+.cpt-rest-api-cpts-table code {
+    background-color: #f0f0f1;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 12px;
+}
+
+/* Toggle Switch Styles */
+.cpt-rest-api-toggle-switch {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+}
+
+.cpt-rest-api-toggle-switch input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.cpt-rest-api-toggle-slider {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+    background-color: #dcdcde;
+    border-radius: 24px;
+    transition: background-color 0.3s ease;
+    margin-right: 10px;
+}
+
+.cpt-rest-api-toggle-slider::before {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    background-color: #fff;
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.cpt-rest-api-toggle-switch input[type="checkbox"]:checked + .cpt-rest-api-toggle-slider {
+    background-color: #2271b1;
+}
+
+.cpt-rest-api-toggle-switch input[type="checkbox"]:checked + .cpt-rest-api-toggle-slider::before {
+    transform: translateX(26px);
+}
+
+.cpt-rest-api-toggle-switch input[type="checkbox"]:focus + .cpt-rest-api-toggle-slider,
+.cpt-rest-api-toggle-slider.focused {
+    box-shadow: 0 0 0 2px #2271b1;
+}
+
+.cpt-rest-api-toggle-label {
+    font-weight: 600;
+    color: #1d2327;
+}
+
+/* CPT Actions */
+.cpt-rest-api-cpts-actions {
+    padding: 15px;
+    background-color: #f6f7f7;
+    border: 1px solid #dcdcde;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.cpt-rest-api-cpts-actions .button {
+    margin-bottom: 10px;
+}
+
+.cpt-rest-api-cpts-actions .description {
+    margin: 0;
+    font-size: 13px;
+    color: #646970;
+}
+
+/* Responsive adjustments */
+@media (max-width: 782px) {
+    .cpt-rest-api-cpts-table th,
+    .cpt-rest-api-cpts-table td {
+        padding: 8px 4px;
+        font-size: 13px;
+    }
+    
+    .cpt-rest-api-toggle-label {
+        display: none;
+    }
+    
+    .cpt-rest-api-toggle-slider {
+        margin-right: 0;
+    }
+}

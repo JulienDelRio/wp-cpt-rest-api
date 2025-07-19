@@ -35,6 +35,11 @@ function activate_wp_cpt_restapi() {
     if ( ! get_option( 'cpt_rest_api_keys' ) ) {
         add_option( 'cpt_rest_api_keys', array() );
     }
+    
+    // Initialize Active CPTs option
+    if ( ! get_option( 'cpt_rest_api_active_cpts' ) ) {
+        add_option( 'cpt_rest_api_active_cpts', array() );
+    }
 }
 
 /**

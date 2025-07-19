@@ -168,5 +168,61 @@
                 }
             });
         });
+
+        // CPT Management
+        
+        // Reset All CPTs
+        $('.cpt-rest-api-reset-cpts').on('click', function() {
+            const confirmMessage = 'Are you sure you want to deactivate all Custom Post Types? This action will uncheck all toggle switches.';
+            
+            if (!confirm(confirmMessage)) {
+                return;
+            }
+            
+            $.ajax({
+                url: ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'cpt_rest_api_reset_cpts',
+                    nonce: cptRestApiAdmin.nonce
+                },
+                beforeSend: function() {
+                    $('.cpt-rest-api-reset-cpts').prop('disabled', true).text('Resetting...');
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Uncheck all CPT toggles
+                        $('.cpt-rest-api-toggle-switch input[type="checkbox"]').prop('checked', false);
+                        
+                        // Show success message
+                        alert(response.data.message);
+                    } else {
+                        alert(response.data.message);
+                    }
+                },
+                error: function() {
+                    alert(cptRestApiAdmin.i18n.ajaxError);
+                },
+                complete: function() {
+                    $('.cpt-rest-api-reset-cpts').prop('disabled', false).text('Reset All');
+                }
+            });
+        });
+
+        // Toggle switch accessibility - handle keyboard navigation
+        $('.cpt-rest-api-toggle-switch input[type="checkbox"]').on('keydown', function(e) {
+            // Allow space bar to toggle the checkbox
+            if (e.which === 32) { // Space bar
+                e.preventDefault();
+                $(this).prop('checked', !$(this).prop('checked')).trigger('change');
+            }
+        });
+
+        // Toggle switch visual feedback
+        $('.cpt-rest-api-toggle-switch input[type="checkbox"]').on('focus', function() {
+            $(this).next('.cpt-rest-api-toggle-slider').addClass('focused');
+        }).on('blur', function() {
+            $(this).next('.cpt-rest-api-toggle-slider').removeClass('focused');
+        });
     });
 })(jQuery);

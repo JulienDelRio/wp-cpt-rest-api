@@ -29,6 +29,15 @@ class WP_CPT_RestAPI_Admin {
     private $option_name = 'cpt_rest_api_base_segment';
 
     /**
+     * The option name for the active CPTs.
+     *
+     * @since    1.0.0
+     * @access   private
+     * @var      string    $cpt_option_name    The option name for the active CPTs.
+     */
+    private $cpt_option_name = 'cpt_rest_api_active_cpts';
+
+    /**
      * The default value for the REST API base segment.
      *
      * @since    1.0.0
@@ -58,6 +67,9 @@ class WP_CPT_RestAPI_Admin {
         // Add AJAX handlers for API key management
         add_action( 'wp_ajax_cpt_rest_api_add_key', array( $this, 'ajax_add_key' ) );
         add_action( 'wp_ajax_cpt_rest_api_delete_key', array( $this, 'ajax_delete_key' ) );
+        
+        // Add AJAX handler for CPT reset
+        add_action( 'wp_ajax_cpt_rest_api_reset_cpts', array( $this, 'ajax_reset_cpts' ) );
     }
 
     /**
@@ -142,11 +154,18 @@ class WP_CPT_RestAPI_Admin {
      * @since    1.0.0
      */
     public function register_settings() {
-        // Register the setting
+        // Register the setting for base segment
         register_setting(
             'cpt_rest_api_settings',                  // Option group
             $this->option_name,                       // Option name
             array( $this, 'validate_base_segment' )   // Sanitize callback
+        );
+
+        // Register the setting for active CPTs
+        register_setting(
+            'cpt_rest_api_settings',                  // Option group
+            $this->cpt_option_name,                   // Option name
+            array( $this, 'validate_active_cpts' )    // Sanitize callback
         );
 
         // Add settings section for REST API configuration
@@ -164,6 +183,23 @@ class WP_CPT_RestAPI_Admin {
             array( $this, 'base_segment_field_callback' ), // Callback
             'cpt-rest-api',                           // Page
             'cpt_rest_api_section'                    // Section
+        );
+
+        // Add settings section for CPT Management
+        add_settings_section(
+            'cpt_rest_api_cpts_section',              // ID
+            __( 'Custom Post Types', 'wp-cpt-restapi' ), // Title
+            array( $this, 'cpts_section_callback' ),  // Callback
+            'cpt-rest-api'                            // Page
+        );
+
+        // Add settings field for CPT selection
+        add_settings_field(
+            'cpt_rest_api_active_cpts',               // ID
+            __( 'Active Post Types', 'wp-cpt-restapi' ), // Title
+            array( $this, 'cpts_field_callback' ),    // Callback
+            'cpt-rest-api',                           // Page
+            'cpt_rest_api_cpts_section'               // Section
         );
         
         // Add settings section for API Keys
@@ -284,6 +320,144 @@ class WP_CPT_RestAPI_Admin {
     }
 
     /**
+     * Validate the active CPTs field.
+     *
+     * @since    1.0.0
+     * @param    array    $input    The input to validate.
+     * @return   array              The validated input.
+     */
+    public function validate_active_cpts( $input ) {
+        // If input is not an array, return empty array
+        if ( ! is_array( $input ) ) {
+            return array();
+        }
+
+        // Get all available CPTs to validate against
+        $available_cpts = $this->get_available_cpts();
+        $validated_cpts = array();
+
+        // Only keep CPTs that exist and are valid
+        foreach ( $input as $cpt ) {
+            if ( isset( $available_cpts[ $cpt ] ) ) {
+                $validated_cpts[] = sanitize_text_field( $cpt );
+            }
+        }
+
+        // Add success message
+        add_settings_error(
+            $this->cpt_option_name,
+            'cpts_updated',
+            __( 'Custom Post Types settings saved successfully.', 'wp-cpt-restapi' ),
+            'updated'
+        );
+
+        return $validated_cpts;
+    }
+
+    /**
+     * Get all available public CPTs (excluding core types).
+     *
+     * @since    1.0.0
+     * @return   array    Array of CPT objects keyed by post type name.
+     */
+    private function get_available_cpts() {
+        // Get all public post types
+        $post_types = get_post_types( array( 'public' => true ), 'objects' );
+        
+        // Remove core post types
+        $core_types = array( 'post', 'page', 'attachment' );
+        foreach ( $core_types as $core_type ) {
+            unset( $post_types[ $core_type ] );
+        }
+
+        return $post_types;
+    }
+
+    /**
+     * Render the CPTs section description.
+     *
+     * @since    1.0.0
+     */
+    public function cpts_section_callback() {
+        echo '<p>' . esc_html__( 'Select which Custom Post Types should be available through the REST API.', 'wp-cpt-restapi' ) . '</p>';
+    }
+
+    /**
+     * Render the CPTs selection field.
+     *
+     * @since    1.0.0
+     */
+    public function cpts_field_callback() {
+        // Get available CPTs
+        $available_cpts = $this->get_available_cpts();
+        
+        // Get currently active CPTs
+        $active_cpts = get_option( $this->cpt_option_name, array() );
+        
+        if ( empty( $available_cpts ) ) {
+            echo '<p>' . esc_html__( 'No Custom Post Types found. Custom Post Types will appear here once they are registered.', 'wp-cpt-restapi' ) . '</p>';
+            return;
+        }
+
+        ?>
+        <div class="cpt-rest-api-cpts-container">
+            <table class="widefat cpt-rest-api-cpts-table">
+                <thead>
+                    <tr>
+                        <th><?php echo esc_html__( 'Post Type', 'wp-cpt-restapi' ); ?></th>
+                        <th><?php echo esc_html__( 'Description', 'wp-cpt-restapi' ); ?></th>
+                        <th><?php echo esc_html__( 'Slug', 'wp-cpt-restapi' ); ?></th>
+                        <th><?php echo esc_html__( 'Status', 'wp-cpt-restapi' ); ?></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ( $available_cpts as $cpt_name => $cpt_object ) : ?>
+                        <tr>
+                            <td>
+                                <strong><?php echo esc_html( $cpt_object->labels->name ); ?></strong>
+                            </td>
+                            <td>
+                                <?php if ( ! empty( $cpt_object->description ) ) : ?>
+                                    <?php echo esc_html( $cpt_object->description ); ?>
+                                <?php else : ?>
+                                    <span class="description"><?php echo esc_html__( 'No description available', 'wp-cpt-restapi' ); ?></span>
+                                <?php endif; ?>
+                            </td>
+                            <td>
+                                <code><?php echo esc_html( $cpt_name ); ?></code>
+                            </td>
+                            <td>
+                                <label class="cpt-rest-api-toggle-switch">
+                                    <input
+                                        type="checkbox"
+                                        name="<?php echo esc_attr( $this->cpt_option_name ); ?>[]"
+                                        value="<?php echo esc_attr( $cpt_name ); ?>"
+                                        <?php checked( in_array( $cpt_name, $active_cpts, true ) ); ?>
+                                    />
+                                    <span class="cpt-rest-api-toggle-slider"></span>
+                                    <span class="cpt-rest-api-toggle-label">
+                                        <?php echo esc_html__( 'Activate', 'wp-cpt-restapi' ); ?>
+                                    </span>
+                                </label>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+            
+            <div class="cpt-rest-api-cpts-actions">
+                <button type="button" class="button cpt-rest-api-reset-cpts">
+                    <?php echo esc_html__( 'Reset All', 'wp-cpt-restapi' ); ?>
+                </button>
+                <p class="description">
+                    <?php echo esc_html__( 'Reset All will deactivate all Custom Post Types.', 'wp-cpt-restapi' ); ?>
+                </p>
+            </div>
+        </div>
+        <?php
+    }
+
+    /**
      * Display the settings page content.
      *
      * @since    1.0.0
@@ -304,10 +478,13 @@ class WP_CPT_RestAPI_Admin {
                 // Output security fields
                 settings_fields( 'cpt_rest_api_settings' );
                 
-                // Output only the REST API settings section
+                // Output the REST API settings section
                 $this->output_settings_section( 'cpt_rest_api_section' );
                 
-                // Output save settings button immediately after API Base Segment
+                // Output the CPT settings section
+                $this->output_settings_section( 'cpt_rest_api_cpts_section' );
+                
+                // Output save settings button
                 submit_button( __( 'Save Settings', 'wp-cpt-restapi' ) );
                 ?>
             </form>
@@ -522,6 +699,30 @@ class WP_CPT_RestAPI_Admin {
             wp_send_json_success( array( 'message' => __( 'API key deleted successfully.', 'wp-cpt-restapi' ) ) );
         } else {
             wp_send_json_error( array( 'message' => __( 'Failed to delete API key.', 'wp-cpt-restapi' ) ) );
+        }
+    }
+
+    /**
+     * AJAX handler for resetting CPTs.
+     *
+     * @since    1.0.0
+     */
+    public function ajax_reset_cpts() {
+        // Check nonce
+        check_ajax_referer( 'cpt_rest_api', 'nonce' );
+        
+        // Check user capabilities
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( array( 'message' => __( 'You do not have permission to perform this action.', 'wp-cpt-restapi' ) ) );
+        }
+        
+        // Reset CPTs by saving an empty array
+        $updated = update_option( $this->cpt_option_name, array() );
+        
+        if ( $updated !== false ) {
+            wp_send_json_success( array( 'message' => __( 'All Custom Post Types have been deactivated.', 'wp-cpt-restapi' ) ) );
+        } else {
+            wp_send_json_error( array( 'message' => __( 'Failed to reset Custom Post Types.', 'wp-cpt-restapi' ) ) );
         }
     }
 }

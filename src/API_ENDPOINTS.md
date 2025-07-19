@@ -1,0 +1,195 @@
+# Custom Post Types REST API Endpoints
+
+This plugin creates REST API endpoints for Custom Post Types that are enabled through the admin interface.
+
+## Base URL Structure
+
+```
+https://yoursite.com/wp-json/{base_segment}/v1/
+```
+
+Where `{base_segment}` is configurable in the admin settings (default: `cpt`).
+
+## Authentication
+
+All endpoints require API key authentication using the Bearer token method:
+
+```
+Authorization: Bearer YOUR_API_KEY_HERE
+```
+
+## Available Endpoints
+
+### 1. Namespace Info
+**GET** `/wp-json/cpt/v1/`
+
+Returns information about the API namespace.
+
+**Response:**
+```json
+{
+  "namespace": "cpt/v1",
+  "description": "WordPress Custom Post Types REST API",
+  "version": "1.0.0"
+}
+```
+
+### 2. List CPT Posts
+**GET** `/wp-json/cpt/v1/{post_type}`
+
+Returns a paginated list of posts for the specified Custom Post Type.
+
+**Parameters:**
+- `per_page` (optional): Number of posts per page (default: 10, max: 100)
+- `page` (optional): Page number (default: 1)
+
+**Example:**
+```
+GET /wp-json/cpt/v1/product?per_page=5&page=1
+```
+
+**Response:**
+```json
+{
+  "posts": [
+    {
+      "id": 123,
+      "title": "Sample Product",
+      "content": "Product description...",
+      "excerpt": "Short description...",
+      "slug": "sample-product",
+      "status": "publish",
+      "type": "product",
+      "date": "2024-01-15 10:30:00",
+      "modified": "2024-01-16 14:20:00",
+      "author": "1",
+      "featured_media": 456,
+      "meta": {
+        "custom_field_1": "value1",
+        "custom_field_2": "value2"
+      }
+    }
+  ],
+  "pagination": {
+    "total": 25,
+    "pages": 5,
+    "current_page": 1,
+    "per_page": 5
+  }
+}
+```
+
+### 3. Get Single CPT Post
+**GET** `/wp-json/cpt/v1/{post_type}/{id}`
+
+Returns a specific post from the Custom Post Type.
+
+**Example:**
+```
+GET /wp-json/cpt/v1/product/123
+```
+
+**Response:**
+```json
+{
+  "id": 123,
+  "title": "Sample Product",
+  "content": "Product description...",
+  "excerpt": "Short description...",
+  "slug": "sample-product",
+  "status": "publish",
+  "type": "product",
+  "date": "2024-01-15 10:30:00",
+  "modified": "2024-01-16 14:20:00",
+  "author": "1",
+  "featured_media": 456,
+  "meta": {
+    "custom_field_1": "value1",
+    "custom_field_2": "value2"
+  }
+}
+```
+
+## Error Responses
+
+### 401 Unauthorized
+```json
+{
+  "code": "rest_not_logged_in",
+  "message": "You are not logged in and no valid API key was provided.",
+  "data": {
+    "status": 401
+  }
+}
+```
+
+### 403 Forbidden
+```json
+{
+  "code": "rest_forbidden",
+  "message": "This Custom Post Type is not available via the API.",
+  "data": {
+    "status": 403
+  }
+}
+```
+
+### 404 Not Found
+```json
+{
+  "code": "rest_post_invalid_id",
+  "message": "Invalid post ID.",
+  "data": {
+    "status": 404
+  }
+}
+```
+
+## Usage Examples
+
+### Using cURL
+
+```bash
+# List products
+curl -H "Authorization: Bearer YOUR_API_KEY" \
+     "https://yoursite.com/wp-json/cpt/v1/product"
+
+# Get specific product
+curl -H "Authorization: Bearer YOUR_API_KEY" \
+     "https://yoursite.com/wp-json/cpt/v1/product/123"
+```
+
+### Using JavaScript (fetch)
+
+```javascript
+const apiKey = 'YOUR_API_KEY';
+const baseUrl = 'https://yoursite.com/wp-json/cpt/v1';
+
+// List products
+fetch(`${baseUrl}/product`, {
+  headers: {
+    'Authorization': `Bearer ${apiKey}`
+  }
+})
+.then(response => response.json())
+.then(data => console.log(data));
+
+// Get specific product
+fetch(`${baseUrl}/product/123`, {
+  headers: {
+    'Authorization': `Bearer ${apiKey}`
+  }
+})
+.then(response => response.json())
+.then(data => console.log(data));
+```
+
+## Admin Configuration
+
+1. Go to **Settings > CPT REST API** in your WordPress admin
+2. Configure the API Base Segment (default: `cpt`)
+3. Enable/disable specific Custom Post Types using the toggle switches
+4. Create API keys for authentication
+5. Save your settings
+
+Only Custom Post Types that are **enabled** in the admin interface will be available through the API endpoints.
