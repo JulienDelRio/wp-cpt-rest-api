@@ -96,8 +96,9 @@ Content-Type: application/json
 - `excerpt` (optional): Post excerpt
 - `status` (optional): Post status (`publish`, `draft`, `private`, `pending` - default: `publish`)
 - `meta` (optional): Object containing custom meta fields
+- **Meta fields can also be provided directly at root level**
 
-**Example Request:**
+**Example Request (Nested meta):**
 ```http
 POST /wp-json/cpt/v1/etablissement
 Authorization: Bearer YOUR_API_KEY
@@ -108,9 +109,43 @@ Content-Type: application/json
   "content": "Description de l'établissement.",
   "status": "publish",
   "meta": {
-    "address": "123 Main Street",
-    "phone": "+1234567890"
+    "wpcf-email-elu": "test@gmail.com",
+    "wpcf-ordre": "700"
   },
+  "extra_field": "ignored"
+}
+```
+
+**Example Request (Root-level meta):**
+```http
+POST /wp-json/cpt/v1/etablissement
+Authorization: Bearer YOUR_API_KEY
+Content-Type: application/json
+
+{
+  "title": "École Test",
+  "content": "Description de l'établissement.",
+  "status": "publish",
+  "wpcf-email-elu": "test@gmail.com",
+  "wpcf-ordre": "700",
+  "extra_field": "ignored"
+}
+```
+
+**Mixed Format (Both nested and root-level):**
+```http
+POST /wp-json/cpt/v1/etablissement
+Authorization: Bearer YOUR_API_KEY
+Content-Type: application/json
+
+{
+  "title": "École Test",
+  "content": "Description de l'établissement.",
+  "status": "publish",
+  "meta": {
+    "wpcf-email-elu": "test@gmail.com"
+  },
+  "wpcf-ordre": "700",
   "extra_field": "ignored"
 }
 ```
@@ -226,7 +261,7 @@ curl -H "Authorization: Bearer YOUR_API_KEY" \
 curl -H "Authorization: Bearer YOUR_API_KEY" \
      "https://yoursite.com/wp-json/cpt/v1/product/123"
 
-# Create new product
+# Create new product (nested meta)
 curl -X POST \
      -H "Authorization: Bearer YOUR_API_KEY" \
      -H "Content-Type: application/json" \
@@ -238,6 +273,19 @@ curl -X POST \
          "price": "29.99",
          "category": "electronics"
        }
+     }' \
+     "https://yoursite.com/wp-json/cpt/v1/product"
+
+# Create new product (root-level meta)
+curl -X POST \
+     -H "Authorization: Bearer YOUR_API_KEY" \
+     -H "Content-Type: application/json" \
+     -d '{
+       "title": "New Product",
+       "content": "Product description here",
+       "status": "publish",
+       "price": "29.99",
+       "category": "electronics"
      }' \
      "https://yoursite.com/wp-json/cpt/v1/product"
 ```
@@ -266,7 +314,7 @@ fetch(`${baseUrl}/product/123`, {
 .then(response => response.json())
 .then(data => console.log(data));
 
-// Create new product
+// Create new product (nested meta)
 fetch(`${baseUrl}/product`, {
   method: 'POST',
   headers: {
@@ -281,6 +329,24 @@ fetch(`${baseUrl}/product`, {
       price: '29.99',
       category: 'electronics'
     }
+  })
+})
+.then(response => response.json())
+.then(data => console.log(data));
+
+// Create new product (root-level meta)
+fetch(`${baseUrl}/product`, {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${apiKey}`,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    title: 'New Product',
+    content: 'Product description here',
+    status: 'publish',
+    price: '29.99',
+    category: 'electronics'
   })
 })
 .then(response => response.json())

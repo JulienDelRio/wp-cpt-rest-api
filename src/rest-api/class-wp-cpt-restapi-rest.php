@@ -406,11 +406,8 @@ class WP_CPT_RestAPI_REST {
             );
         }
         
-        // Handle meta fields
-        $meta_data = $request->get_param( 'meta' );
-        if ( is_array( $meta_data ) && ! empty( $meta_data ) ) {
-            $this->update_post_meta_fields( $post_id, $meta_data, $cpt );
-        }
+        // Handle meta fields from both 'meta' object and root-level fields
+        $this->handle_meta_fields( $request, $post_id, $cpt );
         
         // Get the created post
         $created_post = get_post( $post_id );
@@ -444,6 +441,40 @@ class WP_CPT_RestAPI_REST {
         }
         
         return $status;
+    }
+
+    /**
+     * Handle meta fields from both 'meta' object and root-level fields.
+     *
+     * @since    1.0.0
+     * @param    WP_REST_Request    $request    The REST request object.
+     * @param    int                $post_id    The post ID.
+     * @param    string             $cpt        The custom post type.
+     */
+    private function handle_meta_fields( $request, $post_id, $cpt ) {
+        $all_meta_data = array();
+        
+        // Get meta fields from nested 'meta' object
+        $nested_meta = $request->get_param( 'meta' );
+        if ( is_array( $nested_meta ) && ! empty( $nested_meta ) ) {
+            $all_meta_data = array_merge( $all_meta_data, $nested_meta );
+        }
+        
+        // Get meta fields from root level (excluding standard post fields)
+        $standard_fields = array( 'title', 'content', 'excerpt', 'status', 'meta', 'cpt' );
+        $all_params = $request->get_params();
+        
+        foreach ( $all_params as $key => $value ) {
+            if ( ! in_array( $key, $standard_fields, true ) ) {
+                // This is potentially a meta field at root level
+                $all_meta_data[ $key ] = $value;
+            }
+        }
+        
+        // Update meta fields if any were found
+        if ( ! empty( $all_meta_data ) ) {
+            $this->update_post_meta_fields( $post_id, $all_meta_data, $cpt );
+        }
     }
 
     /**
