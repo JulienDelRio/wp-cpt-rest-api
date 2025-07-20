@@ -219,24 +219,61 @@ class WP_CPT_RestAPI_REST {
                 )
             );
             
-            // Register endpoint for getting a specific CPT post
+            // Register endpoint for getting and updating a specific CPT post
             register_rest_route(
                 $base_segment . '/v1',
                 '/' . $cpt_name . '/(?P<id>\d+)',
                 array(
-                    'methods'  => 'GET',
-                    'callback' => array( $this, 'get_cpt_post' ),
-                    'args'     => array(
-                        'cpt' => array(
-                            'default' => $cpt_name,
-                            'sanitize_callback' => 'sanitize_text_field',
+                    array(
+                        'methods'  => 'GET',
+                        'callback' => array( $this, 'get_cpt_post' ),
+                        'args'     => array(
+                            'cpt' => array(
+                                'default' => $cpt_name,
+                                'sanitize_callback' => 'sanitize_text_field',
+                            ),
+                            'id' => array(
+                                'required' => true,
+                                'sanitize_callback' => 'absint',
+                            ),
                         ),
-                        'id' => array(
-                            'required' => true,
-                            'sanitize_callback' => 'absint',
-                        ),
+                        'permission_callback' => '__return_true',
                     ),
-                    'permission_callback' => '__return_true',
+                    array(
+                        'methods'  => array( 'PUT', 'PATCH' ),
+                        'callback' => array( $this, 'update_cpt_post' ),
+                        'args'     => array(
+                            'cpt' => array(
+                                'default' => $cpt_name,
+                                'sanitize_callback' => 'sanitize_text_field',
+                            ),
+                            'id' => array(
+                                'required' => true,
+                                'sanitize_callback' => 'absint',
+                            ),
+                            'title' => array(
+                                'required' => false,
+                                'sanitize_callback' => 'sanitize_text_field',
+                            ),
+                            'content' => array(
+                                'required' => false,
+                                'sanitize_callback' => 'wp_kses_post',
+                            ),
+                            'excerpt' => array(
+                                'required' => false,
+                                'sanitize_callback' => 'sanitize_textarea_field',
+                            ),
+                            'status' => array(
+                                'required' => false,
+                                'sanitize_callback' => 'sanitize_text_field',
+                            ),
+                            'meta' => array(
+                                'required' => false,
+                                'validate_callback' => array( $this, 'validate_meta_field' ),
+                            ),
+                        ),
+                        'permission_callback' => '__return_true',
+                    ),
                 )
             );
         }
@@ -425,6 +462,97 @@ class WP_CPT_RestAPI_REST {
         
         return $response;
     }
+    /**
+     * Update an existing post for a specific CPT.
+     *
+     * @since    1.0.0
+     * @param    WP_REST_Request    $request    The REST request object.
+     * @return   WP_REST_Response|WP_Error      The response or error.
+     */
+    public function update_cpt_post( $request ) {
+        $cpt = $request->get_param( 'cpt' );
+        $id = $request->get_param( 'id' );
+        
+        // Validate CPT is active
+        $active_cpts = $this->get_active_cpts();
+        if ( ! in_array( $cpt, $active_cpts, true ) ) {
+            return new WP_Error(
+                'rest_forbidden',
+                __( 'This Custom Post Type is not available via the API.', 'wp-cpt-restapi' ),
+                array( 'status' => 403 )
+            );
+        }
+        
+        // Get the existing post
+        $existing_post = get_post( $id );
+        
+        if ( ! $existing_post || $existing_post->post_type !== $cpt ) {
+            return new WP_Error(
+                'rest_post_invalid_id',
+                __( 'Invalid post ID or post does not belong to this Custom Post Type.', 'wp-cpt-restapi' ),
+                array( 'status' => 404 )
+            );
+        }
+        
+        // Check if post is published (only allow updating published posts for security)
+        if ( $existing_post->post_status !== 'publish' ) {
+            return new WP_Error(
+                'rest_cannot_edit',
+                __( 'Sorry, you are not allowed to edit this post.', 'wp-cpt-restapi' ),
+                array( 'status' => 403 )
+            );
+        }
+        
+        // Prepare post data for update
+        $post_data = array(
+            'ID' => $id,
+        );
+        
+        // Add fields if provided (partial update support)
+        if ( $request->get_param( 'title' ) !== null ) {
+            $post_data['post_title'] = $request->get_param( 'title' );
+        }
+        
+        if ( $request->get_param( 'content' ) !== null ) {
+            $post_data['post_content'] = $request->get_param( 'content' );
+        }
+        
+        if ( $request->get_param( 'excerpt' ) !== null ) {
+            $post_data['post_excerpt'] = $request->get_param( 'excerpt' );
+        }
+        
+        if ( $request->get_param( 'status' ) !== null ) {
+            $post_data['post_status'] = $this->sanitize_post_status( $request->get_param( 'status' ) );
+        }
+        
+        // Update the post
+        $updated_post_id = wp_update_post( $post_data, true );
+        
+        if ( is_wp_error( $updated_post_id ) ) {
+            return new WP_Error(
+                'rest_cannot_update',
+                __( 'The post cannot be updated.', 'wp-cpt-restapi' ),
+                array( 'status' => 500 )
+            );
+        }
+        
+        // Handle meta fields using the same flexible approach as create
+        $this->handle_meta_fields( $request, $id, $cpt );
+        
+        // Get the updated post
+        $updated_post = get_post( $id );
+        if ( ! $updated_post ) {
+            return new WP_Error(
+                'rest_cannot_read',
+                __( 'The post was updated but cannot be read.', 'wp-cpt-restapi' ),
+                array( 'status' => 500 )
+            );
+        }
+        
+        // Return the updated post data with 200 status
+        return rest_ensure_response( $this->prepare_post_data( $updated_post ) );
+    }
+
 
     /**
      * Sanitize post status value.

@@ -171,7 +171,76 @@ Content-Type: application/json
 }
 ```
 
-### 4. Get Single CPT Post
+### 4. Update CPT Post
+**PUT/PATCH** `/wp-json/cpt/v1/{post_type}/{id}`
+
+Updates an existing post for the specified Custom Post Type. Both PUT and PATCH methods are supported for full or partial updates.
+
+**Request Headers:**
+```
+Authorization: Bearer YOUR_API_KEY
+Content-Type: application/json
+```
+
+**Request Body Parameters:**
+- `title` (optional): Post title
+- `content` (optional): Post content (HTML allowed)
+- `excerpt` (optional): Post excerpt
+- `status` (optional): Post status (`publish`, `draft`, `private`, `pending`)
+- `meta` (optional): Object containing custom meta fields
+- **Meta fields can also be provided directly at root level**
+
+**Example Request (Partial Update - PATCH):**
+```http
+PATCH /wp-json/cpt/v1/etablissement/123
+Authorization: Bearer YOUR_API_KEY
+Content-Type: application/json
+
+{
+  "title": "École Test Updated",
+  "wpcf-email-elu": "updated@gmail.com"
+}
+```
+
+**Example Request (Full Update - PUT):**
+```http
+PUT /wp-json/cpt/v1/etablissement/123
+Authorization: Bearer YOUR_API_KEY
+Content-Type: application/json
+
+{
+  "title": "École Test Updated",
+  "content": "Updated description",
+  "status": "publish",
+  "meta": {
+    "wpcf-email-elu": "updated@gmail.com",
+    "wpcf-ordre": "800"
+  }
+}
+```
+
+**Success Response (200 OK):**
+```json
+{
+  "id": 123,
+  "title": "École Test Updated",
+  "content": "Updated description",
+  "excerpt": "",
+  "slug": "ecole-test",
+  "status": "publish",
+  "type": "etablissement",
+  "date": "2024-01-15 10:30:00",
+  "modified": "2024-01-16 15:45:00",
+  "author": "1",
+  "featured_media": 0,
+  "meta": {
+    "wpcf-email-elu": "updated@gmail.com",
+    "wpcf-ordre": "800"
+  }
+}
+```
+
+### 5. Get Single CPT Post
 **GET** `/wp-json/cpt/v1/{post_type}/{id}`
 
 Returns a specific post from the Custom Post Type.
@@ -248,6 +317,28 @@ GET /wp-json/cpt/v1/product/123
 }
 ```
 
+### 500 Internal Server Error (PUT/PATCH)
+```json
+{
+  "code": "rest_cannot_update",
+  "message": "The post cannot be updated.",
+  "data": {
+    "status": 500
+  }
+}
+```
+
+### 403 Forbidden (Update)
+```json
+{
+  "code": "rest_cannot_edit",
+  "message": "Sorry, you are not allowed to edit this post.",
+  "data": {
+    "status": 403
+  }
+}
+```
+
 ## Usage Examples
 
 ### Using cURL
@@ -288,6 +379,31 @@ curl -X POST \
        "category": "electronics"
      }' \
      "https://yoursite.com/wp-json/cpt/v1/product"
+
+# Update product (partial update - PATCH)
+curl -X PATCH \
+     -H "Authorization: Bearer YOUR_API_KEY" \
+     -H "Content-Type: application/json" \
+     -d '{
+       "title": "Updated Product Title",
+       "price": "39.99"
+     }' \
+     "https://yoursite.com/wp-json/cpt/v1/product/123"
+
+# Update product (full update - PUT)
+curl -X PUT \
+     -H "Authorization: Bearer YOUR_API_KEY" \
+     -H "Content-Type: application/json" \
+     -d '{
+       "title": "Completely Updated Product",
+       "content": "New product description",
+       "status": "publish",
+       "meta": {
+         "price": "49.99",
+         "category": "updated-electronics"
+       }
+     }' \
+     "https://yoursite.com/wp-json/cpt/v1/product/123"
 ```
 
 ### Using JavaScript (fetch)
@@ -347,6 +463,41 @@ fetch(`${baseUrl}/product`, {
     status: 'publish',
     price: '29.99',
     category: 'electronics'
+  })
+})
+.then(response => response.json())
+.then(data => console.log(data));
+
+// Update product (partial update - PATCH)
+fetch(`${baseUrl}/product/123`, {
+  method: 'PATCH',
+  headers: {
+    'Authorization': `Bearer ${apiKey}`,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    title: 'Updated Product Title',
+    price: '39.99'
+  })
+})
+.then(response => response.json())
+.then(data => console.log(data));
+
+// Update product (full update - PUT)
+fetch(`${baseUrl}/product/123`, {
+  method: 'PUT',
+  headers: {
+    'Authorization': `Bearer ${apiKey}`,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    title: 'Completely Updated Product',
+    content: 'New product description',
+    status: 'publish',
+    meta: {
+      price: '49.99',
+      category: 'updated-electronics'
+    }
   })
 })
 .then(response => response.json())
