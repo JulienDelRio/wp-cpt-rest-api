@@ -79,7 +79,64 @@ GET /wp-json/cpt/v1/product?per_page=5&page=1
 }
 ```
 
-### 3. Get Single CPT Post
+### 3. Create CPT Post
+**POST** `/wp-json/cpt/v1/{post_type}`
+
+Creates a new post for the specified Custom Post Type.
+
+**Request Headers:**
+```
+Authorization: Bearer YOUR_API_KEY
+Content-Type: application/json
+```
+
+**Request Body Parameters:**
+- `title` (optional): Post title
+- `content` (optional): Post content (HTML allowed)
+- `excerpt` (optional): Post excerpt
+- `status` (optional): Post status (`publish`, `draft`, `private`, `pending` - default: `publish`)
+- `meta` (optional): Object containing custom meta fields
+
+**Example Request:**
+```http
+POST /wp-json/cpt/v1/etablissement
+Authorization: Bearer YOUR_API_KEY
+Content-Type: application/json
+
+{
+  "title": "École Test",
+  "content": "Description de l'établissement.",
+  "status": "publish",
+  "meta": {
+    "address": "123 Main Street",
+    "phone": "+1234567890"
+  },
+  "extra_field": "ignored"
+}
+```
+
+**Success Response (201 Created):**
+```json
+{
+  "id": 123,
+  "title": "École Test",
+  "content": "Description de l'établissement.",
+  "excerpt": "",
+  "slug": "ecole-test",
+  "status": "publish",
+  "type": "etablissement",
+  "date": "2024-01-15 10:30:00",
+  "modified": "2024-01-15 10:30:00",
+  "author": "1",
+  "featured_media": 0,
+  "meta": {
+    "address": "123 Main Street",
+    "phone": "+1234567890"
+  }
+}
+```
+
+### 4. Get Single CPT Post
 **GET** `/wp-json/cpt/v1/{post_type}/{id}`
 
 Returns a specific post from the Custom Post Type.
@@ -145,6 +202,17 @@ GET /wp-json/cpt/v1/product/123
 }
 ```
 
+### 500 Internal Server Error (POST)
+```json
+{
+  "code": "rest_cannot_create",
+  "message": "The post cannot be created.",
+  "data": {
+    "status": 500
+  }
+}
+```
+
 ## Usage Examples
 
 ### Using cURL
@@ -157,6 +225,21 @@ curl -H "Authorization: Bearer YOUR_API_KEY" \
 # Get specific product
 curl -H "Authorization: Bearer YOUR_API_KEY" \
      "https://yoursite.com/wp-json/cpt/v1/product/123"
+
+# Create new product
+curl -X POST \
+     -H "Authorization: Bearer YOUR_API_KEY" \
+     -H "Content-Type: application/json" \
+     -d '{
+       "title": "New Product",
+       "content": "Product description here",
+       "status": "publish",
+       "meta": {
+         "price": "29.99",
+         "category": "electronics"
+       }
+     }' \
+     "https://yoursite.com/wp-json/cpt/v1/product"
 ```
 
 ### Using JavaScript (fetch)
@@ -179,6 +262,26 @@ fetch(`${baseUrl}/product/123`, {
   headers: {
     'Authorization': `Bearer ${apiKey}`
   }
+})
+.then(response => response.json())
+.then(data => console.log(data));
+
+// Create new product
+fetch(`${baseUrl}/product`, {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${apiKey}`,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    title: 'New Product',
+    content: 'Product description here',
+    status: 'publish',
+    meta: {
+      price: '29.99',
+      category: 'electronics'
+    }
+  })
 })
 .then(response => response.json())
 .then(data => console.log(data));

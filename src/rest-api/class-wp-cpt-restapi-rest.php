@@ -160,28 +160,62 @@ class WP_CPT_RestAPI_REST {
         $active_cpts = $this->get_active_cpts();
         
         foreach ( $active_cpts as $cpt_name ) {
-            // Register endpoint for listing CPT posts
+            // Register endpoint for listing CPT posts (GET) and creating new posts (POST)
             register_rest_route(
                 $base_segment . '/v1',
                 '/' . $cpt_name,
                 array(
-                    'methods'  => 'GET',
-                    'callback' => array( $this, 'get_cpt_posts' ),
-                    'args'     => array(
-                        'cpt' => array(
-                            'default' => $cpt_name,
-                            'sanitize_callback' => 'sanitize_text_field',
+                    array(
+                        'methods'  => 'GET',
+                        'callback' => array( $this, 'get_cpt_posts' ),
+                        'args'     => array(
+                            'cpt' => array(
+                                'default' => $cpt_name,
+                                'sanitize_callback' => 'sanitize_text_field',
+                            ),
+                            'per_page' => array(
+                                'default' => 10,
+                                'sanitize_callback' => 'absint',
+                            ),
+                            'page' => array(
+                                'default' => 1,
+                                'sanitize_callback' => 'absint',
+                            ),
                         ),
-                        'per_page' => array(
-                            'default' => 10,
-                            'sanitize_callback' => 'absint',
-                        ),
-                        'page' => array(
-                            'default' => 1,
-                            'sanitize_callback' => 'absint',
-                        ),
+                        'permission_callback' => '__return_true',
                     ),
-                    'permission_callback' => '__return_true',
+                    array(
+                        'methods'  => 'POST',
+                        'callback' => array( $this, 'create_cpt_post' ),
+                        'args'     => array(
+                            'cpt' => array(
+                                'default' => $cpt_name,
+                                'sanitize_callback' => 'sanitize_text_field',
+                            ),
+                            'title' => array(
+                                'required' => false,
+                                'sanitize_callback' => 'sanitize_text_field',
+                            ),
+                            'content' => array(
+                                'required' => false,
+                                'sanitize_callback' => 'wp_kses_post',
+                            ),
+                            'excerpt' => array(
+                                'required' => false,
+                                'sanitize_callback' => 'sanitize_textarea_field',
+                            ),
+                            'status' => array(
+                                'required' => false,
+                                'default' => 'publish',
+                                'sanitize_callback' => 'sanitize_text_field',
+                            ),
+                            'meta' => array(
+                                'required' => false,
+                                'validate_callback' => array( $this, 'validate_meta_field' ),
+                            ),
+                        ),
+                        'permission_callback' => '__return_true',
+                    ),
                 )
             );
             
@@ -320,6 +354,162 @@ class WP_CPT_RestAPI_REST {
         }
         
         return rest_ensure_response( $this->prepare_post_data( $post ) );
+    }
+
+    /**
+     * Create a new post for a specific CPT.
+     *
+     * @since    1.0.0
+     * @param    WP_REST_Request    $request    The REST request object.
+     * @return   WP_REST_Response|WP_Error      The response or error.
+     */
+    public function create_cpt_post( $request ) {
+        $cpt = $request->get_param( 'cpt' );
+        
+        // Validate CPT is active
+        $active_cpts = $this->get_active_cpts();
+        if ( ! in_array( $cpt, $active_cpts, true ) ) {
+            return new WP_Error(
+                'rest_forbidden',
+                __( 'This Custom Post Type is not available via the API.', 'wp-cpt-restapi' ),
+                array( 'status' => 403 )
+            );
+        }
+        
+        // Prepare post data
+        $post_data = array(
+            'post_type' => $cpt,
+            'post_status' => $this->sanitize_post_status( $request->get_param( 'status' ) ),
+        );
+        
+        // Add optional fields if provided
+        if ( $request->get_param( 'title' ) ) {
+            $post_data['post_title'] = $request->get_param( 'title' );
+        }
+        
+        if ( $request->get_param( 'content' ) ) {
+            $post_data['post_content'] = $request->get_param( 'content' );
+        }
+        
+        if ( $request->get_param( 'excerpt' ) ) {
+            $post_data['post_excerpt'] = $request->get_param( 'excerpt' );
+        }
+        
+        // Create the post
+        $post_id = wp_insert_post( $post_data, true );
+        
+        if ( is_wp_error( $post_id ) ) {
+            return new WP_Error(
+                'rest_cannot_create',
+                __( 'The post cannot be created.', 'wp-cpt-restapi' ),
+                array( 'status' => 500 )
+            );
+        }
+        
+        // Handle meta fields
+        $meta_data = $request->get_param( 'meta' );
+        if ( is_array( $meta_data ) && ! empty( $meta_data ) ) {
+            $this->update_post_meta_fields( $post_id, $meta_data, $cpt );
+        }
+        
+        // Get the created post
+        $created_post = get_post( $post_id );
+        if ( ! $created_post ) {
+            return new WP_Error(
+                'rest_cannot_read',
+                __( 'The post was created but cannot be read.', 'wp-cpt-restapi' ),
+                array( 'status' => 500 )
+            );
+        }
+        
+        // Return the created post data with 201 status
+        $response = rest_ensure_response( $this->prepare_post_data( $created_post ) );
+        $response->set_status( 201 );
+        
+        return $response;
+    }
+
+    /**
+     * Sanitize post status value.
+     *
+     * @since    1.0.0
+     * @param    string    $status    The post status to sanitize.
+     * @return   string               The sanitized post status.
+     */
+    private function sanitize_post_status( $status ) {
+        $allowed_statuses = array( 'publish', 'draft', 'private', 'pending' );
+        
+        if ( empty( $status ) || ! in_array( $status, $allowed_statuses, true ) ) {
+            return 'publish';
+        }
+        
+        return $status;
+    }
+
+    /**
+     * Update post meta fields for a CPT post.
+     *
+     * @since    1.0.0
+     * @param    int       $post_id     The post ID.
+     * @param    array     $meta_data   The meta data to update.
+     * @param    string    $cpt         The custom post type.
+     */
+    private function update_post_meta_fields( $post_id, $meta_data, $cpt ) {
+        // Get registered meta fields for this post type
+        $registered_meta = get_registered_meta_keys( 'post', $cpt );
+        
+        foreach ( $meta_data as $meta_key => $meta_value ) {
+            // Skip private meta fields (starting with _)
+            if ( strpos( $meta_key, '_' ) === 0 ) {
+                continue;
+            }
+            
+            // Only update if it's a registered meta field or if no specific meta fields are registered
+            if ( empty( $registered_meta ) || isset( $registered_meta[ $meta_key ] ) ) {
+                // Sanitize the meta value
+                $sanitized_value = $this->sanitize_meta_value( $meta_value );
+                
+                if ( $sanitized_value !== null ) {
+                    update_post_meta( $post_id, $meta_key, $sanitized_value );
+                }
+            }
+        }
+    }
+
+    /**
+     * Sanitize meta field value.
+     *
+     * @since    1.0.0
+     * @param    mixed    $value    The meta value to sanitize.
+     * @return   mixed             The sanitized meta value, or null if invalid.
+     */
+    private function sanitize_meta_value( $value ) {
+        if ( is_string( $value ) ) {
+            return sanitize_text_field( $value );
+        } elseif ( is_numeric( $value ) ) {
+            return $value;
+        } elseif ( is_array( $value ) ) {
+            return array_map( array( $this, 'sanitize_meta_value' ), $value );
+        } elseif ( is_bool( $value ) ) {
+            return $value;
+        }
+        
+        // For other types, convert to string and sanitize
+        return sanitize_text_field( (string) $value );
+    }
+
+    /**
+     * Validate meta field parameter.
+     *
+     * @since    1.0.0
+     * @param    mixed             $value      The meta field value.
+     * @param    WP_REST_Request   $request    The REST request object.
+     * @param    string            $param      The parameter name.
+     * @return   bool                          True if valid, false otherwise.
+     */
+    public function validate_meta_field( $value, $request, $param ) {
+        // Meta field should be an array or null
+        return is_array( $value ) || is_null( $value );
     }
 
     /**
