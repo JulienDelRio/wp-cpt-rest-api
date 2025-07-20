@@ -470,31 +470,49 @@ class WP_CPT_RestAPI_Admin {
 
         ?>
         <div class="wrap">
-            <h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
+            <h1><?php echo esc_html__( 'CPT REST API', 'wp-cpt-restapi' ); ?></h1>
             
-            <!-- REST API Settings Form -->
+            <!-- Section 1: API Settings -->
+            <h2><?php echo esc_html__( 'API Settings', 'wp-cpt-restapi' ); ?></h2>
+            
             <form action="options.php" method="post">
                 <?php
                 // Output security fields
                 settings_fields( 'cpt_rest_api_settings' );
+                ?>
                 
-                // Output the REST API settings section
-                $this->output_settings_section( 'cpt_rest_api_section' );
+                <!-- REST API Base Segment Section -->
+                <h3><?php echo esc_html__( 'REST API Base Segment', 'wp-cpt-restapi' ); ?></h3>
+                <p><?php echo esc_html__( 'Configure the base segment for the Custom Post Types REST API.', 'wp-cpt-restapi' ); ?></p>
+                <div class="cpt-rest-api-field-wrapper">
+                    <?php $this->base_segment_field_callback(); ?>
+                </div>
                 
-                // Output the CPT settings section
-                $this->output_settings_section( 'cpt_rest_api_cpts_section' );
+                <!-- Custom Post Types Section -->
+                <h3><?php echo esc_html__( 'Custom Post Types', 'wp-cpt-restapi' ); ?></h3>
+                <p><?php echo esc_html__( 'Select which Custom Post Types should be available through the REST API.', 'wp-cpt-restapi' ); ?></p>
+                <div class="cpt-rest-api-field-wrapper">
+                    <?php $this->cpts_field_callback(); ?>
+                </div>
                 
+                <?php
                 // Output save settings button
                 submit_button( __( 'Save Settings', 'wp-cpt-restapi' ) );
                 ?>
             </form>
             
-            <!-- API Keys Management Section (separate from form) -->
+            <hr>
+            
+            <!-- Section 2: API Keys Management -->
+            <h2><?php echo esc_html__( 'API Keys Management', 'wp-cpt-restapi' ); ?></h2>
+            
             <div class="cpt-rest-api-section-separator">
-                <?php
-                // Output the API Keys section separately
-                $this->output_settings_section( 'cpt_rest_api_keys_section' );
-                ?>
+                <h3><?php echo esc_html__( 'API Keys', 'wp-cpt-restapi' ); ?></h3>
+                <p><?php echo esc_html__( 'Create and manage API keys for accessing the REST API endpoints.', 'wp-cpt-restapi' ); ?></p>
+                <p><?php echo esc_html__( 'API keys can be used to authenticate requests to the REST API using the Bearer authentication method.', 'wp-cpt-restapi' ); ?></p>
+                <div class="cpt-rest-api-field-wrapper">
+                    <?php $this->api_keys_field_callback(); ?>
+                </div>
             </div>
         </div>
         <?php
@@ -517,21 +535,24 @@ class WP_CPT_RestAPI_Admin {
         
         // Output section title and callback
         if ( $section['title'] ) {
-            echo "<h2>{$section['title']}</h2>\n";
+            echo "<h3>{$section['title']}</h3>\n";
         }
         
         if ( $section['callback'] ) {
             call_user_func( $section['callback'], $section );
         }
         
-        // Output section fields
+        // Output section fields directly without WordPress table structure
         if ( ! isset( $wp_settings_fields['cpt-rest-api'][$section_id] ) ) {
             return;
         }
         
-        echo '<table class="form-table" role="presentation">';
-        do_settings_fields( 'cpt-rest-api', $section_id );
-        echo '</table>';
+        // Call field callbacks directly to avoid table wrapper
+        foreach ( $wp_settings_fields['cpt-rest-api'][$section_id] as $field ) {
+            echo '<div class="cpt-rest-api-field-wrapper">';
+            call_user_func( $field['callback'], $field['args'] );
+            echo '</div>';
+        }
     }
     
     /**

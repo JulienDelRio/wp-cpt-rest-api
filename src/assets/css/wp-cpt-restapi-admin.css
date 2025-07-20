@@ -292,3 +292,13 @@ input.error {
         margin-right: 0;
     }
 }
+
+/* Field wrapper styling to replace form table structure */
+.cpt-rest-api-field-wrapper {
+    margin-bottom: 20px;
+    padding: 0;
+}
+
+.cpt-rest-api-field-wrapper:last-child {
+    margin-bottom: 0;
+}
