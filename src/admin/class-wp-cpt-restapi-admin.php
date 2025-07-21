@@ -361,16 +361,30 @@ class WP_CPT_RestAPI_Admin {
      * @return   array    Array of CPT objects keyed by post type name.
      */
     private function get_available_cpts() {
-        // Get all public post types
-        $post_types = get_post_types( array( 'public' => true ), 'objects' );
-        
-        // Remove core post types
+        // Get all registered post types (not just public ones)
+        // This ensures we include CPTs that might not be public but should be available via admin
+        $all_post_types = get_post_types( array(), 'objects' );
         $core_types = array( 'post', 'page', 'attachment' );
-        foreach ( $core_types as $core_type ) {
-            unset( $post_types[ $core_type ] );
+        $available_cpts = array();
+        
+        foreach ( $all_post_types as $post_type_name => $post_type_obj ) {
+            // Skip core post types
+            if ( in_array( $post_type_name, $core_types, true ) ) {
+                continue;
+            }
+            
+            // Include CPTs that are either:
+            // 1. Public, OR
+            // 2. Publicly queryable, OR
+            // 3. Show in admin UI
+            if ( $post_type_obj->public ||
+                 $post_type_obj->publicly_queryable ||
+                 $post_type_obj->show_ui ) {
+                $available_cpts[ $post_type_name ] = $post_type_obj;
+            }
         }
 
-        return $post_types;
+        return $available_cpts;
     }
 
     /**
@@ -746,4 +760,5 @@ class WP_CPT_RestAPI_Admin {
             wp_send_json_error( array( 'message' => __( 'Failed to reset Custom Post Types.', 'wp-cpt-restapi' ) ) );
         }
     }
+
 }

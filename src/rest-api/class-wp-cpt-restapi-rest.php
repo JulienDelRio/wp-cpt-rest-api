@@ -143,20 +143,23 @@ class WP_CPT_RestAPI_REST {
             )
         );
         
-        // Register endpoints for active CPTs
-        $this->register_cpt_endpoints();
+        // Register endpoints for ALL available CPTs, but validate access dynamically
+        $this->register_all_cpt_endpoints();
     }
 
     /**
-     * Register REST API endpoints for active CPTs.
+     * Register REST API endpoints for ALL available CPTs with dynamic validation.
+     *
+     * This method registers endpoints for all available CPTs, but the actual access
+     * is validated dynamically in each callback method based on current settings.
      *
      * @since    1.0.0
      */
-    private function register_cpt_endpoints() {
+    private function register_all_cpt_endpoints() {
         // Get the configured base segment
         $base_segment = get_option( $this->option_name, $this->default_segment );
         
-        // Get active CPTs
+        // Get only CPTs that are enabled in admin panel
         $active_cpts = $this->get_active_cpts();
         
         foreach ( $active_cpts as $cpt_name ) {
@@ -293,17 +296,52 @@ class WP_CPT_RestAPI_REST {
             return array();
         }
         
-        // Validate that the CPTs still exist
-        $available_cpts = get_post_types( array( 'public' => true ), 'names' );
-        $core_types = array( 'post', 'page', 'attachment' );
-        
-        // Remove core types from available CPTs
-        foreach ( $core_types as $core_type ) {
-            unset( $available_cpts[ $core_type ] );
-        }
+        // Validate that the CPTs still exist using the same logic as get_all_available_cpts()
+        $all_available_cpts = $this->get_all_available_cpts();
         
         // Only return CPTs that are both active and still available
-        return array_intersect( $active_cpts, array_keys( $available_cpts ) );
+        return array_intersect( $active_cpts, $all_available_cpts );
+    }
+
+    /**
+     * Get all available CPTs (excluding core types).
+     *
+     * This method returns all available CPTs regardless of admin settings,
+     * used for registering endpoints that will be validated dynamically.
+     *
+     * @since    1.0.0
+     * @return   array    Array of all available CPT names.
+     */
+    private function get_all_available_cpts() {
+        // Get all registered post types (not just public ones)
+        // This ensures we include CPTs that might not be public but should be available via API
+        $all_post_types = get_post_types( array(), 'names' );
+        $core_types = array( 'post', 'page', 'attachment' );
+        $available_cpts = array();
+        
+        foreach ( $all_post_types as $post_type ) {
+            // Skip core post types
+            if ( in_array( $post_type, $core_types, true ) ) {
+                continue;
+            }
+            
+            // Get post type object to check its properties
+            $post_type_obj = get_post_type_object( $post_type );
+            
+            // Include CPTs that are either:
+            // 1. Public, OR
+            // 2. Publicly queryable, OR
+            // 3. Show in admin UI
+            if ( $post_type_obj && (
+                $post_type_obj->public ||
+                $post_type_obj->publicly_queryable ||
+                $post_type_obj->show_ui
+            ) ) {
+                $available_cpts[] = $post_type;
+            }
+        }
+        
+        return $available_cpts;
     }
 
     /**
@@ -723,4 +761,5 @@ class WP_CPT_RestAPI_REST {
             'version' => WP_CPT_RESTAPI_VERSION,
         );
     }
+
 }
