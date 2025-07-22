@@ -56,6 +56,15 @@ class WP_CPT_RestAPI_REST {
     private $api_keys;
 
     /**
+     * The option name for Toolset relationship support.
+     *
+     * @since    1.0.0
+     * @access   private
+     * @var      string    $toolset_option_name    The option name for Toolset relationship support.
+     */
+    private $toolset_option_name = 'cpt_rest_api_toolset_relationships';
+
+    /**
      * Initialize the class and set its properties.
      *
      * @since    1.0.0
@@ -760,6 +769,16 @@ class WP_CPT_RestAPI_REST {
             'description' => __( 'WordPress Custom Post Types REST API', 'wp-cpt-restapi' ),
             'version' => WP_CPT_RESTAPI_VERSION,
         );
+    }
+
+    /**
+     * Check if Toolset relationship support is enabled.
+     *
+     * @since    1.0.0
+     * @return   bool    True if Toolset relationship support is enabled, false otherwise.
+     */
+    public function is_toolset_relationships_enabled() {
+        return (bool) get_option( $this->toolset_option_name, false );
     }
 
 }

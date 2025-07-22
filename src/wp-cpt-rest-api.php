@@ -40,6 +40,11 @@ function activate_wp_cpt_restapi() {
     if ( ! get_option( 'cpt_rest_api_active_cpts' ) ) {
         add_option( 'cpt_rest_api_active_cpts', array() );
     }
+    
+    // Initialize Toolset relationships option (default to disabled)
+    if ( ! get_option( 'cpt_rest_api_toolset_relationships' ) ) {
+        add_option( 'cpt_rest_api_toolset_relationships', false );
+    }
 }
 
 /**

@@ -38,6 +38,15 @@ class WP_CPT_RestAPI_Admin {
     private $cpt_option_name = 'cpt_rest_api_active_cpts';
 
     /**
+     * The option name for Toolset relationship support.
+     *
+     * @since    1.0.0
+     * @access   private
+     * @var      string    $toolset_option_name    The option name for Toolset relationship support.
+     */
+    private $toolset_option_name = 'cpt_rest_api_toolset_relationships';
+
+    /**
      * The default value for the REST API base segment.
      *
      * @since    1.0.0
@@ -168,6 +177,13 @@ class WP_CPT_RestAPI_Admin {
             array( $this, 'validate_active_cpts' )    // Sanitize callback
         );
 
+        // Register the setting for Toolset relationship support
+        register_setting(
+            'cpt_rest_api_settings',                  // Option group
+            $this->toolset_option_name,               // Option name
+            array( $this, 'validate_toolset_relationships' ) // Sanitize callback
+        );
+
         // Add settings section for REST API configuration
         add_settings_section(
             'cpt_rest_api_section',                   // ID
@@ -181,6 +197,15 @@ class WP_CPT_RestAPI_Admin {
             'cpt_rest_api_base_segment',              // ID
             __( 'API Base Segment', 'wp-cpt-restapi' ), // Title
             array( $this, 'base_segment_field_callback' ), // Callback
+            'cpt-rest-api',                           // Page
+            'cpt_rest_api_section'                    // Section
+        );
+
+        // Add settings field for Toolset relationship support
+        add_settings_field(
+            'cpt_rest_api_toolset_relationships',     // ID
+            __( 'Enable Toolset relationship support', 'wp-cpt-restapi' ), // Title
+            array( $this, 'toolset_relationships_field_callback' ), // Callback
             'cpt-rest-api',                           // Page
             'cpt_rest_api_section'                    // Section
         );
@@ -263,6 +288,42 @@ class WP_CPT_RestAPI_Admin {
         <p class="description">
             <?php echo esc_html__( 'Full REST API URL:', 'wp-cpt-restapi' ); ?> 
             <code id="rest-api-preview"><?php echo esc_url( $rest_url ); ?></code>
+        </p>
+        <?php
+    }
+
+    /**
+     * Render the Toolset relationships field.
+     *
+     * @since    1.0.0
+     */
+    public function toolset_relationships_field_callback() {
+        // Get the current value or use default (false)
+        $value = get_option( $this->toolset_option_name, false );
+        
+        ?>
+        <div class="cpt-rest-api-field-container">
+            <label class="cpt-rest-api-toggle-switch">
+                <input type="checkbox"
+                       id="cpt_rest_api_toolset_relationships"
+                       name="<?php echo esc_attr( $this->toolset_option_name ); ?>"
+                       value="1"
+                       <?php checked( $value, true ); ?>
+                />
+                <span class="cpt-rest-api-toggle-slider"></span>
+                <span class="cpt-rest-api-toggle-label">
+                    <?php echo esc_html__( 'Enable', 'wp-cpt-restapi' ); ?>
+                </span>
+            </label>
+            <span class="tooltip">
+                <span class="dashicons dashicons-editor-help"></span>
+                <span class="tooltip-text">
+                    <?php echo esc_html__( 'When enabled, this will add REST API endpoints for managing Toolset relationships between Custom Post Types. Requires Toolset Types plugin to be installed and active.', 'wp-cpt-restapi' ); ?>
+                </span>
+            </span>
+        </div>
+        <p class="description">
+            <?php echo esc_html__( 'Enable this option to include Toolset relationship functionality in the REST API endpoints.', 'wp-cpt-restapi' ); ?>
         </p>
         <?php
     }
@@ -352,6 +413,28 @@ class WP_CPT_RestAPI_Admin {
         );
 
         return $validated_cpts;
+    }
+
+    /**
+     * Validate the Toolset relationships field.
+     *
+     * @since    1.0.0
+     * @param    mixed    $input    The input to validate.
+     * @return   bool               The validated input.
+     */
+    public function validate_toolset_relationships( $input ) {
+        // Convert to boolean - checkbox will send '1' if checked, null if not
+        $validated = ! empty( $input ) && $input === '1';
+        
+        // Add success message
+        add_settings_error(
+            $this->toolset_option_name,
+            'toolset_updated',
+            __( 'Toolset relationship settings saved successfully.', 'wp-cpt-restapi' ),
+            'updated'
+        );
+
+        return $validated;
     }
 
     /**
@@ -500,6 +583,13 @@ class WP_CPT_RestAPI_Admin {
                 <p><?php echo esc_html__( 'Configure the base segment for the Custom Post Types REST API.', 'wp-cpt-restapi' ); ?></p>
                 <div class="cpt-rest-api-field-wrapper">
                     <?php $this->base_segment_field_callback(); ?>
+                </div>
+                
+                <!-- Toolset Relationships Section -->
+                <h3><?php echo esc_html__( 'Toolset Relationships', 'wp-cpt-restapi' ); ?></h3>
+                <p><?php echo esc_html__( 'Enable support for Toolset relationship functionality in the REST API.', 'wp-cpt-restapi' ); ?></p>
+                <div class="cpt-rest-api-field-wrapper">
+                    <?php $this->toolset_relationships_field_callback(); ?>
                 </div>
                 
                 <!-- Custom Post Types Section -->
@@ -759,6 +849,16 @@ class WP_CPT_RestAPI_Admin {
         } else {
             wp_send_json_error( array( 'message' => __( 'Failed to reset Custom Post Types.', 'wp-cpt-restapi' ) ) );
         }
+    }
+
+    /**
+     * Check if Toolset relationship support is enabled.
+     *
+     * @since    1.0.0
+     * @return   bool    True if Toolset relationship support is enabled, false otherwise.
+     */
+    public function is_toolset_relationships_enabled() {
+        return (bool) get_option( $this->toolset_option_name, false );
     }
 
 }
