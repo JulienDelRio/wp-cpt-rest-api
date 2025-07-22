@@ -154,6 +154,11 @@ class WP_CPT_RestAPI_REST {
         
         // Register endpoints for ALL available CPTs, but validate access dynamically
         $this->register_all_cpt_endpoints();
+        
+        // Register Toolset relationships endpoint if enabled
+        if ( $this->is_toolset_relationships_enabled() ) {
+            $this->register_toolset_relationships_endpoints();
+        }
     }
 
     /**
@@ -289,6 +294,30 @@ class WP_CPT_RestAPI_REST {
                 )
             );
         }
+    }
+
+    /**
+     * Register REST API endpoints for Toolset relationships.
+     *
+     * This method registers endpoints for Toolset relationship functionality
+     * when the Toolset relationships support is enabled.
+     *
+     * @since    1.0.0
+     */
+    private function register_toolset_relationships_endpoints() {
+        // Get the configured base segment
+        $base_segment = get_option( $this->option_name, $this->default_segment );
+        
+        // Register endpoint for listing all Toolset relationships
+        register_rest_route(
+            $base_segment . '/v1',
+            '/relations',
+            array(
+                'methods'  => 'GET',
+                'callback' => array( $this, 'get_toolset_relationships' ),
+                'permission_callback' => '__return_true',
+            )
+        );
     }
 
     /**
@@ -779,6 +808,150 @@ class WP_CPT_RestAPI_REST {
      */
     public function is_toolset_relationships_enabled() {
         return (bool) get_option( $this->toolset_option_name, false );
+    }
+
+    /**
+     * Get all Toolset relationships.
+     *
+     * This method fetches all registered Toolset relationships and returns
+     * them in a structured format for the REST API.
+     *
+     * @since    1.0.0
+     * @param    WP_REST_Request    $request    The REST request object.
+     * @return   WP_REST_Response|WP_Error      The response or error.
+     */
+    public function get_toolset_relationships( $request ) {
+        // Check if Toolset is active and available
+        if ( ! $this->is_toolset_available() ) {
+            return new WP_Error(
+                'toolset_not_available',
+                __( 'Toolset plugin is not active or available.', 'wp-cpt-restapi' ),
+                array( 'status' => 503 )
+            );
+        }
+
+        try {
+            // Get all relationship definitions using Toolset API
+            $relationships = $this->fetch_toolset_relationships();
+            
+            // Format the response
+            $response = array(
+                'relationships' => $relationships,
+                'count' => count( $relationships ),
+            );
+            
+            return rest_ensure_response( $response );
+            
+        } catch ( Exception $e ) {
+            return new WP_Error(
+                'toolset_error',
+                __( 'Error fetching Toolset relationships: ', 'wp-cpt-restapi' ) . $e->getMessage(),
+                array( 'status' => 500 )
+            );
+        }
+    }
+
+    /**
+     * Check if Toolset is available and active.
+     *
+     * @since    1.0.0
+     * @return   bool    True if Toolset is available, false otherwise.
+     */
+    private function is_toolset_available() {
+        // Check if Toolset Types is active
+        return class_exists( 'Toolset_Relationship_Definition_Repository' ) &&
+               function_exists( 'toolset_get_relationship_definitions' );
+    }
+
+    /**
+     * Fetch Toolset relationships using the Toolset API.
+     *
+     * @since    1.0.0
+     * @return   array    Array of formatted relationship data.
+     */
+    private function fetch_toolset_relationships() {
+        $relationships = array();
+        
+        // Use Toolset API to get relationship definitions
+        if ( function_exists( 'toolset_get_relationship_definitions' ) ) {
+            $toolset_relationships = toolset_get_relationship_definitions();
+            
+            foreach ( $toolset_relationships as $relationship ) {
+                $relationships[] = $this->format_relationship_data( $relationship );
+            }
+        }
+        
+        return $relationships;
+    }
+
+    /**
+     * Format relationship data for API response.
+     *
+     * @since    1.0.0
+     * @param    mixed    $relationship    The Toolset relationship object.
+     * @return   array                     Formatted relationship data.
+     */
+    private function format_relationship_data( $relationship ) {
+        $formatted = array(
+            'slug' => '',
+            'name' => '',
+            'parent_types' => array(),
+            'child_types' => array(),
+            'cardinality' => array(),
+            'is_active' => true,
+        );
+
+        try {
+            // Get relationship slug/key
+            if ( method_exists( $relationship, 'get_slug' ) ) {
+                $formatted['slug'] = sanitize_text_field( $relationship->get_slug() );
+            }
+
+            // Get relationship display name
+            if ( method_exists( $relationship, 'get_display_name' ) ) {
+                $formatted['name'] = sanitize_text_field( $relationship->get_display_name() );
+            } elseif ( method_exists( $relationship, 'get_slug' ) ) {
+                $formatted['name'] = sanitize_text_field( $relationship->get_slug() );
+            }
+
+            // Get parent post types
+            if ( method_exists( $relationship, 'get_parent_type' ) ) {
+                $parent_type = $relationship->get_parent_type();
+                if ( method_exists( $parent_type, 'get_types' ) ) {
+                    $formatted['parent_types'] = array_map( 'sanitize_text_field', $parent_type->get_types() );
+                }
+            }
+
+            // Get child post types
+            if ( method_exists( $relationship, 'get_child_type' ) ) {
+                $child_type = $relationship->get_child_type();
+                if ( method_exists( $child_type, 'get_types' ) ) {
+                    $formatted['child_types'] = array_map( 'sanitize_text_field', $child_type->get_types() );
+                }
+            }
+
+            // Get cardinality information
+            if ( method_exists( $relationship, 'get_cardinality' ) ) {
+                $cardinality = $relationship->get_cardinality();
+                if ( method_exists( $cardinality, 'get_parent_max' ) && method_exists( $cardinality, 'get_child_max' ) ) {
+                    $formatted['cardinality'] = array(
+                        'parent_max' => $cardinality->get_parent_max(),
+                        'child_max' => $cardinality->get_child_max(),
+                    );
+                }
+            }
+
+            // Check if relationship is active
+            if ( method_exists( $relationship, 'is_active' ) ) {
+                $formatted['is_active'] = (bool) $relationship->is_active();
+            }
+
+        } catch ( Exception $e ) {
+            // If there's an error getting relationship data, return basic info
+            $formatted['error'] = 'Error retrieving relationship details: ' . $e->getMessage();
+        }
+
+        return $formatted;
     }
 
 }
