@@ -858,9 +858,11 @@ class WP_CPT_RestAPI_REST {
      * @return   bool    True if Toolset is available, false otherwise.
      */
     private function is_toolset_available() {
-        // Check if Toolset Types is active
-        return class_exists( 'Toolset_Relationship_Definition_Repository' ) &&
-               function_exists( 'toolset_get_relationship_definitions' );
+        // Check if Toolset Types is active - try multiple detection methods
+        return class_exists( 'Types_Main' ) ||
+               class_exists( 'Toolset_Common_Bootstrap' ) ||
+               defined( 'TYPES_VERSION' ) ||
+               function_exists( 'wpcf_init' );
     }
 
     /**
@@ -872,12 +874,43 @@ class WP_CPT_RestAPI_REST {
     private function fetch_toolset_relationships() {
         $relationships = array();
         
-        // Use Toolset API to get relationship definitions
-        if ( function_exists( 'toolset_get_relationship_definitions' ) ) {
-            $toolset_relationships = toolset_get_relationship_definitions();
-            
-            foreach ( $toolset_relationships as $relationship ) {
-                $relationships[] = $this->format_relationship_data( $relationship );
+        // Try different methods to get Toolset relationships
+        
+        // Method 1: Try the newer Toolset API
+        if ( class_exists( 'Toolset_Relationship_Definition_Repository' ) ) {
+            try {
+                $repository = Toolset_Relationship_Definition_Repository::get_instance();
+                if ( method_exists( $repository, 'get_definitions' ) ) {
+                    $toolset_relationships = $repository->get_definitions();
+                    foreach ( $toolset_relationships as $relationship ) {
+                        $relationships[] = $this->format_relationship_data( $relationship );
+                    }
+                }
+            } catch ( Exception $e ) {
+                // Continue to next method
+            }
+        }
+        
+        // Method 2: Try legacy Types API if no relationships found
+        if ( empty( $relationships ) && function_exists( 'wpcf_pr_get_belongs' ) ) {
+            // Get legacy post relationships
+            $legacy_relationships = wpcf_pr_get_belongs();
+            if ( is_array( $legacy_relationships ) ) {
+                foreach ( $legacy_relationships as $slug => $relationship ) {
+                    $relationships[] = $this->format_legacy_relationship_data( $slug, $relationship );
+                }
+            }
+        }
+        
+        // Method 3: Try to get from database directly if still empty
+        if ( empty( $relationships ) ) {
+            global $wpdb;
+            $table_name = $wpdb->prefix . 'toolset_relationships';
+            if ( $wpdb->get_var( "SHOW TABLES LIKE '$table_name'" ) === $table_name ) {
+                $results = $wpdb->get_results( "SELECT * FROM $table_name WHERE active = 1" );
+                foreach ( $results as $relationship ) {
+                    $relationships[] = $this->format_db_relationship_data( $relationship );
+                }
             }
         }
         
@@ -952,6 +985,52 @@ class WP_CPT_RestAPI_REST {
         }
 
         return $formatted;
+    }
+
+    /**
+     * Format legacy relationship data for API response.
+     *
+     * @since    1.0.0
+     * @param    string    $slug           The relationship slug.
+     * @param    array     $relationship   The legacy relationship data.
+     * @return   array                     Formatted relationship data.
+     */
+    private function format_legacy_relationship_data( $slug, $relationship ) {
+        return array(
+            'slug' => sanitize_text_field( $slug ),
+            'name' => isset( $relationship['name'] ) ? sanitize_text_field( $relationship['name'] ) : $slug,
+            'parent_types' => isset( $relationship['parent'] ) ? array( sanitize_text_field( $relationship['parent'] ) ) : array(),
+            'child_types' => isset( $relationship['child'] ) ? array( sanitize_text_field( $relationship['child'] ) ) : array(),
+            'cardinality' => array(
+                'parent_max' => isset( $relationship['cardinality']['parent'] ) ? (int) $relationship['cardinality']['parent'] : -1,
+                'child_max' => isset( $relationship['cardinality']['child'] ) ? (int) $relationship['cardinality']['child'] : -1,
+            ),
+            'is_active' => true,
+            'type' => 'legacy'
+        );
+    }
+
+    /**
+     * Format database relationship data for API response.
+     *
+     * @since    1.0.0
+     * @param    object    $relationship    The database relationship object.
+     * @return   array                      Formatted relationship data.
+     */
+    private function format_db_relationship_data( $relationship ) {
+        return array(
+            'slug' => isset( $relationship->slug ) ? sanitize_text_field( $relationship->slug ) : '',
+            'name' => isset( $relationship->display_name_plural ) ? sanitize_text_field( $relationship->display_name_plural ) :
+                     (isset( $relationship->slug ) ? sanitize_text_field( $relationship->slug ) : ''),
+            'parent_types' => array(), // Would need additional query to get post types
+            'child_types' => array(),  // Would need additional query to get post types
+            'cardinality' => array(
+                'parent_max' => isset( $relationship->parent_max ) ? (int) $relationship->parent_max : -1,
+                'child_max' => isset( $relationship->child_max ) ? (int) $relationship->child_max : -1,
+            ),
+            'is_active' => isset( $relationship->active ) ? (bool) $relationship->active : true,
+            'type' => 'database'
+        );
     }
 
 }
