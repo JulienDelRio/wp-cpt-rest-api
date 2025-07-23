@@ -318,6 +318,70 @@ class WP_CPT_RestAPI_REST {
                 'permission_callback' => '__return_true',
             )
         );
+        
+        // Register endpoint for managing specific relationship by slug
+        register_rest_route(
+            $base_segment . '/v1',
+            '/relations/(?P<relation_slug>[a-zA-Z0-9_-]+)',
+            array(
+                array(
+                    'methods'  => 'GET',
+                    'callback' => array( $this, 'get_toolset_relationship_instances' ),
+                    'args'     => array(
+                        'relation_slug' => array(
+                            'required' => true,
+                            'sanitize_callback' => 'sanitize_text_field',
+                            'validate_callback' => array( $this, 'validate_relation_slug' ),
+                        ),
+                    ),
+                    'permission_callback' => '__return_true',
+                ),
+                array(
+                    'methods'  => 'POST',
+                    'callback' => array( $this, 'create_toolset_relationship_instance' ),
+                    'args'     => array(
+                        'relation_slug' => array(
+                            'required' => true,
+                            'sanitize_callback' => 'sanitize_text_field',
+                            'validate_callback' => array( $this, 'validate_relation_slug' ),
+                        ),
+                        'parent_id' => array(
+                            'required' => true,
+                            'sanitize_callback' => 'absint',
+                            'validate_callback' => array( $this, 'validate_post_id' ),
+                        ),
+                        'child_id' => array(
+                            'required' => true,
+                            'sanitize_callback' => 'absint',
+                            'validate_callback' => array( $this, 'validate_post_id' ),
+                        ),
+                    ),
+                    'permission_callback' => '__return_true',
+                ),
+            )
+        );
+        
+        // Register endpoint for deleting specific relationship instance
+        register_rest_route(
+            $base_segment . '/v1',
+            '/relations/(?P<relation_slug>[a-zA-Z0-9_-]+)/(?P<relationship_id>[a-zA-Z0-9_-]+)',
+            array(
+                'methods'  => 'DELETE',
+                'callback' => array( $this, 'delete_toolset_relationship_instance' ),
+                'args'     => array(
+                    'relation_slug' => array(
+                        'required' => true,
+                        'sanitize_callback' => 'sanitize_text_field',
+                        'validate_callback' => array( $this, 'validate_relation_slug' ),
+                    ),
+                    'relationship_id' => array(
+                        'required' => true,
+                        'sanitize_callback' => 'sanitize_text_field',
+                    ),
+                ),
+                'permission_callback' => '__return_true',
+            )
+        );
     }
 
     /**
@@ -973,7 +1037,6 @@ class WP_CPT_RestAPI_REST {
                     );
                 }
             }
-
             // Check if relationship is active
             if ( method_exists( $relationship, 'is_active' ) ) {
                 $formatted['is_active'] = (bool) $relationship->is_active();
@@ -1030,6 +1093,462 @@ class WP_CPT_RestAPI_REST {
             ),
             'is_active' => isset( $relationship->active ) ? (bool) $relationship->active : true,
             'type' => 'database'
+        );
+    }
+
+    /**
+     * Validate relation slug parameter.
+     *
+     * @since    1.0.0
+     * @param    string            $value      The relation slug value.
+     * @param    WP_REST_Request   $request    The REST request object.
+     * @param    string            $param      The parameter name.
+     * @return   bool                          True if valid, false otherwise.
+     */
+    public function validate_relation_slug( $value, $request, $param ) {
+        if ( empty( $value ) || ! is_string( $value ) ) {
+            return false;
+        }
+        
+        // Check if the relation slug exists
+        if ( ! $this->is_toolset_available() ) {
+            return false;
+        }
+        
+        // Get all available relationships and check if this slug exists
+        try {
+            $relationships = $this->fetch_toolset_relationships();
+            foreach ( $relationships as $relationship ) {
+                if ( isset( $relationship['slug'] ) && $relationship['slug'] === $value ) {
+                    return true;
+                }
+            }
+        } catch ( Exception $e ) {
+            return false;
+        }
+        
+        return false;
+    }
+
+    /**
+     * Validate post ID parameter.
+     *
+     * @since    1.0.0
+     * @param    int               $value      The post ID value.
+     * @param    WP_REST_Request   $request    The REST request object.
+     * @param    string            $param      The parameter name.
+     * @return   bool                          True if valid, false otherwise.
+     */
+    public function validate_post_id( $value, $request, $param ) {
+        if ( ! is_numeric( $value ) || $value <= 0 ) {
+            return false;
+        }
+        
+        $post = get_post( absint( $value ) );
+        return $post && $post->post_status === 'publish';
+    }
+
+    /**
+     * Get relationship instances for a specific relation slug.
+     *
+     * @since    1.0.0
+     * @param    WP_REST_Request    $request    The REST request object.
+     * @return   WP_REST_Response|WP_Error      The response or error.
+     */
+    public function get_toolset_relationship_instances( $request ) {
+        $relation_slug = $request->get_param( 'relation_slug' );
+        
+        // Check if Toolset is available
+        if ( ! $this->is_toolset_available() ) {
+            return new WP_Error(
+                'toolset_not_available',
+                __( 'Toolset plugin is not active or available.', 'wp-cpt-restapi' ),
+                array( 'status' => 503 )
+            );
+        }
+
+        try {
+            $instances = array();
+            
+            // Try different methods to get relationship instances
+            
+            // Method 1: Try newer Toolset API
+            if ( function_exists( 'toolset_get_related_posts' ) ) {
+                // Get all posts and find relationships
+                $all_posts = get_posts( array(
+                    'post_type' => 'any',
+                    'post_status' => 'publish',
+                    'numberposts' => -1,
+                    'fields' => 'ids'
+                ) );
+                
+                foreach ( $all_posts as $post_id ) {
+                    // Try as parent role
+                    try {
+                        $related_posts_as_parent = toolset_get_related_posts( $post_id, $relation_slug, 'parent' );
+                        if ( ! empty( $related_posts_as_parent ) ) {
+                            foreach ( $related_posts_as_parent as $related_id ) {
+                                $relationship_id = $this->generate_relationship_id( $post_id, $related_id, $relation_slug );
+                                $instances[] = array(
+                                    'relationship_id' => $relationship_id,
+                                    'parent_id' => $post_id,
+                                    'child_id' => $related_id,
+                                    'relation_slug' => $relation_slug,
+                                );
+                            }
+                        }
+                    } catch ( Exception $e ) {
+                        // Continue to next method if this fails
+                    }
+                    
+                    // Try as child role
+                    try {
+                        $related_posts_as_child = toolset_get_related_posts( $post_id, $relation_slug, 'child' );
+                        if ( ! empty( $related_posts_as_child ) ) {
+                            foreach ( $related_posts_as_child as $related_id ) {
+                                $relationship_id = $this->generate_relationship_id( $related_id, $post_id, $relation_slug );
+                                // Avoid duplicates by checking if this relationship already exists
+                                $duplicate = false;
+                                foreach ( $instances as $existing_instance ) {
+                                    if ( $existing_instance['relationship_id'] === $relationship_id ) {
+                                        $duplicate = true;
+                                        break;
+                                    }
+                                }
+                                if ( ! $duplicate ) {
+                                    $instances[] = array(
+                                        'relationship_id' => $relationship_id,
+                                        'parent_id' => $related_id,
+                                        'child_id' => $post_id,
+                                        'relation_slug' => $relation_slug,
+                                    );
+                                }
+                            }
+                        }
+                    } catch ( Exception $e ) {
+                        // Continue to next method if this fails
+                    }
+                }
+            }
+            
+            // Method 2: Try database query if no instances found
+            if ( empty( $instances ) ) {
+                global $wpdb;
+                $table_name = $wpdb->prefix . 'toolset_associations';
+                
+                if ( $wpdb->get_var( "SHOW TABLES LIKE '$table_name'" ) === $table_name ) {
+                    // Get relationship definition ID
+                    $relationship_def_table = $wpdb->prefix . 'toolset_relationships';
+                    $relationship_def = $wpdb->get_row( $wpdb->prepare(
+                        "SELECT id FROM $relationship_def_table WHERE slug = %s AND active = 1",
+                        $relation_slug
+                    ) );
+                    
+                    if ( $relationship_def ) {
+                        $associations = $wpdb->get_results( $wpdb->prepare(
+                            "SELECT parent_id, child_id FROM $table_name WHERE relationship_id = %d",
+                            $relationship_def->id
+                        ) );
+                        
+                        foreach ( $associations as $association ) {
+                            $relationship_id = $this->generate_relationship_id( $association->parent_id, $association->child_id, $relation_slug );
+                            $instances[] = array(
+                                'relationship_id' => $relationship_id,
+                                'parent_id' => (int) $association->parent_id,
+                                'child_id' => (int) $association->child_id,
+                                'relation_slug' => $relation_slug,
+                            );
+                        }
+                    }
+                }
+            }
+            
+            $response = array(
+                'relation_slug' => $relation_slug,
+                'instances' => $instances,
+                'count' => count( $instances ),
+            );
+            
+            return rest_ensure_response( $response );
+            
+        } catch ( Exception $e ) {
+            return new WP_Error(
+                'toolset_error',
+                __( 'Error fetching relationship instances: ', 'wp-cpt-restapi' ) . $e->getMessage(),
+                array( 'status' => 500 )
+            );
+        }
+    }
+
+    /**
+     * Create a new relationship instance.
+     *
+     * @since    1.0.0
+     * @param    WP_REST_Request    $request    The REST request object.
+     * @return   WP_REST_Response|WP_Error      The response or error.
+     */
+    public function create_toolset_relationship_instance( $request ) {
+        $relation_slug = $request->get_param( 'relation_slug' );
+        $parent_id = $request->get_param( 'parent_id' );
+        $child_id = $request->get_param( 'child_id' );
+        
+        // Check if Toolset is available
+        if ( ! $this->is_toolset_available() ) {
+            return new WP_Error(
+                'toolset_not_available',
+                __( 'Toolset plugin is not active or available.', 'wp-cpt-restapi' ),
+                array( 'status' => 503 )
+            );
+        }
+
+        try {
+            $success = false;
+            
+            // Method 1: Try newer Toolset API
+            if ( function_exists( 'toolset_connect_posts' ) ) {
+                $success = toolset_connect_posts( $relation_slug, $parent_id, $child_id );
+            }
+            
+            // Method 2: Try legacy API if newer one failed
+            if ( ! $success && function_exists( 'wpcf_pr_add_belongs' ) ) {
+                $success = wpcf_pr_add_belongs( $child_id, $parent_id, $relation_slug );
+            }
+            
+            // Method 3: Direct database insertion as last resort
+            if ( ! $success ) {
+                global $wpdb;
+                $relationship_def_table = $wpdb->prefix . 'toolset_relationships';
+                $associations_table = $wpdb->prefix . 'toolset_associations';
+                
+                // Check if tables exist
+                if ( $wpdb->get_var( "SHOW TABLES LIKE '$relationship_def_table'" ) === $relationship_def_table &&
+                     $wpdb->get_var( "SHOW TABLES LIKE '$associations_table'" ) === $associations_table ) {
+                    
+                    // Get relationship definition ID
+                    $relationship_def = $wpdb->get_row( $wpdb->prepare(
+                        "SELECT id FROM $relationship_def_table WHERE slug = %s AND active = 1",
+                        $relation_slug
+                    ) );
+                    
+                    if ( $relationship_def ) {
+                        // Check if relationship already exists
+                        $existing = $wpdb->get_var( $wpdb->prepare(
+                            "SELECT id FROM $associations_table WHERE relationship_id = %d AND parent_id = %d AND child_id = %d",
+                            $relationship_def->id,
+                            $parent_id,
+                            $child_id
+                        ) );
+                        
+                        if ( ! $existing ) {
+                            $result = $wpdb->insert(
+                                $associations_table,
+                                array(
+                                    'relationship_id' => $relationship_def->id,
+                                    'parent_id' => $parent_id,
+                                    'child_id' => $child_id,
+                                ),
+                                array( '%d', '%d', '%d' )
+                            );
+                            
+                            $success = $result !== false;
+                        } else {
+                            return new WP_Error(
+                                'relationship_exists',
+                                __( 'Relationship already exists between these posts.', 'wp-cpt-restapi' ),
+                                array( 'status' => 409 )
+                            );
+                        }
+                    }
+                }
+            }
+            
+            if ( $success ) {
+                $relationship_id = $this->generate_relationship_id( $parent_id, $child_id, $relation_slug );
+                
+                $response = array(
+                    'success' => true,
+                    'relationship_id' => $relationship_id,
+                    'parent_id' => $parent_id,
+                    'child_id' => $child_id,
+                    'relation_slug' => $relation_slug,
+                    'message' => __( 'Relationship created successfully.', 'wp-cpt-restapi' ),
+                );
+                
+                $rest_response = rest_ensure_response( $response );
+                $rest_response->set_status( 201 );
+                return $rest_response;
+            } else {
+                return new WP_Error(
+                    'relationship_creation_failed',
+                    __( 'Failed to create relationship.', 'wp-cpt-restapi' ),
+                    array( 'status' => 500 )
+                );
+            }
+            
+        } catch ( Exception $e ) {
+            return new WP_Error(
+                'toolset_error',
+                __( 'Error creating relationship: ', 'wp-cpt-restapi' ) . $e->getMessage(),
+                array( 'status' => 500 )
+            );
+        }
+    }
+
+    /**
+     * Delete a specific relationship instance.
+     *
+     * @since    1.0.0
+     * @param    WP_REST_Request    $request    The REST request object.
+     * @return   WP_REST_Response|WP_Error      The response or error.
+     */
+    public function delete_toolset_relationship_instance( $request ) {
+        $relation_slug = $request->get_param( 'relation_slug' );
+        $relationship_id = $request->get_param( 'relationship_id' );
+        
+        // Check if Toolset is available
+        if ( ! $this->is_toolset_available() ) {
+            return new WP_Error(
+                'toolset_not_available',
+                __( 'Toolset plugin is not active or available.', 'wp-cpt-restapi' ),
+                array( 'status' => 503 )
+            );
+        }
+
+        try {
+            // Parse relationship ID to get parent and child IDs
+            $parsed_ids = $this->parse_relationship_id( $relationship_id, $relation_slug );
+            if ( ! $parsed_ids ) {
+                return new WP_Error(
+                    'invalid_relationship_id',
+                    __( 'Invalid relationship ID format.', 'wp-cpt-restapi' ),
+                    array( 'status' => 400 )
+                );
+            }
+            
+            $parent_id = $parsed_ids['parent_id'];
+            $child_id = $parsed_ids['child_id'];
+            $success = false;
+            
+            // Method 1: Try newer Toolset API
+            if ( function_exists( 'toolset_disconnect_posts' ) ) {
+                $success = toolset_disconnect_posts( $relation_slug, $parent_id, $child_id );
+            }
+            
+            // Method 2: Try legacy API if newer one failed
+            if ( ! $success && function_exists( 'wpcf_pr_del_belongs' ) ) {
+                $success = wpcf_pr_del_belongs( $child_id, $parent_id, $relation_slug );
+            }
+            
+            // Method 3: Direct database deletion as last resort
+            if ( ! $success ) {
+                global $wpdb;
+                $relationship_def_table = $wpdb->prefix . 'toolset_relationships';
+                $associations_table = $wpdb->prefix . 'toolset_associations';
+                
+                // Check if tables exist
+                if ( $wpdb->get_var( "SHOW TABLES LIKE '$relationship_def_table'" ) === $relationship_def_table &&
+                     $wpdb->get_var( "SHOW TABLES LIKE '$associations_table'" ) === $associations_table ) {
+                    
+                    // Get relationship definition ID
+                    $relationship_def = $wpdb->get_row( $wpdb->prepare(
+                        "SELECT id FROM $relationship_def_table WHERE slug = %s AND active = 1",
+                        $relation_slug
+                    ) );
+                    
+                    if ( $relationship_def ) {
+                        $result = $wpdb->delete(
+                            $associations_table,
+                            array(
+                                'relationship_id' => $relationship_def->id,
+                                'parent_id' => $parent_id,
+                                'child_id' => $child_id,
+                            ),
+                            array( '%d', '%d', '%d' )
+                        );
+                        
+                        $success = $result !== false && $result > 0;
+                    }
+                }
+            }
+            
+            if ( $success ) {
+                $response = array(
+                    'success' => true,
+                    'relationship_id' => $relationship_id,
+                    'parent_id' => $parent_id,
+                    'child_id' => $child_id,
+                    'relation_slug' => $relation_slug,
+                    'message' => __( 'Relationship deleted successfully.', 'wp-cpt-restapi' ),
+                );
+                
+                return rest_ensure_response( $response );
+            } else {
+                return new WP_Error(
+                    'relationship_not_found',
+                    __( 'Relationship not found or could not be deleted.', 'wp-cpt-restapi' ),
+                    array( 'status' => 404 )
+                );
+            }
+            
+        } catch ( Exception $e ) {
+            return new WP_Error(
+                'toolset_error',
+                __( 'Error deleting relationship: ', 'wp-cpt-restapi' ) . $e->getMessage(),
+                array( 'status' => 500 )
+            );
+        }
+    }
+
+    /**
+     * Generate a unique relationship ID from parent ID, child ID, and relation slug.
+     *
+     * @since    1.0.0
+     * @param    int       $parent_id      The parent post ID.
+     * @param    int       $child_id       The child post ID.
+     * @param    string    $relation_slug  The relation slug.
+     * @return   string                    The generated relationship ID.
+     */
+    private function generate_relationship_id( $parent_id, $child_id, $relation_slug ) {
+        return base64_encode( $parent_id . ':' . $child_id . ':' . $relation_slug );
+    }
+
+    /**
+     * Parse a relationship ID to extract parent ID, child ID, and relation slug.
+     *
+     * @since    1.0.0
+     * @param    string    $relationship_id  The relationship ID to parse.
+     * @param    string    $relation_slug    The expected relation slug for validation.
+     * @return   array|false               Array with parent_id, child_id, and relation_slug, or false if invalid.
+     */
+    private function parse_relationship_id( $relationship_id, $relation_slug ) {
+        $decoded = base64_decode( $relationship_id, true );
+        if ( $decoded === false ) {
+            return false;
+        }
+        
+        $parts = explode( ':', $decoded );
+        if ( count( $parts ) !== 3 ) {
+            return false;
+        }
+        
+        $parent_id = absint( $parts[0] );
+        $child_id = absint( $parts[1] );
+        $decoded_slug = sanitize_text_field( $parts[2] );
+        
+        // Validate that the slug matches
+        if ( $decoded_slug !== $relation_slug ) {
+            return false;
+        }
+        
+        // Validate that IDs are valid
+        if ( $parent_id <= 0 || $child_id <= 0 ) {
+            return false;
+        }
+        
+        return array(
+            'parent_id' => $parent_id,
+            'child_id' => $child_id,
+            'relation_slug' => $decoded_slug,
         );
     }
 

@@ -271,6 +271,179 @@ GET /wp-json/cpt/v1/product/123
 }
 ```
 
+## Toolset Relationships Endpoints
+
+**Note:** These endpoints are only available when Toolset relationship support is enabled in the plugin settings and the Toolset plugin is active.
+
+### 6. List All Toolset Relationships
+**GET** `/wp-json/cpt/v1/relations`
+
+Returns all available Toolset relationships.
+
+**Response:**
+```json
+{
+  "relationships": [
+    {
+      "slug": "product-category",
+      "name": "Product Category",
+      "parent_types": ["category"],
+      "child_types": ["product"],
+      "cardinality": {
+        "parent_max": -1,
+        "child_max": 1
+      },
+      "is_active": true
+    }
+  ],
+  "count": 1
+}
+```
+
+### 7. Get Relationship Instances
+**GET** `/wp-json/cpt/v1/relations/{relation_slug}`
+
+Returns all instances of a specific relationship.
+
+**Example:**
+```
+GET /wp-json/cpt/v1/relations/product-category
+```
+
+**Response:**
+```json
+{
+  "relation_slug": "product-category",
+  "instances": [
+    {
+      "relationship_id": "MTIzOjQ1Njpwcm9kdWN0LWNhdGVnb3J5",
+      "parent_id": 123,
+      "child_id": 456,
+      "relation_slug": "product-category"
+    }
+  ],
+  "count": 1
+}
+```
+
+### 8. Create Relationship Instance
+**POST** `/wp-json/cpt/v1/relations/{relation_slug}`
+
+Creates a new relationship instance between two posts.
+
+**Request Headers:**
+```
+Authorization: Bearer YOUR_API_KEY
+Content-Type: application/json
+```
+
+**Request Body Parameters:**
+- `parent_id` (required): ID of the parent post
+- `child_id` (required): ID of the child post
+
+**Example Request:**
+```http
+POST /wp-json/cpt/v1/relations/product-category
+Authorization: Bearer YOUR_API_KEY
+Content-Type: application/json
+
+{
+  "parent_id": 123,
+  "child_id": 456
+}
+```
+
+**Success Response (201 Created):**
+```json
+{
+  "success": true,
+  "relationship_id": "MTIzOjQ1Njpwcm9kdWN0LWNhdGVnb3J5",
+  "parent_id": 123,
+  "child_id": 456,
+  "relation_slug": "product-category",
+  "message": "Relationship created successfully."
+}
+```
+
+### 9. Delete Relationship Instance
+**DELETE** `/wp-json/cpt/v1/relations/{relation_slug}/{relationship_id}`
+
+Deletes a specific relationship instance.
+
+**Example:**
+```
+DELETE /wp-json/cpt/v1/relations/product-category/MTIzOjQ1Njpwcm9kdWN0LWNhdGVnb3J5
+```
+
+**Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "relationship_id": "MTIzOjQ1Njpwcm9kdWN0LWNhdGVnb3J5",
+  "parent_id": 123,
+  "child_id": 456,
+  "relation_slug": "product-category",
+  "message": "Relationship deleted successfully."
+}
+```
+
+## Toolset Relationship Error Responses
+
+### 503 Service Unavailable (Toolset not available)
+```json
+{
+  "code": "toolset_not_available",
+  "message": "Toolset plugin is not active or available.",
+  "data": {
+    "status": 503
+  }
+}
+```
+
+### 400 Bad Request (Invalid relationship ID)
+```json
+{
+  "code": "invalid_relationship_id",
+  "message": "Invalid relationship ID format.",
+  "data": {
+    "status": 400
+  }
+}
+```
+
+### 409 Conflict (Relationship already exists)
+```json
+{
+  "code": "relationship_exists",
+  "message": "Relationship already exists between these posts.",
+  "data": {
+    "status": 409
+  }
+}
+```
+
+### 404 Not Found (Relationship not found)
+```json
+{
+  "code": "relationship_not_found",
+  "message": "Relationship not found or could not be deleted.",
+  "data": {
+    "status": 404
+  }
+}
+```
+
+### 500 Internal Server Error (Relationship creation failed)
+```json
+{
+  "code": "relationship_creation_failed",
+  "message": "Failed to create relationship.",
+  "data": {
+    "status": 500
+  }
+}
+```
+
 ## Error Responses
 
 ### 401 Unauthorized
@@ -504,12 +677,106 @@ fetch(`${baseUrl}/product/123`, {
 .then(data => console.log(data));
 ```
 
+### Toolset Relationships Examples
+
+#### Using cURL
+
+```bash
+# List all relationships
+curl -H "Authorization: Bearer YOUR_API_KEY" \
+     "https://yoursite.com/wp-json/cpt/v1/relations"
+
+# Get relationship instances
+curl -H "Authorization: Bearer YOUR_API_KEY" \
+     "https://yoursite.com/wp-json/cpt/v1/relations/product-category"
+
+# Create relationship
+curl -X POST \
+     -H "Authorization: Bearer YOUR_API_KEY" \
+     -H "Content-Type: application/json" \
+     -d '{
+       "parent_id": 123,
+       "child_id": 456
+     }' \
+     "https://yoursite.com/wp-json/cpt/v1/relations/product-category"
+
+# Delete relationship
+curl -X DELETE \
+     -H "Authorization: Bearer YOUR_API_KEY" \
+     "https://yoursite.com/wp-json/cpt/v1/relations/product-category/MTIzOjQ1Njpwcm9kdWN0LWNhdGVnb3J5"
+```
+
+#### Using JavaScript (fetch)
+
+```javascript
+const apiKey = 'YOUR_API_KEY';
+const baseUrl = 'https://yoursite.com/wp-json/cpt/v1';
+
+// List all relationships
+fetch(`${baseUrl}/relations`, {
+  headers: {
+    'Authorization': `Bearer ${apiKey}`
+  }
+})
+.then(response => response.json())
+.then(data => console.log(data));
+
+// Get relationship instances
+fetch(`${baseUrl}/relations/product-category`, {
+  headers: {
+    'Authorization': `Bearer ${apiKey}`
+  }
+})
+.then(response => response.json())
+.then(data => console.log(data));
+
+// Create relationship
+fetch(`${baseUrl}/relations/product-category`, {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${apiKey}`,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    parent_id: 123,
+    child_id: 456
+  })
+})
+.then(response => response.json())
+.then(data => console.log(data));
+
+// Delete relationship
+fetch(`${baseUrl}/relations/product-category/MTIzOjQ1Njpwcm9kdWN0LWNhdGVnb3J5`, {
+  method: 'DELETE',
+  headers: {
+    'Authorization': `Bearer ${apiKey}`
+  }
+})
+.then(response => response.json())
+.then(data => console.log(data));
+```
+
 ## Admin Configuration
 
 1. Go to **Settings > CPT REST API** in your WordPress admin
 2. Configure the API Base Segment (default: `cpt`)
 3. Enable/disable specific Custom Post Types using the toggle switches
-4. Create API keys for authentication
-5. Save your settings
+4. **Enable Toolset relationship support** if you want to use relationship endpoints
+5. Create API keys for authentication
+6. Save your settings
 
 Only Custom Post Types that are **enabled** in the admin interface will be available through the API endpoints.
+
+## Notes
+
+- All endpoints require valid API key authentication
+- Only Custom Post Types that are enabled in the admin settings are accessible via the API
+- Meta fields starting with underscore (_) are considered private and will be ignored
+- The API supports both nested meta fields (in a `meta` object) and root-level meta fields
+- When both nested and root-level meta fields are provided, they will be merged (root-level takes precedence for duplicate keys)
+- Only registered meta fields or all meta fields (if none are specifically registered) will be updated
+- Post status is limited to: `publish`, `draft`, `private`, `pending`
+- Update operations (PUT/PATCH) only work on published posts for security reasons
+- **Toolset relationship endpoints are only available when Toolset relationship support is enabled in the plugin settings and the Toolset plugin is active**
+- **Relationship IDs are base64-encoded strings containing parent_id:child_id:relation_slug**
+- **The plugin uses multiple fallback methods to interact with Toolset relationships for maximum compatibility**
