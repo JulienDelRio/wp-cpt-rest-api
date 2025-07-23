@@ -2,7 +2,7 @@
 /**
  * The REST API-specific functionality of the plugin.
  *
- * @since      1.0.0
+ * @since      0.1
  * @package    WP_CPT_RestAPI
  */
 
@@ -22,7 +22,7 @@ class WP_CPT_RestAPI_REST {
     /**
      * The option name for the REST API base segment.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @access   private
      * @var      string    $option_name    The option name for the REST API base segment.
      */
@@ -31,7 +31,7 @@ class WP_CPT_RestAPI_REST {
     /**
      * The option name for the active CPTs.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @access   private
      * @var      string    $cpt_option_name    The option name for the active CPTs.
      */
@@ -40,7 +40,7 @@ class WP_CPT_RestAPI_REST {
     /**
      * The default value for the REST API base segment.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @access   private
      * @var      string    $default_segment    The default value for the REST API base segment.
      */
@@ -49,7 +49,7 @@ class WP_CPT_RestAPI_REST {
     /**
      * The API Keys manager instance.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @access   private
      * @var      WP_CPT_RestAPI_API_Keys    $api_keys    Handles API key management.
      */
@@ -58,7 +58,7 @@ class WP_CPT_RestAPI_REST {
     /**
      * The option name for Toolset relationship support.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @access   private
      * @var      string    $toolset_option_name    The option name for Toolset relationship support.
      */
@@ -67,7 +67,7 @@ class WP_CPT_RestAPI_REST {
     /**
      * Initialize the class and set its properties.
      *
-     * @since    1.0.0
+     * @since    0.1
      */
     public function __construct() {
         // Initialize API Keys manager
@@ -83,7 +83,7 @@ class WP_CPT_RestAPI_REST {
      * This function checks for a valid API key in the Authorization header
      * and allows or denies access to the REST API endpoints accordingly.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @param    WP_Error|null|bool    $result    The current authentication status.
      * @return   WP_Error|null|bool               The updated authentication status.
      */
@@ -135,7 +135,7 @@ class WP_CPT_RestAPI_REST {
      *
      * This function registers the REST API namespace and creates endpoints for active CPTs.
      *
-     * @since    1.0.0
+     * @since    0.1
      */
     public function register_rest_namespace() {
         // Get the configured base segment or use the default
@@ -167,7 +167,7 @@ class WP_CPT_RestAPI_REST {
      * This method registers endpoints for all available CPTs, but the actual access
      * is validated dynamically in each callback method based on current settings.
      *
-     * @since    1.0.0
+     * @since    0.1
      */
     private function register_all_cpt_endpoints() {
         // Get the configured base segment
@@ -302,7 +302,7 @@ class WP_CPT_RestAPI_REST {
      * This method registers endpoints for Toolset relationship functionality
      * when the Toolset relationships support is enabled.
      *
-     * @since    1.0.0
+     * @since    0.1
      */
     private function register_toolset_relationships_endpoints() {
         // Get the configured base segment
@@ -387,7 +387,7 @@ class WP_CPT_RestAPI_REST {
     /**
      * Get active CPTs from the admin settings.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @return   array    Array of active CPT names.
      */
     private function get_active_cpts() {
@@ -411,7 +411,7 @@ class WP_CPT_RestAPI_REST {
      * This method returns all available CPTs regardless of admin settings,
      * used for registering endpoints that will be validated dynamically.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @return   array    Array of all available CPT names.
      */
     private function get_all_available_cpts() {
@@ -449,7 +449,7 @@ class WP_CPT_RestAPI_REST {
     /**
      * Get posts for a specific CPT.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @param    WP_REST_Request    $request    The REST request object.
      * @return   WP_REST_Response|WP_Error      The response or error.
      */
@@ -501,7 +501,7 @@ class WP_CPT_RestAPI_REST {
     /**
      * Get a specific post from a CPT.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @param    WP_REST_Request    $request    The REST request object.
      * @return   WP_REST_Response|WP_Error      The response or error.
      */
@@ -536,7 +536,7 @@ class WP_CPT_RestAPI_REST {
     /**
      * Create a new post for a specific CPT.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @param    WP_REST_Request    $request    The REST request object.
      * @return   WP_REST_Response|WP_Error      The response or error.
      */
@@ -605,7 +605,7 @@ class WP_CPT_RestAPI_REST {
     /**
      * Update an existing post for a specific CPT.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @param    WP_REST_Request    $request    The REST request object.
      * @return   WP_REST_Response|WP_Error      The response or error.
      */
@@ -697,7 +697,7 @@ class WP_CPT_RestAPI_REST {
     /**
      * Sanitize post status value.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @param    string    $status    The post status to sanitize.
      * @return   string               The sanitized post status.
      */
@@ -714,7 +714,7 @@ class WP_CPT_RestAPI_REST {
     /**
      * Handle meta fields from both 'meta' object and root-level fields.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @param    WP_REST_Request    $request    The REST request object.
      * @param    int                $post_id    The post ID.
      * @param    string             $cpt        The custom post type.
@@ -748,7 +748,7 @@ class WP_CPT_RestAPI_REST {
     /**
      * Update post meta fields for a CPT post.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @param    int       $post_id     The post ID.
      * @param    array     $meta_data   The meta data to update.
      * @param    string    $cpt         The custom post type.
@@ -778,7 +778,7 @@ class WP_CPT_RestAPI_REST {
     /**
      * Sanitize meta field value.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @param    mixed    $value    The meta value to sanitize.
      * @return   mixed             The sanitized meta value, or null if invalid.
      */
@@ -800,7 +800,7 @@ class WP_CPT_RestAPI_REST {
     /**
      * Validate meta field parameter.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @param    mixed             $value      The meta field value.
      * @param    WP_REST_Request   $request    The REST request object.
      * @param    string            $param      The parameter name.
@@ -814,7 +814,7 @@ class WP_CPT_RestAPI_REST {
     /**
      * Prepare post data for API response.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @param    WP_Post    $post    The post object.
      * @return   array               The prepared post data.
      */
@@ -853,7 +853,7 @@ class WP_CPT_RestAPI_REST {
      * This is a simple endpoint that returns information about the namespace.
      * It serves as a placeholder for the namespace and can be used to verify that the namespace is registered.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @return   array    Information about the namespace.
      */
     public function namespace_info() {
@@ -867,7 +867,7 @@ class WP_CPT_RestAPI_REST {
     /**
      * Check if Toolset relationship support is enabled.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @return   bool    True if Toolset relationship support is enabled, false otherwise.
      */
     public function is_toolset_relationships_enabled() {
@@ -880,7 +880,7 @@ class WP_CPT_RestAPI_REST {
      * This method fetches all registered Toolset relationships and returns
      * them in a structured format for the REST API.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @param    WP_REST_Request    $request    The REST request object.
      * @return   WP_REST_Response|WP_Error      The response or error.
      */
@@ -918,7 +918,7 @@ class WP_CPT_RestAPI_REST {
     /**
      * Check if Toolset is available and active.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @return   bool    True if Toolset is available, false otherwise.
      */
     private function is_toolset_available() {
@@ -932,7 +932,7 @@ class WP_CPT_RestAPI_REST {
     /**
      * Fetch Toolset relationships using the Toolset API.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @return   array    Array of formatted relationship data.
      */
     private function fetch_toolset_relationships() {
@@ -984,7 +984,7 @@ class WP_CPT_RestAPI_REST {
     /**
      * Format relationship data for API response.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @param    mixed    $relationship    The Toolset relationship object.
      * @return   array                     Formatted relationship data.
      */
@@ -1053,7 +1053,7 @@ class WP_CPT_RestAPI_REST {
     /**
      * Format legacy relationship data for API response.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @param    string    $slug           The relationship slug.
      * @param    array     $relationship   The legacy relationship data.
      * @return   array                     Formatted relationship data.
@@ -1076,7 +1076,7 @@ class WP_CPT_RestAPI_REST {
     /**
      * Format database relationship data for API response.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @param    object    $relationship    The database relationship object.
      * @return   array                      Formatted relationship data.
      */
@@ -1099,7 +1099,7 @@ class WP_CPT_RestAPI_REST {
     /**
      * Validate relation slug parameter.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @param    string            $value      The relation slug value.
      * @param    WP_REST_Request   $request    The REST request object.
      * @param    string            $param      The parameter name.
@@ -1133,7 +1133,7 @@ class WP_CPT_RestAPI_REST {
     /**
      * Validate post ID parameter.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @param    int               $value      The post ID value.
      * @param    WP_REST_Request   $request    The REST request object.
      * @param    string            $param      The parameter name.
@@ -1151,7 +1151,7 @@ class WP_CPT_RestAPI_REST {
     /**
      * Get relationship instances for a specific relation slug.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @param    WP_REST_Request    $request    The REST request object.
      * @return   WP_REST_Response|WP_Error      The response or error.
      */
@@ -1283,7 +1283,7 @@ class WP_CPT_RestAPI_REST {
     /**
      * Create a new relationship instance.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @param    WP_REST_Request    $request    The REST request object.
      * @return   WP_REST_Response|WP_Error      The response or error.
      */
@@ -1397,7 +1397,7 @@ class WP_CPT_RestAPI_REST {
     /**
      * Delete a specific relationship instance.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @param    WP_REST_Request    $request    The REST request object.
      * @return   WP_REST_Response|WP_Error      The response or error.
      */
@@ -1502,7 +1502,7 @@ class WP_CPT_RestAPI_REST {
     /**
      * Generate a unique relationship ID from parent ID, child ID, and relation slug.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @param    int       $parent_id      The parent post ID.
      * @param    int       $child_id       The child post ID.
      * @param    string    $relation_slug  The relation slug.
@@ -1515,7 +1515,7 @@ class WP_CPT_RestAPI_REST {
     /**
      * Parse a relationship ID to extract parent ID, child ID, and relation slug.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @param    string    $relationship_id  The relationship ID to parse.
      * @param    string    $relation_slug    The expected relation slug for validation.
      * @return   array|false               Array with parent_id, child_id, and relation_slug, or false if invalid.

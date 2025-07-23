@@ -2,7 +2,7 @@
 /**
  * The API Keys management functionality of the plugin.
  *
- * @since      1.0.0
+ * @since      0.1
  * @package    WP_CPT_RestAPI
  */
 
@@ -21,7 +21,7 @@ class WP_CPT_RestAPI_API_Keys {
     /**
      * The option name for storing API keys.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @access   private
      * @var      string    $option_name    The option name for storing API keys.
      */
@@ -30,7 +30,7 @@ class WP_CPT_RestAPI_API_Keys {
     /**
      * Initialize the class and set its properties.
      *
-     * @since    1.0.0
+     * @since    0.1
      */
     public function __construct() {
         // Constructor code
@@ -41,7 +41,7 @@ class WP_CPT_RestAPI_API_Keys {
      * 
      * Creates the option for storing API keys if it doesn't exist.
      *
-     * @since    1.0.0
+     * @since    0.1
      */
     public function activate() {
         if ( ! get_option( $this->option_name ) ) {
@@ -57,7 +57,7 @@ class WP_CPT_RestAPI_API_Keys {
      * - Contains lowercase letters (a-z), digits (0-9), and hyphens (-)
      * - Uses cryptographically secure random generation
      *
-     * @since    1.0.0
+     * @since    0.1
      * @return   string    The generated API key.
      */
     public function generate_key() {
@@ -95,7 +95,7 @@ class WP_CPT_RestAPI_API_Keys {
     /**
      * Get a random character from a string.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @param    string    $chars    The string of characters to choose from.
      * @return   string              A random character from the string.
      */
@@ -107,7 +107,7 @@ class WP_CPT_RestAPI_API_Keys {
     /**
      * Add a new API key.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @param    string    $label    The label for the API key.
      * @return   array               The newly created API key data, or false on failure.
      */
@@ -138,7 +138,7 @@ class WP_CPT_RestAPI_API_Keys {
     /**
      * Get all API keys.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @return   array    The list of API keys.
      */
     public function get_keys() {
@@ -149,7 +149,7 @@ class WP_CPT_RestAPI_API_Keys {
     /**
      * Get a specific API key by ID.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @param    string    $id    The ID of the API key.
      * @return   array            The API key data, or false if not found.
      */
@@ -168,7 +168,7 @@ class WP_CPT_RestAPI_API_Keys {
     /**
      * Delete an API key.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @param    string    $id    The ID of the API key to delete.
      * @return   boolean          True if the key was deleted, false otherwise.
      */
@@ -196,7 +196,7 @@ class WP_CPT_RestAPI_API_Keys {
     /**
      * Validate an API key.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @param    string    $key    The API key to validate.
      * @return   boolean           True if the key is valid, false otherwise.
      */

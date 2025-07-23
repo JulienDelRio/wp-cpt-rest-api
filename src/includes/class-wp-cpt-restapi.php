@@ -5,7 +5,7 @@
  * This is used to define internationalization, admin-specific hooks,
  * and REST API functionality.
  *
- * @since      1.0.0
+ * @since      0.1
  * @package    WP_CPT_RestAPI
  */
 
@@ -23,7 +23,7 @@ class WP_CPT_RestAPI {
      * The loader that's responsible for maintaining and registering all hooks that power
      * the plugin.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @access   protected
      * @var      WP_CPT_RestAPI_Loader    $loader    Maintains and registers all hooks for the plugin.
      */
@@ -32,7 +32,7 @@ class WP_CPT_RestAPI {
     /**
      * The API Keys manager instance.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @access   protected
      * @var      WP_CPT_RestAPI_API_Keys    $api_keys    Handles API key management.
      */
@@ -45,7 +45,7 @@ class WP_CPT_RestAPI {
      * Load the dependencies, define the locale, and set the hooks for the admin area and
      * the REST API functionality.
      *
-     * @since    1.0.0
+     * @since    0.1
      */
     public function __construct() {
         $this->load_dependencies();
@@ -62,7 +62,7 @@ class WP_CPT_RestAPI {
      * - WP_CPT_RestAPI_Admin. Defines all hooks for the admin area.
      * - WP_CPT_RestAPI_REST. Defines all hooks for the REST API functionality.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @access   private
      */
     private function load_dependencies() {
@@ -95,7 +95,7 @@ class WP_CPT_RestAPI {
      * Register all of the hooks related to the admin area functionality
      * of the plugin.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @access   private
      */
     private function define_admin_hooks() {
@@ -111,7 +111,7 @@ class WP_CPT_RestAPI {
      * Register all of the hooks related to the REST API functionality
      * of the plugin.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @access   private
      */
     private function define_rest_api_hooks() {
@@ -123,7 +123,7 @@ class WP_CPT_RestAPI {
     /**
      * Run the loader to execute all of the hooks with WordPress.
      *
-     * @since    1.0.0
+     * @since    0.1
      */
     public function run() {
         $this->loader->run();

@@ -4,7 +4,7 @@ Donate link: https://juliendelrio.fr
 Tags: RestAPI, Rest, Custom Post Types
 Requires at least: 6.0
 Tested up to: 6.6
-Stable tag: 1.0.0
+Stable tag: 0.1
 Requires PHP: 7.4
 License: Apache 2.0
 License URI: http://www.apache.org/licenses/LICENSE-2.0
@@ -48,12 +48,12 @@ Yes, the plugin provides access to all associated metadata for your Custom Post 
 
 == Changelog ==
 
-= 1.0.0 =
+= 0.1 =
 * Initial release
 
 == Upgrade Notice ==
 
-= 1.0.0 =
+= 0.1 =
 Initial release of the plugin.
 
 == Screenshots ==

@@ -2,7 +2,7 @@
 /**
  * The admin-specific functionality of the plugin.
  *
- * @since      1.0.0
+ * @since      0.1
  * @package    WP_CPT_RestAPI
  */
 
@@ -22,7 +22,7 @@ class WP_CPT_RestAPI_Admin {
     /**
      * The option name for the REST API base segment.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @access   private
      * @var      string    $option_name    The option name for the REST API base segment.
      */
@@ -31,7 +31,7 @@ class WP_CPT_RestAPI_Admin {
     /**
      * The option name for the active CPTs.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @access   private
      * @var      string    $cpt_option_name    The option name for the active CPTs.
      */
@@ -40,7 +40,7 @@ class WP_CPT_RestAPI_Admin {
     /**
      * The option name for Toolset relationship support.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @access   private
      * @var      string    $toolset_option_name    The option name for Toolset relationship support.
      */
@@ -49,7 +49,7 @@ class WP_CPT_RestAPI_Admin {
     /**
      * The default value for the REST API base segment.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @access   private
      * @var      string    $default_segment    The default value for the REST API base segment.
      */
@@ -58,7 +58,7 @@ class WP_CPT_RestAPI_Admin {
     /**
      * The API Keys manager instance.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @access   private
      * @var      WP_CPT_RestAPI_API_Keys    $api_keys    Handles API key management.
      */
@@ -67,7 +67,7 @@ class WP_CPT_RestAPI_Admin {
     /**
      * Initialize the class and set its properties.
      *
-     * @since    1.0.0
+     * @since    0.1
      */
     public function __construct() {
         // Initialize API Keys manager
@@ -84,7 +84,7 @@ class WP_CPT_RestAPI_Admin {
     /**
      * Register the stylesheets for the admin area.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @param    string    $hook    The current admin page.
      */
     public function enqueue_styles( $hook ) {
@@ -105,7 +105,7 @@ class WP_CPT_RestAPI_Admin {
     /**
      * Register the JavaScript for the admin area.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @param    string    $hook    The current admin page.
      */
     public function enqueue_scripts( $hook ) {
@@ -144,7 +144,7 @@ class WP_CPT_RestAPI_Admin {
     /**
      * Add the settings page to the WordPress admin menu.
      *
-     * @since    1.0.0
+     * @since    0.1
      */
     public function add_settings_page() {
         add_submenu_page(
@@ -160,7 +160,7 @@ class WP_CPT_RestAPI_Admin {
     /**
      * Register the settings for the admin page.
      *
-     * @since    1.0.0
+     * @since    0.1
      */
     public function register_settings() {
         // Register the setting for base segment
@@ -248,7 +248,7 @@ class WP_CPT_RestAPI_Admin {
     /**
      * Render the settings section description.
      *
-     * @since    1.0.0
+     * @since    0.1
      */
     public function settings_section_callback() {
         echo '<p>' . esc_html__( 'Configure the base segment for the Custom Post Types REST API.', 'wp-cpt-restapi' ) . '</p>';
@@ -257,7 +257,7 @@ class WP_CPT_RestAPI_Admin {
     /**
      * Render the base segment field.
      *
-     * @since    1.0.0
+     * @since    0.1
      */
     public function base_segment_field_callback() {
         // Get the current value or use default
@@ -295,7 +295,7 @@ class WP_CPT_RestAPI_Admin {
     /**
      * Render the Toolset relationships field.
      *
-     * @since    1.0.0
+     * @since    0.1
      */
     public function toolset_relationships_field_callback() {
         // Get the current value or use default (false)
@@ -331,7 +331,7 @@ class WP_CPT_RestAPI_Admin {
     /**
      * Validate the base segment field.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @param    string    $input    The input to validate.
      * @return   string              The validated input.
      */
@@ -383,7 +383,7 @@ class WP_CPT_RestAPI_Admin {
     /**
      * Validate the active CPTs field.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @param    array    $input    The input to validate.
      * @return   array              The validated input.
      */
@@ -418,7 +418,7 @@ class WP_CPT_RestAPI_Admin {
     /**
      * Validate the Toolset relationships field.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @param    mixed    $input    The input to validate.
      * @return   bool               The validated input.
      */
@@ -440,7 +440,7 @@ class WP_CPT_RestAPI_Admin {
     /**
      * Get all available public CPTs (excluding core types).
      *
-     * @since    1.0.0
+     * @since    0.1
      * @return   array    Array of CPT objects keyed by post type name.
      */
     private function get_available_cpts() {
@@ -473,7 +473,7 @@ class WP_CPT_RestAPI_Admin {
     /**
      * Render the CPTs section description.
      *
-     * @since    1.0.0
+     * @since    0.1
      */
     public function cpts_section_callback() {
         echo '<p>' . esc_html__( 'Select which Custom Post Types should be available through the REST API.', 'wp-cpt-restapi' ) . '</p>';
@@ -482,7 +482,7 @@ class WP_CPT_RestAPI_Admin {
     /**
      * Render the CPTs selection field.
      *
-     * @since    1.0.0
+     * @since    0.1
      */
     public function cpts_field_callback() {
         // Get available CPTs
@@ -557,7 +557,7 @@ class WP_CPT_RestAPI_Admin {
     /**
      * Display the settings page content.
      *
-     * @since    1.0.0
+     * @since    0.1
      */
     public function display_settings_page() {
         // Check user capabilities
@@ -625,7 +625,7 @@ class WP_CPT_RestAPI_Admin {
     /**
      * Output a specific settings section and its fields.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @param    string    $section_id    The section ID to output.
      */
     private function output_settings_section( $section_id ) {
@@ -662,7 +662,7 @@ class WP_CPT_RestAPI_Admin {
     /**
      * Render the API Keys section description.
      *
-     * @since    1.0.0
+     * @since    0.1
      */
     public function api_keys_section_callback() {
         echo '<p>' . esc_html__( 'Create and manage API keys for accessing the REST API endpoints.', 'wp-cpt-restapi' ) . '</p>';
@@ -672,7 +672,7 @@ class WP_CPT_RestAPI_Admin {
     /**
      * Render the API Keys management field.
      *
-     * @since    1.0.0
+     * @since    0.1
      */
     public function api_keys_field_callback() {
         // Get all API keys
@@ -763,7 +763,7 @@ class WP_CPT_RestAPI_Admin {
     /**
      * AJAX handler for adding a new API key.
      *
-     * @since    1.0.0
+     * @since    0.1
      */
     public function ajax_add_key() {
         // Check nonce
@@ -798,7 +798,7 @@ class WP_CPT_RestAPI_Admin {
     /**
      * AJAX handler for deleting an API key.
      *
-     * @since    1.0.0
+     * @since    0.1
      */
     public function ajax_delete_key() {
         // Check nonce
@@ -830,7 +830,7 @@ class WP_CPT_RestAPI_Admin {
     /**
      * AJAX handler for resetting CPTs.
      *
-     * @since    1.0.0
+     * @since    0.1
      */
     public function ajax_reset_cpts() {
         // Check nonce
@@ -854,7 +854,7 @@ class WP_CPT_RestAPI_Admin {
     /**
      * Check if Toolset relationship support is enabled.
      *
-     * @since    1.0.0
+     * @since    0.1
      * @return   bool    True if Toolset relationship support is enabled, false otherwise.
      */
     public function is_toolset_relationships_enabled() {
