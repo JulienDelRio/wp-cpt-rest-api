@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: WordPress Custom Post Types RestAPI
+ * Plugin Name: Custom Post Types RestAPI
  * Plugin URI: https://github.com/JulienDelRio/wp-cpt-rest-api
  * Description: A robust WordPress plugin that extends the native REST API functionalities to provide comprehensive endpoints for Custom Post Types and their associated metadata.
  * Version: 0.1
