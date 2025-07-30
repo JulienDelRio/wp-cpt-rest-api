@@ -470,14 +470,24 @@ class WP_CPT_RestAPI_Admin {
      * @return   bool               The validated input.
      */
     public function validate_include_nonpublic_cpts( $input ) {
-        // Convert to boolean - checkbox will send '1' if checked, null if not
-        $validated = ! empty( $input ) && $input === '1';
+        // Handle array of selected visibility types
+        $validated = array();
+        
+        if ( is_array( $input ) ) {
+            $allowed_types = array( 'publicly_queryable', 'show_ui', 'private' );
+            
+            foreach ( $input as $type ) {
+                if ( in_array( $type, $allowed_types, true ) ) {
+                    $validated[] = sanitize_text_field( $type );
+                }
+            }
+        }
         
         // Add success message
         add_settings_error(
             $this->include_nonpublic_option_name,
             'nonpublic_updated',
-            __( 'Non-public CPT settings saved successfully.', 'wp-cpt-restapi' ),
+            __( 'Non-public CPT visibility settings saved successfully.', 'wp-cpt-restapi' ),
             'updated'
         );
 
@@ -490,33 +500,51 @@ class WP_CPT_RestAPI_Admin {
      * @since    0.1
      */
     public function include_nonpublic_cpts_field_callback() {
-        // Get the current value or use default (false)
-        $value = get_option( $this->include_nonpublic_option_name, false );
+        // Get the current value or use default (empty array)
+        $selected_types = get_option( $this->include_nonpublic_option_name, array() );
+        if ( ! is_array( $selected_types ) ) {
+            $selected_types = array();
+        }
+        
+        // Define available visibility types
+        $visibility_types = array(
+            'publicly_queryable' => __( 'Publicly Queryable', 'wp-cpt-restapi' ),
+            'show_ui'           => __( 'Admin Only (Show UI)', 'wp-cpt-restapi' ),
+            'private'           => __( 'Private', 'wp-cpt-restapi' ),
+        );
         
         ?>
         <div class="cpt-rest-api-field-container">
-            <label class="cpt-rest-api-toggle-switch">
-                <input type="checkbox"
-                       id="cpt_rest_api_include_nonpublic_cpts"
-                       name="<?php echo esc_attr( $this->include_nonpublic_option_name ); ?>"
-                       value="1"
-                       <?php checked( $value, true ); ?>
-                />
-                <span class="cpt-rest-api-toggle-slider"></span>
-                <span class="cpt-rest-api-toggle-label">
-                    <?php echo esc_html__( 'Enable', 'wp-cpt-restapi' ); ?>
-                </span>
-            </label>
+            <fieldset>
+                <legend class="screen-reader-text"><?php echo esc_html__( 'Select non-public CPT types to include', 'wp-cpt-restapi' ); ?></legend>
+                <p class="description" style="margin-bottom: 10px;">
+                    <?php echo esc_html__( 'Select which types of non-public Custom Post Types should be available for selection:', 'wp-cpt-restapi' ); ?>
+                </p>
+                
+                <?php foreach ( $visibility_types as $type => $label ) : ?>
+                    <label style="display: block; margin-bottom: 8px;">
+                        <input type="checkbox"
+                               name="<?php echo esc_attr( $this->include_nonpublic_option_name ); ?>[]"
+                               value="<?php echo esc_attr( $type ); ?>"
+                               <?php checked( in_array( $type, $selected_types, true ) ); ?>
+                        />
+                        <?php echo esc_html( $label ); ?>
+                    </label>
+                <?php endforeach; ?>
+                
+                <p class="description" style="margin-top: 10px;">
+                    <strong><?php echo esc_html__( 'Note:', 'wp-cpt-restapi' ); ?></strong>
+                    <?php echo esc_html__( 'Public CPTs are always available. Select additional visibility types to include in the list below.', 'wp-cpt-restapi' ); ?>
+                </p>
+            </fieldset>
+            
             <span class="tooltip">
                 <span class="dashicons dashicons-editor-help"></span>
                 <span class="tooltip-text">
-                    <?php echo esc_html__( 'When enabled, this will include non-public Custom Post Types in the available options below. By default, only public CPTs or those with admin UI are shown.', 'wp-cpt-restapi' ); ?>
+                    <?php echo esc_html__( 'Choose which types of non-public CPTs to make available for API exposure. Publicly Queryable CPTs can be queried but aren\'t fully public. Admin Only CPTs show in WordPress admin. Private CPTs are completely hidden from public access.', 'wp-cpt-restapi' ); ?>
                 </span>
             </span>
         </div>
-        <p class="description">
-            <?php echo esc_html__( 'Enable this option to include non-public Custom Post Types in the selection list below.', 'wp-cpt-restapi' ); ?>
-        </p>
         <?php
     }
 
@@ -532,8 +560,11 @@ class WP_CPT_RestAPI_Admin {
         $core_types = array( 'post', 'page', 'attachment' );
         $available_cpts = array();
         
-        // Check if non-public CPTs should be included
-        $include_nonpublic = get_option( $this->include_nonpublic_option_name, false );
+        // Get selected non-public visibility types
+        $selected_types = get_option( $this->include_nonpublic_option_name, array() );
+        if ( ! is_array( $selected_types ) ) {
+            $selected_types = array();
+        }
         
         foreach ( $all_post_types as $post_type_name => $post_type_obj ) {
             // Skip core post types
@@ -541,19 +572,35 @@ class WP_CPT_RestAPI_Admin {
                 continue;
             }
             
-            if ( $include_nonpublic ) {
-                // Include all CPTs when non-public option is enabled
+            // Always include public CPTs
+            if ( $post_type_obj->public ) {
                 $available_cpts[ $post_type_name ] = $post_type_obj;
-            } else {
-                // Include CPTs that are either:
-                // 1. Public, OR
-                // 2. Publicly queryable, OR
-                // 3. Show in admin UI
-                if ( $post_type_obj->public ||
-                     $post_type_obj->publicly_queryable ||
-                     $post_type_obj->show_ui ) {
-                    $available_cpts[ $post_type_name ] = $post_type_obj;
-                }
+                continue;
+            }
+            
+            // Check if non-public CPT matches selected visibility types
+            $include_cpt = false;
+            
+            // Check for publicly queryable
+            if ( in_array( 'publicly_queryable', $selected_types, true ) &&
+                 $post_type_obj->publicly_queryable && ! $post_type_obj->public ) {
+                $include_cpt = true;
+            }
+            
+            // Check for show_ui (admin only)
+            if ( in_array( 'show_ui', $selected_types, true ) &&
+                 $post_type_obj->show_ui && ! $post_type_obj->public && ! $post_type_obj->publicly_queryable ) {
+                $include_cpt = true;
+            }
+            
+            // Check for private (completely private CPTs)
+            if ( in_array( 'private', $selected_types, true ) &&
+                 ! $post_type_obj->public && ! $post_type_obj->publicly_queryable && ! $post_type_obj->show_ui ) {
+                $include_cpt = true;
+            }
+            
+            if ( $include_cpt ) {
+                $available_cpts[ $post_type_name ] = $post_type_obj;
             }
         }
 
