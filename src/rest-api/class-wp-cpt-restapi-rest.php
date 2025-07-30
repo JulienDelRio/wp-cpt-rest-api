@@ -102,8 +102,9 @@ class WP_CPT_RestAPI_REST {
             return $result;
         }
         
-        // Allow public access to the OpenAPI specification endpoint
-        if ( strpos( $current_route, '/wp-json/' . $base_segment . '/v1/openapi' ) !== false ) {
+        // Allow public access to the root endpoint and OpenAPI specification endpoint
+        if ( strpos( $current_route, '/wp-json/' . $base_segment . '/v1/openapi' ) !== false ||
+             preg_match( '#/wp-json/' . preg_quote( $base_segment, '#' ) . '/v1/?$#', $current_route ) ) {
             return $result;
         }
         
