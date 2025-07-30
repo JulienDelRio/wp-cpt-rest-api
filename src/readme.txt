@@ -4,7 +4,7 @@ Donate link: https://juliendelrio.fr
 Tags: RestAPI, Rest, Custom Post Types
 Requires at least: 6.0
 Tested up to: 6.6
-Stable tag: 0.1
+Stable tag: 0.2
 Requires PHP: 7.4
 License: Apache 2.0
 License URI: http://www.apache.org/licenses/LICENSE-2.0
