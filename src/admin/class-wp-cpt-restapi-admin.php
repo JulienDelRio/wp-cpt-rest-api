@@ -47,6 +47,15 @@ class WP_CPT_RestAPI_Admin {
     private $toolset_option_name = 'cpt_rest_api_toolset_relationships';
 
     /**
+     * The option name for including non-public CPTs.
+     *
+     * @since    0.1
+     * @access   private
+     * @var      string    $include_nonpublic_option_name    The option name for including non-public CPTs.
+     */
+    private $include_nonpublic_option_name = 'cpt_rest_api_include_nonpublic_cpts';
+
+    /**
      * The default value for the REST API base segment.
      *
      * @since    0.1
@@ -184,6 +193,13 @@ class WP_CPT_RestAPI_Admin {
             array( $this, 'validate_toolset_relationships' ) // Sanitize callback
         );
 
+        // Register the setting for including non-public CPTs
+        register_setting(
+            'cpt_rest_api_settings',                  // Option group
+            $this->include_nonpublic_option_name,     // Option name
+            array( $this, 'validate_include_nonpublic_cpts' ) // Sanitize callback
+        );
+
         // Add settings section for REST API configuration
         add_settings_section(
             'cpt_rest_api_section',                   // ID
@@ -206,6 +222,15 @@ class WP_CPT_RestAPI_Admin {
             'cpt_rest_api_toolset_relationships',     // ID
             __( 'Enable Toolset relationship support', 'wp-cpt-restapi' ), // Title
             array( $this, 'toolset_relationships_field_callback' ), // Callback
+            'cpt-rest-api',                           // Page
+            'cpt_rest_api_section'                    // Section
+        );
+
+        // Add settings field for including non-public CPTs
+        add_settings_field(
+            'cpt_rest_api_include_nonpublic_cpts',    // ID
+            __( 'Include non-public Custom Post Types', 'wp-cpt-restapi' ), // Title
+            array( $this, 'include_nonpublic_cpts_field_callback' ), // Callback
             'cpt-rest-api',                           // Page
             'cpt_rest_api_section'                    // Section
         );
@@ -438,17 +463,77 @@ class WP_CPT_RestAPI_Admin {
     }
 
     /**
-     * Get all available public CPTs (excluding core types).
+     * Validate the include non-public CPTs field.
+     *
+     * @since    0.1
+     * @param    mixed    $input    The input to validate.
+     * @return   bool               The validated input.
+     */
+    public function validate_include_nonpublic_cpts( $input ) {
+        // Convert to boolean - checkbox will send '1' if checked, null if not
+        $validated = ! empty( $input ) && $input === '1';
+        
+        // Add success message
+        add_settings_error(
+            $this->include_nonpublic_option_name,
+            'nonpublic_updated',
+            __( 'Non-public CPT settings saved successfully.', 'wp-cpt-restapi' ),
+            'updated'
+        );
+
+        return $validated;
+    }
+
+    /**
+     * Render the include non-public CPTs field.
+     *
+     * @since    0.1
+     */
+    public function include_nonpublic_cpts_field_callback() {
+        // Get the current value or use default (false)
+        $value = get_option( $this->include_nonpublic_option_name, false );
+        
+        ?>
+        <div class="cpt-rest-api-field-container">
+            <label class="cpt-rest-api-toggle-switch">
+                <input type="checkbox"
+                       id="cpt_rest_api_include_nonpublic_cpts"
+                       name="<?php echo esc_attr( $this->include_nonpublic_option_name ); ?>"
+                       value="1"
+                       <?php checked( $value, true ); ?>
+                />
+                <span class="cpt-rest-api-toggle-slider"></span>
+                <span class="cpt-rest-api-toggle-label">
+                    <?php echo esc_html__( 'Enable', 'wp-cpt-restapi' ); ?>
+                </span>
+            </label>
+            <span class="tooltip">
+                <span class="dashicons dashicons-editor-help"></span>
+                <span class="tooltip-text">
+                    <?php echo esc_html__( 'When enabled, this will include non-public Custom Post Types in the available options below. By default, only public CPTs or those with admin UI are shown.', 'wp-cpt-restapi' ); ?>
+                </span>
+            </span>
+        </div>
+        <p class="description">
+            <?php echo esc_html__( 'Enable this option to include non-public Custom Post Types in the selection list below.', 'wp-cpt-restapi' ); ?>
+        </p>
+        <?php
+    }
+
+    /**
+     * Get all available CPTs (excluding core types).
      *
      * @since    0.1
      * @return   array    Array of CPT objects keyed by post type name.
      */
     private function get_available_cpts() {
-        // Get all registered post types (not just public ones)
-        // This ensures we include CPTs that might not be public but should be available via admin
+        // Get all registered post types
         $all_post_types = get_post_types( array(), 'objects' );
         $core_types = array( 'post', 'page', 'attachment' );
         $available_cpts = array();
+        
+        // Check if non-public CPTs should be included
+        $include_nonpublic = get_option( $this->include_nonpublic_option_name, false );
         
         foreach ( $all_post_types as $post_type_name => $post_type_obj ) {
             // Skip core post types
@@ -456,14 +541,19 @@ class WP_CPT_RestAPI_Admin {
                 continue;
             }
             
-            // Include CPTs that are either:
-            // 1. Public, OR
-            // 2. Publicly queryable, OR
-            // 3. Show in admin UI
-            if ( $post_type_obj->public ||
-                 $post_type_obj->publicly_queryable ||
-                 $post_type_obj->show_ui ) {
+            if ( $include_nonpublic ) {
+                // Include all CPTs when non-public option is enabled
                 $available_cpts[ $post_type_name ] = $post_type_obj;
+            } else {
+                // Include CPTs that are either:
+                // 1. Public, OR
+                // 2. Publicly queryable, OR
+                // 3. Show in admin UI
+                if ( $post_type_obj->public ||
+                     $post_type_obj->publicly_queryable ||
+                     $post_type_obj->show_ui ) {
+                    $available_cpts[ $post_type_name ] = $post_type_obj;
+                }
             }
         }
 
@@ -476,7 +566,7 @@ class WP_CPT_RestAPI_Admin {
      * @since    0.1
      */
     public function cpts_section_callback() {
-        echo '<p>' . esc_html__( 'Select which Custom Post Types should be available through the REST API.', 'wp-cpt-restapi' ) . '</p>';
+        echo '<p>' . esc_html__( 'Select which Custom Post Types should be available through the REST API. Use the option above to include non-public CPTs in the selection.', 'wp-cpt-restapi' ) . '</p>';
     }
 
     /**
@@ -504,6 +594,7 @@ class WP_CPT_RestAPI_Admin {
                         <th><?php echo esc_html__( 'Post Type', 'wp-cpt-restapi' ); ?></th>
                         <th><?php echo esc_html__( 'Description', 'wp-cpt-restapi' ); ?></th>
                         <th><?php echo esc_html__( 'Slug', 'wp-cpt-restapi' ); ?></th>
+                        <th><?php echo esc_html__( 'Visibility', 'wp-cpt-restapi' ); ?></th>
                         <th><?php echo esc_html__( 'Status', 'wp-cpt-restapi' ); ?></th>
                     </tr>
                 </thead>
@@ -522,6 +613,20 @@ class WP_CPT_RestAPI_Admin {
                             </td>
                             <td>
                                 <code><?php echo esc_html( $cpt_name ); ?></code>
+                            </td>
+                            <td>
+                                <?php
+                                // Determine visibility status
+                                if ( $cpt_object->public ) {
+                                    echo '<span class="cpt-visibility-public">' . esc_html__( 'Public', 'wp-cpt-restapi' ) . '</span>';
+                                } elseif ( $cpt_object->publicly_queryable ) {
+                                    echo '<span class="cpt-visibility-queryable">' . esc_html__( 'Publicly Queryable', 'wp-cpt-restapi' ) . '</span>';
+                                } elseif ( $cpt_object->show_ui ) {
+                                    echo '<span class="cpt-visibility-admin">' . esc_html__( 'Admin Only', 'wp-cpt-restapi' ) . '</span>';
+                                } else {
+                                    echo '<span class="cpt-visibility-private">' . esc_html__( 'Private', 'wp-cpt-restapi' ) . '</span>';
+                                }
+                                ?>
                             </td>
                             <td>
                                 <label class="cpt-rest-api-toggle-switch">
@@ -590,6 +695,13 @@ class WP_CPT_RestAPI_Admin {
                 <p><?php echo esc_html__( 'Enable support for Toolset relationship functionality in the REST API.', 'wp-cpt-restapi' ); ?></p>
                 <div class="cpt-rest-api-field-wrapper">
                     <?php $this->toolset_relationships_field_callback(); ?>
+                </div>
+                
+                <!-- Include Non-Public CPTs Section -->
+                <h3><?php echo esc_html__( 'Non-Public Custom Post Types', 'wp-cpt-restapi' ); ?></h3>
+                <p><?php echo esc_html__( 'Control whether non-public Custom Post Types should be available for selection.', 'wp-cpt-restapi' ); ?></p>
+                <div class="cpt-rest-api-field-wrapper">
+                    <?php $this->include_nonpublic_cpts_field_callback(); ?>
                 </div>
                 
                 <!-- Custom Post Types Section -->
