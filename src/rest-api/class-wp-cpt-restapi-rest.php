@@ -102,6 +102,11 @@ class WP_CPT_RestAPI_REST {
             return $result;
         }
         
+        // Allow public access to the OpenAPI specification endpoint
+        if ( strpos( $current_route, '/wp-json/' . $base_segment . '/v1/openapi' ) !== false ) {
+            return $result;
+        }
+        
         // Get the Authorization header
         $auth_header = isset( $_SERVER['HTTP_AUTHORIZATION'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_AUTHORIZATION'] ) ) : '';
         
@@ -148,6 +153,17 @@ class WP_CPT_RestAPI_REST {
             array(
                 'methods'  => 'GET',
                 'callback' => array( $this, 'namespace_info' ),
+                'permission_callback' => '__return_true',
+            )
+        );
+        
+        // Register the OpenAPI specification endpoint
+        register_rest_route(
+            $base_segment . '/v1',
+            '/openapi',
+            array(
+                'methods'  => 'GET',
+                'callback' => array( $this, 'get_openapi_spec' ),
                 'permission_callback' => '__return_true',
             )
         );
@@ -862,6 +878,25 @@ class WP_CPT_RestAPI_REST {
             'description' => __( 'WordPress Custom Post Types REST API', 'wp-cpt-restapi' ),
             'version' => WP_CPT_RESTAPI_VERSION,
         );
+    }
+
+    /**
+     * Get the OpenAPI 3.0.3 specification.
+     *
+     * This endpoint returns the complete OpenAPI 3.0.3 specification for the Custom Post Types REST API.
+     * The specification is dynamically generated based on active CPTs and plugin settings.
+     *
+     * @since    0.1
+     * @return   WP_REST_Response    The OpenAPI specification.
+     */
+    public function get_openapi_spec() {
+        $openapi_generator = new WP_CPT_RestAPI_OpenAPI();
+        $spec = $openapi_generator->generate_openapi_spec();
+        
+        $response = rest_ensure_response( $spec );
+        $response->header( 'Content-Type', 'application/json' );
+        
+        return $response;
     }
 
     /**

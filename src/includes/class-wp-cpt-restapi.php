@@ -87,6 +87,11 @@ class WP_CPT_RestAPI {
          */
         require_once WP_CPT_RESTAPI_PLUGIN_DIR . 'includes/class-wp-cpt-restapi-api-keys.php';
 
+        /**
+         * The class responsible for OpenAPI specification generation.
+         */
+        require_once WP_CPT_RESTAPI_PLUGIN_DIR . 'swagger/class-wp-cpt-restapi-openapi.php';
+
         $this->loader = new WP_CPT_RestAPI_Loader();
         $this->api_keys = new WP_CPT_RestAPI_API_Keys();
     }
