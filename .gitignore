@@ -70,3 +70,4 @@ Thumbs.db
 
 # Composer
 composer.phar
+/src/wp-cpt-rest-api.zip
