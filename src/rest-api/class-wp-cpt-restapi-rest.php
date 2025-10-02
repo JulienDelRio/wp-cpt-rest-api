@@ -308,6 +308,21 @@ class WP_CPT_RestAPI_REST {
                         ),
                         'permission_callback' => '__return_true',
                     ),
+                    array(
+                        'methods'  => 'DELETE',
+                        'callback' => array( $this, 'delete_cpt_post' ),
+                        'args'     => array(
+                            'cpt' => array(
+                                'default' => $cpt_name,
+                                'sanitize_callback' => 'sanitize_text_field',
+                            ),
+                            'id' => array(
+                                'required' => true,
+                                'sanitize_callback' => 'absint',
+                            ),
+                        ),
+                        'permission_callback' => '__return_true',
+                    ),
                 )
             );
         }
@@ -619,6 +634,65 @@ class WP_CPT_RestAPI_REST {
         
         return $response;
     }
+    /**
+     * Delete an existing post for a specific CPT.
+     *
+     * @since    0.2
+     * @param    WP_REST_Request    $request    The REST request object.
+     * @return   WP_REST_Response|WP_Error      The response or error.
+     */
+    public function delete_cpt_post( $request ) {
+        $cpt = $request->get_param( 'cpt' );
+        $id = $request->get_param( 'id' );
+
+        // Validate CPT is active
+        $active_cpts = $this->get_active_cpts();
+        if ( ! in_array( $cpt, $active_cpts, true ) ) {
+            return new WP_Error(
+                'rest_forbidden',
+                __( 'This Custom Post Type is not available via the API.', 'wp-cpt-restapi' ),
+                array( 'status' => 403 )
+            );
+        }
+
+        // Get the existing post
+        $existing_post = get_post( $id );
+
+        if ( ! $existing_post || $existing_post->post_type !== $cpt ) {
+            return new WP_Error(
+                'rest_post_invalid_id',
+                __( 'Invalid post ID or post does not belong to this Custom Post Type.', 'wp-cpt-restapi' ),
+                array( 'status' => 404 )
+            );
+        }
+
+        // Check if post is published (only allow deleting published posts for security)
+        if ( $existing_post->post_status !== 'publish' ) {
+            return new WP_Error(
+                'rest_cannot_delete',
+                __( 'Sorry, you are not allowed to delete this post.', 'wp-cpt-restapi' ),
+                array( 'status' => 403 )
+            );
+        }
+
+        // Prepare the post data before deletion for the response
+        $deleted_post_data = $this->prepare_post_data( $existing_post );
+
+        // Delete the post permanently
+        $deleted = wp_delete_post( $id, true );
+
+        if ( ! $deleted ) {
+            return new WP_Error(
+                'rest_cannot_delete',
+                __( 'The post cannot be deleted.', 'wp-cpt-restapi' ),
+                array( 'status' => 500 )
+            );
+        }
+
+        // Return the deleted post data with 200 status
+        return rest_ensure_response( $deleted_post_data );
+    }
+
     /**
      * Update an existing post for a specific CPT.
      *
