@@ -271,6 +271,115 @@ GET /wp-json/cpt/v1/product/123
 }
 ```
 
+### 6. Delete CPT Post
+**DELETE** `/wp-json/cpt/v1/{post_type}/{id}`
+
+Permanently deletes a specific post from the Custom Post Type.
+
+**Request Headers:**
+```
+Authorization: Bearer YOUR_API_KEY
+```
+
+**Example Request:**
+```http
+DELETE /wp-json/cpt/v1/product/123
+Authorization: Bearer YOUR_API_KEY
+```
+
+**Success Response (200 OK):**
+```json
+{
+  "id": 123,
+  "title": "Sample Product",
+  "content": "Product description...",
+  "excerpt": "Short description...",
+  "slug": "sample-product",
+  "status": "publish",
+  "type": "product",
+  "date": "2024-01-15 10:30:00",
+  "modified": "2024-01-16 14:20:00",
+  "author": "1",
+  "featured_media": 456,
+  "meta": {
+    "custom_field_1": "value1",
+    "custom_field_2": "value2"
+  }
+}
+```
+
+**Error Responses:**
+
+**404 Not Found (Post doesn't exist or wrong type):**
+```json
+{
+  "code": "rest_post_invalid_id",
+  "message": "Invalid post ID or post does not belong to this Custom Post Type.",
+  "data": {
+    "status": 404
+  }
+}
+```
+
+**403 Forbidden (CPT not enabled or post not published):**
+```json
+{
+  "code": "rest_forbidden",
+  "message": "This Custom Post Type is not available via the API.",
+  "data": {
+    "status": 403
+  }
+}
+```
+
+Or:
+```json
+{
+  "code": "rest_cannot_delete",
+  "message": "Sorry, you are not allowed to delete this post.",
+  "data": {
+    "status": 403
+  }
+}
+```
+
+**500 Internal Server Error (Deletion failed):**
+```json
+{
+  "code": "rest_cannot_delete",
+  "message": "The post cannot be deleted.",
+  "data": {
+    "status": 500
+  }
+}
+```
+
+**Usage Examples:**
+
+**cURL:**
+```bash
+curl -X DELETE \
+  https://yoursite.com/wp-json/cpt/v1/product/123 \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+**JavaScript (fetch):**
+```javascript
+fetch('https://yoursite.com/wp-json/cpt/v1/product/123', {
+  method: 'DELETE',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY'
+  }
+})
+  .then(response => response.json())
+  .then(data => {
+    console.log('Post deleted:', data);
+  })
+  .catch(error => {
+    console.error('Error:', error);
+  });
+```
+
 ## Toolset Relationships Endpoints
 
 **Note:** These endpoints are only available when Toolset relationship support is enabled in the plugin settings and the Toolset plugin is active.
