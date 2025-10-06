@@ -45,6 +45,16 @@ function activate_wp_cpt_restapi() {
     if ( ! get_option( 'cpt_rest_api_toolset_relationships' ) ) {
         add_option( 'cpt_rest_api_toolset_relationships', false );
     }
+
+    // Initialize base segment option
+    if ( ! get_option( 'cpt_rest_api_base_segment' ) ) {
+        add_option( 'cpt_rest_api_base_segment', 'cpt' );
+    }
+
+    // Initialize include non-public CPTs option
+    if ( ! get_option( 'cpt_rest_api_include_nonpublic_cpts' ) ) {
+        add_option( 'cpt_rest_api_include_nonpublic_cpts', array() );
+    }
 }
 
 /**
