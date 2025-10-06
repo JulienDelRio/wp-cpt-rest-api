@@ -30,7 +30,7 @@ Returns information about the API namespace.
 {
   "namespace": "cpt/v1",
   "description": "WordPress Custom Post Types REST API",
-  "version": "0.1"
+  "version": "0.2"
 }
 ```
 
