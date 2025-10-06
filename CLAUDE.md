@@ -46,7 +46,7 @@ This is a WordPress plugin with no build process or dependency management. Devel
 - `cpt_rest_api_active_cpts`: Array of enabled Custom Post Types
 - `cpt_rest_api_keys`: Array of generated API keys
 - `cpt_rest_api_toolset_relationships`: Boolean for Toolset support
-- `cpt_rest_api_include_non_public`: Boolean for including non-public CPTs
+- `cpt_rest_api_include_nonpublic_cpts`: Array of non-public CPT visibility types to include (can contain: 'publicly_queryable', 'show_ui', 'private')
 
 ## Available Endpoints
 
