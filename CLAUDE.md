@@ -102,7 +102,12 @@ wp-cpt-rest-api/
 │   ├── admin/ (admin interface)
 │   ├── rest-api/ (REST endpoint handlers)
 │   ├── swagger/ (OpenAPI generation)
-│   ├── assets/ (frontend assets)
+│   ├── assets/
+│   │   ├── css/ (admin styling)
+│   │   │   └── wp-cpt-restapi-admin.css
+│   │   ├── js/ (admin JavaScript)
+│   │   │   └── wp-cpt-restapi-admin.js
+│   │   └── images/ (admin images)
 │   ├── readme.txt (WordPress plugin readme)
 │   ├── API_ENDPOINTS.md (comprehensive API documentation)
 │   └── OPENAPI.md (OpenAPI specification docs)
