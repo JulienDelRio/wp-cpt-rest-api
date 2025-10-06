@@ -685,6 +685,74 @@ class WP_CPT_RestAPI_OpenAPI {
                             )
                         )
                     )
+                ),
+                'delete' => array(
+                    'summary' => 'Delete ' . $cpt_label,
+                    'description' => 'Permanently deletes a specific ' . $cpt_label . ' by ID',
+                    'operationId' => 'delete' . ucfirst( $cpt ) . 'Post',
+                    'parameters' => array(
+                        array(
+                            'name' => 'id',
+                            'in' => 'path',
+                            'description' => 'Post ID',
+                            'required' => true,
+                            'schema' => array(
+                                'type' => 'integer',
+                                'minimum' => 1
+                            )
+                        )
+                    ),
+                    'responses' => array(
+                        '200' => array(
+                            'description' => $cpt_label . ' deleted successfully',
+                            'content' => array(
+                                'application/json' => array(
+                                    'schema' => array(
+                                        'type' => 'object',
+                                        'properties' => array(
+                                            'deleted' => array(
+                                                'type' => 'boolean',
+                                                'description' => 'Whether the post was deleted'
+                                            ),
+                                            'previous' => array(
+                                                '$ref' => '#/components/schemas/Post'
+                                            )
+                                        )
+                                    )
+                                )
+                            )
+                        ),
+                        '401' => array(
+                            'description' => 'Unauthorized',
+                            'content' => array(
+                                'application/json' => array(
+                                    'schema' => array(
+                                        '$ref' => '#/components/schemas/Error'
+                                    )
+                                )
+                            )
+                        ),
+                        '403' => array(
+                            'description' => 'Forbidden - CPT not enabled or insufficient permissions',
+                            'content' => array(
+                                'application/json' => array(
+                                    'schema' => array(
+                                        '$ref' => '#/components/schemas/Error'
+                                    )
+                                )
+                            )
+                        ),
+                        '404' => array(
+                            'description' => 'Post not found',
+                            'content' => array(
+                                'application/json' => array(
+                                    'schema' => array(
+                                        '$ref' => '#/components/schemas/Error'
+                                    )
+                                )
+                            )
+                        )
+                    )
                 )
             )
         );
