@@ -137,6 +137,68 @@ class WP_CPT_RestAPI_REST {
     }
 
     /**
+     * Check if request has read access to CPT posts.
+     *
+     * @since    0.2
+     * @param    WP_REST_Request    $request    Full details about the request.
+     * @return   bool|WP_Error                  True if the request has read access, WP_Error object otherwise.
+     */
+    public function get_items_permissions_check( $request ) {
+        // API key already validated in authenticate_api_key()
+        return true;
+    }
+
+    /**
+     * Check if request has access to create CPT posts.
+     *
+     * @since    0.2
+     * @param    WP_REST_Request    $request    Full details about the request.
+     * @return   bool|WP_Error                  True if the request has access to create, WP_Error object otherwise.
+     */
+    public function create_item_permissions_check( $request ) {
+        // API key already validated in authenticate_api_key()
+        return true;
+    }
+
+    /**
+     * Check if request has access to update a CPT post.
+     *
+     * @since    0.2
+     * @param    WP_REST_Request    $request    Full details about the request.
+     * @return   bool|WP_Error                  True if the request has access to update, WP_Error object otherwise.
+     */
+    public function update_item_permissions_check( $request ) {
+        $post = get_post( $request['id'] );
+        if ( ! $post ) {
+            return new WP_Error(
+                'rest_post_invalid_id',
+                __( 'Invalid post ID.', 'wp-cpt-restapi' ),
+                array( 'status' => 404 )
+            );
+        }
+        return true;
+    }
+
+    /**
+     * Check if request has access to delete a CPT post.
+     *
+     * @since    0.2
+     * @param    WP_REST_Request    $request    Full details about the request.
+     * @return   bool|WP_Error                  True if the request has access to delete, WP_Error object otherwise.
+     */
+    public function delete_item_permissions_check( $request ) {
+        $post = get_post( $request['id'] );
+        if ( ! $post ) {
+            return new WP_Error(
+                'rest_post_invalid_id',
+                __( 'Invalid post ID.', 'wp-cpt-restapi' ),
+                array( 'status' => 404 )
+            );
+        }
+        return true;
+    }
+
+    /**
      * Register the REST API namespace and CPT endpoints.
      *
      * This function registers the REST API namespace and creates endpoints for active CPTs.
@@ -216,7 +278,7 @@ class WP_CPT_RestAPI_REST {
                                 'sanitize_callback' => 'absint',
                             ),
                         ),
-                        'permission_callback' => '__return_true',
+                        'permission_callback' => array( $this, 'get_items_permissions_check' ),
                     ),
                     array(
                         'methods'  => 'POST',
@@ -248,7 +310,7 @@ class WP_CPT_RestAPI_REST {
                                 'validate_callback' => array( $this, 'validate_meta_field' ),
                             ),
                         ),
-                        'permission_callback' => '__return_true',
+                        'permission_callback' => array( $this, 'create_item_permissions_check' ),
                     ),
                 )
             );
@@ -271,7 +333,7 @@ class WP_CPT_RestAPI_REST {
                                 'sanitize_callback' => 'absint',
                             ),
                         ),
-                        'permission_callback' => '__return_true',
+                        'permission_callback' => array( $this, 'get_items_permissions_check' ),
                     ),
                     array(
                         'methods'  => array( 'PUT', 'PATCH' ),
@@ -306,7 +368,7 @@ class WP_CPT_RestAPI_REST {
                                 'validate_callback' => array( $this, 'validate_meta_field' ),
                             ),
                         ),
-                        'permission_callback' => '__return_true',
+                        'permission_callback' => array( $this, 'update_item_permissions_check' ),
                     ),
                     array(
                         'methods'  => 'DELETE',
@@ -321,7 +383,7 @@ class WP_CPT_RestAPI_REST {
                                 'sanitize_callback' => 'absint',
                             ),
                         ),
-                        'permission_callback' => '__return_true',
+                        'permission_callback' => array( $this, 'delete_item_permissions_check' ),
                     ),
                 )
             );
@@ -347,7 +409,7 @@ class WP_CPT_RestAPI_REST {
             array(
                 'methods'  => 'GET',
                 'callback' => array( $this, 'get_toolset_relationships' ),
-                'permission_callback' => '__return_true',
+                'permission_callback' => array( $this, 'get_items_permissions_check' ),
             )
         );
         
@@ -366,7 +428,7 @@ class WP_CPT_RestAPI_REST {
                             'validate_callback' => array( $this, 'validate_relation_slug' ),
                         ),
                     ),
-                    'permission_callback' => '__return_true',
+                    'permission_callback' => array( $this, 'get_items_permissions_check' ),
                 ),
                 array(
                     'methods'  => 'POST',
@@ -388,7 +450,7 @@ class WP_CPT_RestAPI_REST {
                             'validate_callback' => array( $this, 'validate_post_id' ),
                         ),
                     ),
-                    'permission_callback' => '__return_true',
+                    'permission_callback' => array( $this, 'create_item_permissions_check' ),
                 ),
             )
         );
@@ -411,7 +473,7 @@ class WP_CPT_RestAPI_REST {
                         'sanitize_callback' => 'sanitize_text_field',
                     ),
                 ),
-                'permission_callback' => '__return_true',
+                'permission_callback' => array( $this, 'delete_item_permissions_check' ),
             )
         );
     }
