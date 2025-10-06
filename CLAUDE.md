@@ -57,6 +57,7 @@ This is a WordPress plugin with no build process or dependency management. Devel
 - `POST /{base}/v1/{cpt}` - Create new CPT post
 - `GET /{base}/v1/{cpt}/{id}` - Get single CPT post
 - `PUT/PATCH /{base}/v1/{cpt}/{id}` - Update CPT post
+- `DELETE /{base}/v1/{cpt}/{id}` - Delete CPT post
 
 ### Toolset Relationships (when enabled)
 - `GET /{base}/v1/relations` - List all relationships
@@ -75,10 +76,13 @@ Navigate to **Settings > CPT REST API** in WordPress admin to:
 - Include non-public CPTs in selection
 
 ### Security Considerations
-- All API endpoints require Bearer token authentication (except `/openapi`)
+- All API endpoints require Bearer token authentication (except namespace info and `/openapi` which are publicly accessible)
+- API key authentication occurs at the `rest_authentication_errors` filter level
+- Permission callbacks validate requests follow WordPress REST API conventions
 - Private meta fields (starting with `_`) are ignored
 - Only enabled CPTs are accessible via API
 - API keys are stored securely in WordPress options
+- Current model: API keys provide binary access (valid key = full access to all enabled CPTs)
 
 ## Development Notes
 

@@ -380,9 +380,11 @@ Response: 200 OK with deletion confirmation
 - **Meta Fields:** Private field protection and recursive sanitization
 
 #### Access Control
-- **Authentication:** Bearer token requirement for all protected endpoints
+- **Authentication:** Bearer token requirement for all protected endpoints (implemented via `rest_authentication_errors` filter)
+- **Permission Callbacks:** WordPress-compliant permission callback methods for all REST endpoints (public endpoints: namespace info and OpenAPI spec)
 - **Authorization:** CPT availability validation per request
 - **Capabilities:** WordPress capability checks for admin operations
+- **Access Model:** Binary API key access (valid key = full access to all enabled CPTs)
 
 ### Performance Optimization
 
