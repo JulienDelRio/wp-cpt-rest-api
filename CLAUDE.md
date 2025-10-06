@@ -79,10 +79,15 @@ Navigate to **Settings > CPT REST API** in WordPress admin to:
 - All API endpoints require Bearer token authentication (except namespace info and `/openapi` which are publicly accessible)
 - API key authentication occurs at the `rest_authentication_errors` filter level
 - Permission callbacks validate requests follow WordPress REST API conventions
+- **Access Model**: API keys provide binary access (valid key = full access to all enabled CPTs)
+  - Keys can perform ALL operations (GET, POST, PUT/PATCH, DELETE)
+  - Keys grant access to ALL enabled CPTs (configured in Settings > CPT REST API)
+  - No granular permissions per key (read-only keys not supported)
+  - This model is intentional for external API integration use cases
 - Private meta fields (starting with `_`) are ignored
 - Only enabled CPTs are accessible via API
 - API keys are stored securely in WordPress options
-- Current model: API keys provide binary access (valid key = full access to all enabled CPTs)
+- **Security Best Practice**: Generate separate keys for different services and revoke immediately if compromised
 
 ## Development Notes
 

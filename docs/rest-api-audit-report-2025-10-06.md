@@ -22,6 +22,29 @@
 - **Files Modified**: `src/rest-api/class-wp-cpt-restapi-rest.php` (added lines 139-199, updated lines 281, 313, 336, 371, 386, 412, 431, 453, 476)
 - **Compliance Impact**: Improved WordPress REST API convention compliance from 20/100 to 90/100 in permission callbacks area
 
+#### ISSUE-002: No WordPress Capability Checks - **DOCUMENTED (Design Decision)**
+- **Status**: ⚠️ Documented as Intentional Design
+- **Resolution Date**: 2025-10-06
+- **Decision**: Option C - Document Current All-or-Nothing Model
+- **Rationale**:
+  - Plugin designed for external API integration (not WordPress users)
+  - Binary API key model appropriate for use case
+  - Simpler and more maintainable than custom capability system
+  - Follows industry standard API key patterns
+- **Changes Made**:
+  - Added security warnings to admin interface displaying key access scope
+  - API key labeling/description feature already exists in admin interface
+  - Created comprehensive security documentation (SECURITY.md)
+  - Updated all documentation to clarify access model
+  - Documented security best practices
+- **Files Modified**:
+  - `src/admin/class-wp-cpt-restapi-admin.php` (added security warnings in api_keys_section_callback)
+  - `src/includes/class-wp-cpt-restapi-api-keys.php` (already has key description support)
+  - `CLAUDE.md` (enhanced security considerations section)
+  - `src/API_ENDPOINTS.md` (added comprehensive Authentication & Security section)
+  - `src/SECURITY.md` (new comprehensive security guide created)
+- **Future Consideration**: If granular permissions are needed, Option A (Custom Capability System) can be implemented in a future version
+
 ---
 
 ## Executive Summary
@@ -81,9 +104,11 @@ This report documents the findings from a comprehensive audit of the REST API im
    - ~~Potential security bypass if authentication filter is removed~~
    - **Fixed**: Proper permission callback methods now implemented for all non-public endpoints
 
-2. **No WordPress Capability Checks**
+2. ⚠️ **No WordPress Capability Checks** - **DOCUMENTED (Design Decision)** (2025-10-06)
    - Zero calls to `current_user_can()` in entire file
    - Binary API key access model (all or nothing)
+   - **Documented**: This is intentional for external API integration use cases
+   - Comprehensive security documentation and warnings added
    - No granular permissions based on user roles or post ownership
 
 3. **Inconsistent Error Code** (Line: 731)
@@ -628,15 +653,25 @@ This will help diagnose if this scenario ever occurs in production.
 
 ---
 
-#### TASK-002: Design and Implement Capability System
+#### ⚠️ TASK-002: Design and Implement Capability System - **DOCUMENTED (Option C Chosen)**
 **Priority**: Critical
 **Severity**: Critical
 **Issue**: ISSUE-002
-**Files**: `src/rest-api/class-wp-cpt-restapi-rest.php`, `src/includes/class-wp-cpt-restapi-api-keys.php`, `src/admin/class-wp-cpt-restapi-admin.php`
+**Files**: `src/admin/class-wp-cpt-restapi-admin.php`, `src/includes/class-wp-cpt-restapi-api-keys.php`, `CLAUDE.md`, `src/API_ENDPOINTS.md`, `src/SECURITY.md`
+**Status**: ⚠️ **Documented as Intentional Design on 2025-10-06**
 
-Make design decision on capability/permission model and implement. See ISSUE-002 for options.
+~~Make design decision on capability/permission model and implement. See ISSUE-002 for options.~~
 
-**Estimated Effort**: 8-16 hours (depending on approach chosen)
+**Resolution Summary**:
+- ✅ **Design Decision Made**: Option C - Document Current All-or-Nothing Model
+- ✅ Added security warnings to admin interface
+- ✅ Enhanced CLAUDE.md security documentation
+- ✅ Added comprehensive Authentication & Security section to API_ENDPOINTS.md
+- ✅ Created SECURITY.md with full security guide and best practices
+- ⚠️ Binary access model documented as intentional for external API integration
+- 📋 Future enhancement noted: Option A (Custom Capability System) can be added later if needed
+
+**Actual Effort**: 1.5 hours (documentation and warnings)
 
 ---
 
@@ -700,8 +735,8 @@ Add logging for `rest_cannot_read` scenarios. See ISSUE-006 for details.
 
 **Phase 1 - Critical Security & Conventions**:
 1. ✅ ~~TASK-001: Implement Proper Permission Callbacks (2-3 hours)~~ - **COMPLETED**
-2. TASK-003: Fix Error Code Inconsistency (5 min) - **Next Priority**
-3. TASK-002: Design and Implement Capability System (8-16 hours)
+2. ⚠️ ~~TASK-002: Design and Implement Capability System (8-16 hours)~~ - **DOCUMENTED (Option C)**
+3. TASK-003: Fix Error Code Inconsistency (5 min) - **Next Priority**
 
 **Phase 2 - WordPress Convention Compliance** (Complete Second):
 4. TASK-004: Standardize Toolset Error Codes (30 min)

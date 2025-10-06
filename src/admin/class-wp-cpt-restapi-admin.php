@@ -826,6 +826,17 @@ class WP_CPT_RestAPI_Admin {
     public function api_keys_section_callback() {
         echo '<p>' . esc_html__( 'Create and manage API keys for accessing the REST API endpoints.', 'wp-cpt-restapi' ) . '</p>';
         echo '<p>' . esc_html__( 'API keys can be used to authenticate requests to the REST API using the Bearer authentication method.', 'wp-cpt-restapi' ) . '</p>';
+
+        // Security warning
+        echo '<div class="notice notice-warning inline" style="margin: 15px 0; padding: 10px;">';
+        echo '<p><strong>⚠️ ' . esc_html__( 'Security Notice:', 'wp-cpt-restapi' ) . '</strong></p>';
+        echo '<ul style="margin-left: 20px; margin-top: 5px;">';
+        echo '<li>' . esc_html__( 'API keys grant full access to all enabled Custom Post Types', 'wp-cpt-restapi' ) . '</li>';
+        echo '<li>' . esc_html__( 'Keys can perform all operations: create, read, update, and delete', 'wp-cpt-restapi' ) . '</li>';
+        echo '<li>' . esc_html__( 'Treat API keys like passwords - never share them publicly or commit them to version control', 'wp-cpt-restapi' ) . '</li>';
+        echo '<li>' . esc_html__( 'Regenerate keys immediately if you suspect they have been compromised', 'wp-cpt-restapi' ) . '</li>';
+        echo '</ul>';
+        echo '</div>';
     }
     
     /**

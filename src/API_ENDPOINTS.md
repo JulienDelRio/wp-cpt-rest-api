@@ -10,13 +10,45 @@ https://yoursite.com/wp-json/{base_segment}/v1/
 
 Where `{base_segment}` is configurable in the admin settings (default: `cpt`).
 
-## Authentication
+## Authentication & Security
 
-All endpoints require API key authentication using the Bearer token method:
+### API Key Model
+
+This plugin uses a **binary API key model** designed for external API integration:
+
+- **Full Access**: Valid API keys grant complete access to all enabled Custom Post Types
+- **All Operations**: Keys can create, read, update, and delete posts
+- **No Granular Permissions**: All keys have identical permissions (read-only keys not available)
+- **CPT Filtering**: Access is limited only by which CPTs are enabled in admin settings
+
+### Authentication Method
+
+All endpoints (except namespace info and `/openapi`) require API key authentication using the Bearer token method:
 
 ```
 Authorization: Bearer YOUR_API_KEY_HERE
 ```
+
+**Example cURL:**
+```bash
+curl -H "Authorization: Bearer abc123xyz..." \
+     https://yoursite.com/wp-json/cpt/v1/product
+```
+
+### Security Best Practices
+
+1. **Treat Keys Like Passwords**: Never share API keys publicly or commit them to version control
+2. **Use Environment Variables**: Store keys in `.env` files or environment variables
+3. **Separate Keys Per Service**: Generate different keys for different applications/services
+4. **Regular Rotation**: Regenerate keys periodically, especially for production environments
+5. **Immediate Revocation**: Delete keys immediately if you suspect they've been compromised
+6. **Enable Only Needed CPTs**: Only enable CPTs that external services actually need to access
+
+### Key Management
+
+Generate and manage API keys in **WordPress Admin > Settings > CPT REST API**
+
+Each key can be labeled with a description (e.g., "Mobile App", "External Integration") to track its purpose.
 
 ## Available Endpoints
 
