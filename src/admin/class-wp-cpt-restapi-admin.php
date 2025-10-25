@@ -798,7 +798,7 @@ class WP_CPT_RestAPI_Admin {
         
         // Output section title and callback
         if ( $section['title'] ) {
-            echo "<h3>{$section['title']}</h3>\n";
+            echo '<h3>' . esc_html( $section['title'] ) . '</h3>';
         }
         
         if ( $section['callback'] ) {
