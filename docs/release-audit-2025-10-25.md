@@ -952,7 +952,7 @@ Display admin notices when no CPTs are enabled or no API keys exist to guide use
 ## Progress Tracking Table
 
 **Last Updated**: 2025-10-25
-**Progress**: 4/23 issues resolved (17%)
+**Progress**: 5/23 issues resolved (22%)
 
 | Status | ID | Task | Files | Priority | Effort | Notes |
 |--------|-----|------|-------|----------|--------|-------|
@@ -960,7 +960,7 @@ Display admin notices when no CPTs are enabled or no API keys exist to guide use
 | ✅ | CRITICAL-002 | Add Text Domain header | src/wp-cpt-rest-api.php | Critical | Small | **COMPLETED** - Added Text Domain, Domain Path, and License URI headers |
 | ✅ | CRITICAL-003 | Fix SQL injection | src/rest-api/class-wp-cpt-restapi-rest.php | Critical | Medium | **COMPLETED** - Fixed 4 instances using $wpdb->prepare() |
 | ✅ | CRITICAL-004 | Fix nonce sanitization | src/admin/class-wp-cpt-restapi-admin.php | Critical | Small | **COMPLETED** - Fixed 3 AJAX handlers with proper nonce sanitization |
-| ⬜ | CRITICAL-005 | Create uninstall.php | src/uninstall.php | Critical | Small | WordPress.org requirement |
+| ✅ | CRITICAL-005 | Create uninstall.php | src/uninstall.php | Critical | Small | **COMPLETED** - Created complete uninstall handler with multisite support |
 | ⬜ | CRITICAL-006 | Update changelog | src/readme.txt | Critical | Small | WordPress.org requirement |
 | ⬜ | CRITICAL-007 | Remove insecure rand() | src/includes/class-wp-cpt-restapi-api-keys.php | Critical | Small | Security vulnerability |
 | ⬜ | HIGH-001 | Optimize key validation | src/includes/class-wp-cpt-restapi-api-keys.php | High | Small | Performance improvement |
@@ -1125,14 +1125,43 @@ All handlers now follow WordPress Coding Standards:
 
 ---
 
+#### ✅ CRITICAL-005: Create uninstall.php for database cleanup (2025-10-25)
+**Status**: Completed
+**File**: [src/uninstall.php](../src/uninstall.php) (new file)
+**Changes**:
+Created comprehensive uninstall handler that cleans up all plugin data:
+
+**Plugin Options Removed** (5 total):
+1. `cpt_rest_api_base_segment` - API base URL segment
+2. `cpt_rest_api_active_cpts` - Array of enabled Custom Post Types
+3. `cpt_rest_api_keys` - Array of generated API keys
+4. `cpt_rest_api_toolset_relationships` - Toolset integration toggle
+5. `cpt_rest_api_include_nonpublic_cpts` - Non-public CPT visibility settings
+
+**Features Implemented**:
+- Security check: Verifies `WP_UNINSTALL_PLUGIN` constant is defined
+- Single site cleanup: Removes all 5 plugin options using `delete_option()`
+- Multisite support: Iterates through all sites and cleans each one
+- Proper blog switching: Uses `switch_to_blog()` and `restore_current_blog()`
+- WordPress best practices: Follows Plugin Handbook uninstall guidelines
+
+**Impact**:
+- Meets WordPress.org plugin directory requirements
+- Prevents database bloat after plugin removal
+- Proper cleanup for both single and multisite installations
+- Professional plugin lifecycle management
+- 5 of 7 critical blockers now resolved (71%)
+
+---
+
 ### Outstanding Issues
 
-**Critical**: 3 remaining (CRITICAL-005 through CRITICAL-007)
+**Critical**: 2 remaining (CRITICAL-006, CRITICAL-007)
 **High Priority**: 8 remaining (HIGH-001 through HIGH-008)
 **Medium Priority**: 5 remaining (MEDIUM-001 through MEDIUM-005)
 **Low Priority**: 3 remaining (LOW-001 through LOW-003)
 
-**Next Priority**: CRITICAL-005 - Create uninstall.php for database cleanup
+**Next Priority**: CRITICAL-006 - Update readme.txt changelog for version 0.2
 
 ---
 
