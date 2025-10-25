@@ -95,21 +95,28 @@ class WP_CPT_RestAPI_REST {
         
         // Check if this is a request to our namespace
         $base_segment = get_option( $this->option_name, $this->default_segment );
-        $current_route = isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
-        
+        // Use esc_url_raw for REQUEST_URI as it's a URL
+        $current_route = isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
+
         // Only apply authentication to our namespace
         if ( strpos( $current_route, '/wp-json/' . $base_segment . '/v1/' ) === false ) {
             return $result;
         }
-        
+
         // Allow public access to the root endpoint and OpenAPI specification endpoint
         if ( strpos( $current_route, '/wp-json/' . $base_segment . '/v1/openapi' ) !== false ||
              preg_match( '#/wp-json/' . preg_quote( $base_segment, '#' ) . '/v1/?$#', $current_route ) ) {
             return $result;
         }
-        
-        // Get the Authorization header
-        $auth_header = isset( $_SERVER['HTTP_AUTHORIZATION'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_AUTHORIZATION'] ) ) : '';
+
+        // Get the Authorization header - preserve Bearer token format
+        $auth_header = '';
+        if ( isset( $_SERVER['HTTP_AUTHORIZATION'] ) ) {
+            $auth_header = wp_unslash( $_SERVER['HTTP_AUTHORIZATION'] );
+        } elseif ( isset( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) ) {
+            // Some server configs use REDIRECT_HTTP_AUTHORIZATION
+            $auth_header = wp_unslash( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] );
+        }
         
         // Check if the Authorization header is present and starts with 'Bearer '
         if ( empty( $auth_header ) || strpos( $auth_header, 'Bearer ' ) !== 0 ) {

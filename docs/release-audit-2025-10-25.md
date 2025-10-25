@@ -952,7 +952,7 @@ Display admin notices when no CPTs are enabled or no API keys exist to guide use
 ## Progress Tracking Table
 
 **Last Updated**: 2025-10-25
-**Progress**: 9/23 issues resolved (39%)
+**Progress**: 10/23 issues resolved (43%)
 
 | Status | ID | Task | Files | Priority | Effort | Notes |
 |--------|-----|------|-------|----------|--------|-------|
@@ -965,7 +965,7 @@ Display admin notices when no CPTs are enabled or no API keys exist to guide use
 | ✅ | CRITICAL-007 | Remove insecure rand() | src/includes/class-wp-cpt-restapi-api-keys.php | Critical | Small | **COMPLETED** - Removed unused get_random_char() method with insecure rand() |
 | ✅ | HIGH-001 | Optimize key validation | src/includes/class-wp-cpt-restapi-api-keys.php | High | Small | **COMPLETED** - Added early return, type casting, proper hash_equals() order |
 | ✅ | HIGH-002 | Replace WPINC checks | All class files | High | Small | **COMPLETED** - Replaced WPINC with ABSPATH in 7 files, changed die to exit |
-| ⬜ | HIGH-003 | Improve $_SERVER handling | src/rest-api/class-wp-cpt-restapi-rest.php | High | Medium | Better sanitization |
+| ✅ | HIGH-003 | Improve $_SERVER handling | src/rest-api/class-wp-cpt-restapi-rest.php | High | Medium | **COMPLETED** - Used esc_url_raw for REQUEST_URI, added REDIRECT_HTTP_AUTHORIZATION support |
 | ⬜ | HIGH-004 | Add rate limiting | src/admin/class-wp-cpt-restapi-admin.php | High | Medium | Abuse prevention |
 | ⬜ | HIGH-005 | Escape section titles | src/admin/class-wp-cpt-restapi-admin.php | High | Small | XSS prevention |
 | ⬜ | HIGH-006 | Standardize DB queries | src/rest-api/class-wp-cpt-restapi-rest.php | High | Medium | Security best practice |
@@ -1301,10 +1301,56 @@ Replaced deprecated WPINC constant with standard ABSPATH in all plugin files:
 
 ---
 
+#### ✅ HIGH-003: Improve $_SERVER sanitization (2025-10-25)
+**Status**: Completed
+**File**: [src/rest-api/class-wp-cpt-restapi-rest.php:98-119](../src/rest-api/class-wp-cpt-restapi-rest.php#L98-L119)
+**Changes**:
+Improved $_SERVER variable handling for better security and compatibility:
+
+**1. REQUEST_URI Sanitization** (line 99):
+- **Before**: `sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) )`
+- **After**: `esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) )`
+- **Why**: REQUEST_URI contains a URL, so `esc_url_raw()` is more appropriate
+- **Benefit**: Proper URL-specific sanitization prevents injection attacks
+
+**2. HTTP_AUTHORIZATION Handling** (lines 112-119):
+- **Before**: `sanitize_text_field( wp_unslash( $_SERVER['HTTP_AUTHORIZATION'] ) )`
+- **After**: Removed sanitization, added fallback support
+  ```php
+  $auth_header = '';
+  if ( isset( $_SERVER['HTTP_AUTHORIZATION'] ) ) {
+      $auth_header = wp_unslash( $_SERVER['HTTP_AUTHORIZATION'] );
+  } elseif ( isset( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) ) {
+      $auth_header = wp_unslash( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] );
+  }
+  ```
+
+**Why These Changes Matter**:
+
+**For REQUEST_URI**:
+- `esc_url_raw()` is designed for URL sanitization
+- Preserves URL structure while removing dangerous characters
+- Better than generic `sanitize_text_field()` for URLs
+
+**For HTTP_AUTHORIZATION**:
+- Removed `sanitize_text_field()` which could corrupt Bearer tokens
+- Bearer tokens need to be preserved exactly as sent
+- Added support for `REDIRECT_HTTP_AUTHORIZATION` (nginx/some Apache configs)
+- Improves compatibility across different server configurations
+
+**Impact**:
+- More appropriate sanitization for specific data types
+- Better server configuration compatibility
+- Prevents token corruption that could break authentication
+- Follows WordPress Coding Standards for input handling
+- No breaking changes to existing functionality
+
+---
+
 ### Outstanding Issues
 
 **Critical**: 0 remaining - **ALL CRITICAL ISSUES RESOLVED! 🎉**
-**High Priority**: 6 remaining (HIGH-003 through HIGH-008)
+**High Priority**: 5 remaining (HIGH-004 through HIGH-008)
 **Medium Priority**: 5 remaining (MEDIUM-001 through MEDIUM-005)
 **Low Priority**: 3 remaining (LOW-001 through LOW-003)
 
