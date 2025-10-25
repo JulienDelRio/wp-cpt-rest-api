@@ -952,7 +952,7 @@ Display admin notices when no CPTs are enabled or no API keys exist to guide use
 ## Progress Tracking Table
 
 **Last Updated**: 2025-10-25
-**Progress**: 8/23 issues resolved (35%)
+**Progress**: 9/23 issues resolved (39%)
 
 | Status | ID | Task | Files | Priority | Effort | Notes |
 |--------|-----|------|-------|----------|--------|-------|
@@ -964,7 +964,7 @@ Display admin notices when no CPTs are enabled or no API keys exist to guide use
 | ✅ | CRITICAL-006 | Update changelog | src/readme.txt | Critical | Small | **COMPLETED** - Added comprehensive version 0.2 changelog and upgrade notice |
 | ✅ | CRITICAL-007 | Remove insecure rand() | src/includes/class-wp-cpt-restapi-api-keys.php | Critical | Small | **COMPLETED** - Removed unused get_random_char() method with insecure rand() |
 | ✅ | HIGH-001 | Optimize key validation | src/includes/class-wp-cpt-restapi-api-keys.php | High | Small | **COMPLETED** - Added early return, type casting, proper hash_equals() order |
-| ⬜ | HIGH-002 | Replace WPINC checks | All class files | High | Small | Best practice |
+| ✅ | HIGH-002 | Replace WPINC checks | All class files | High | Small | **COMPLETED** - Replaced WPINC with ABSPATH in 7 files, changed die to exit |
 | ⬜ | HIGH-003 | Improve $_SERVER handling | src/rest-api/class-wp-cpt-restapi-rest.php | High | Medium | Better sanitization |
 | ⬜ | HIGH-004 | Add rate limiting | src/admin/class-wp-cpt-restapi-admin.php | High | Medium | Abuse prevention |
 | ⬜ | HIGH-005 | Escape section titles | src/admin/class-wp-cpt-restapi-admin.php | High | Small | XSS prevention |
@@ -1266,10 +1266,45 @@ Optimized the `validate_key()` method for better performance and security:
 
 ---
 
+#### ✅ HIGH-002: Replace WPINC with ABSPATH checks (2025-10-25)
+**Status**: Completed
+**Files**: 7 plugin files updated
+**Changes**:
+Replaced deprecated WPINC constant with standard ABSPATH in all plugin files:
+
+**Files Updated**:
+1. `src/wp-cpt-rest-api.php` - Main plugin file
+2. `src/includes/class-wp-cpt-restapi.php` - Core plugin class
+3. `src/includes/class-wp-cpt-restapi-loader.php` - Hook loader
+4. `src/includes/class-wp-cpt-restapi-api-keys.php` - API keys management
+5. `src/admin/class-wp-cpt-restapi-admin.php` - Admin interface
+6. `src/rest-api/class-wp-cpt-restapi-rest.php` - REST API handlers
+7. `src/swagger/class-wp-cpt-restapi-openapi.php` - OpenAPI generator
+
+**Changes Made in Each File**:
+- **Before**: `if ( ! defined( 'WPINC' ) ) { die; }`
+- **After**: `if ( ! defined( 'ABSPATH' ) ) { exit; }`
+
+**Why This Matters**:
+- `ABSPATH` is the standard WordPress constant for this purpose
+- `WPINC` is deprecated and may not be defined in all contexts
+- WordPress Coding Standards recommend ABSPATH
+- More reliable protection against direct file access
+- `exit` is preferred over `die` for consistency
+
+**Impact**:
+- Follows WordPress best practices and coding standards
+- More reliable direct access protection
+- Consistent with WordPress core and modern plugins
+- Better compatibility across different WordPress setups
+- Improved code maintainability
+
+---
+
 ### Outstanding Issues
 
 **Critical**: 0 remaining - **ALL CRITICAL ISSUES RESOLVED! 🎉**
-**High Priority**: 7 remaining (HIGH-002 through HIGH-008)
+**High Priority**: 6 remaining (HIGH-003 through HIGH-008)
 **Medium Priority**: 5 remaining (MEDIUM-001 through MEDIUM-005)
 **Low Priority**: 3 remaining (LOW-001 through LOW-003)
 
