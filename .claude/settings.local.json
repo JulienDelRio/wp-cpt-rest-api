@@ -2,8 +2,10 @@
   "permissions": {
     "allow": [
       "Read(./**)",
+      "Write(./**)",
       "Bash(mkdir:*)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(git:*)"
     ],
     "deny": [],
     "ask": []

@@ -4,6 +4,55 @@
 **Analyzer**: Spec Compliance Analyzer Agent
 **Version**: 0.2
 
+- [Code Compliance Analysis Report](#code-compliance-analysis-report)
+  - [PART 1: Specification Documents Analyzed](#part-1-specification-documents-analyzed)
+    - [Document Inventory](#document-inventory)
+    - [Coverage Assessment](#coverage-assessment)
+  - [PART 2: Code Analysis Summary](#part-2-code-analysis-summary)
+    - [Analyzed Components](#analyzed-components)
+    - [Technology Stack Detected](#technology-stack-detected)
+    - [Code Structure Overview](#code-structure-overview)
+    - [Analysis Metrics](#analysis-metrics)
+  - [PART 3: Discrepancies Found](#part-3-discrepancies-found)
+    - [Critical Issues](#critical-issues)
+      - [CRIT-001: Missing DELETE Endpoint for CPT Posts](#crit-001-missing-delete-endpoint-for-cpt-posts)
+      - [CRIT-002: Missing DELETE Endpoint Documentation](#crit-002-missing-delete-endpoint-documentation)
+    - [High Priority Issues](#high-priority-issues)
+      - [HIGH-001: Inconsistent Option Name in Specifications](#high-001-inconsistent-option-name-in-specifications)
+      - [HIGH-002: Missing Activation Hook Initialization](#high-002-missing-activation-hook-initialization)
+    - [Medium Priority Issues](#medium-priority-issues)
+      - [MED-001: OpenAPI Specification Missing DELETE Operations](#med-001-openapi-specification-missing-delete-operations)
+      - [MED-002: WordPress Best Practices Requirement Not Verified](#med-002-wordpress-best-practices-requirement-not-verified)
+      - [MED-003: Missing File Structure Documentation Accuracy](#med-003-missing-file-structure-documentation-accuracy)
+    - [Low Priority Issues](#low-priority-issues)
+      - [LOW-001: Version Number Discrepancy in API Response](#low-001-version-number-discrepancy-in-api-response)
+      - [LOW-002: Missing Assets Directory](#low-002-missing-assets-directory)
+    - [Discrepancy Categories](#discrepancy-categories)
+  - [PART 4: Prioritized Task List](#part-4-prioritized-task-list)
+    - [Critical Tasks](#critical-tasks)
+      - [TASK-001: Implement DELETE Endpoint for CPT Posts](#task-001-implement-delete-endpoint-for-cpt-posts)
+      - [TASK-002: Add DELETE Operation to API Documentation](#task-002-add-delete-operation-to-api-documentation)
+    - [High Priority Tasks](#high-priority-tasks)
+      - [TASK-003: Fix Activation Hook to Initialize All Options](#task-003-fix-activation-hook-to-initialize-all-options)
+      - [TASK-004: Update CLAUDE.md with Correct Option Name](#task-004-update-claudemd-with-correct-option-name)
+      - [TASK-005: Add DELETE to OpenAPI Specification](#task-005-add-delete-to-openapi-specification)
+    - [Medium Priority Tasks](#medium-priority-tasks)
+      - [TASK-006: Fix File Structure Documentation in CLAUDE.md](#task-006-fix-file-structure-documentation-in-claudemd)
+      - [TASK-007: Update Version Number in API Documentation Examples](#task-007-update-version-number-in-api-documentation-examples)
+      - [TASK-008: Verify WordPress REST API Best Practices Compliance](#task-008-verify-wordpress-rest-api-best-practices-compliance)
+    - [Low Priority Tasks](#low-priority-tasks)
+      - [TASK-009: Verify Assets Directory Exists](#task-009-verify-assets-directory-exists)
+  - [Execution Guide](#execution-guide)
+    - [How to Execute Tasks](#how-to-execute-tasks)
+    - [Recommended Execution Order](#recommended-execution-order)
+    - [Verification Checklist](#verification-checklist)
+    - [Re-analysis Instructions](#re-analysis-instructions)
+  - [Summary](#summary)
+    - [Overall Compliance Status](#overall-compliance-status)
+    - [Recommendations](#recommendations)
+    - [Positive Findings](#positive-findings)
+
+
 ---
 
 ## PART 1: Specification Documents Analyzed
@@ -296,43 +345,16 @@ API_ENDPOINTS.md documents endpoints 1-9 but missing DELETE for CPT posts. Only 
 
 **Ready-to-Use Prompt**:
 ```
-Add DELETE endpoint documentation to src/API_ENDPOINTS.md after the "Get Single CPT Post" section (around line 272). The documentation should follow this exact format:
+Add DELETE endpoint documentation to src/API_ENDPOINTS.md after the "Get Single CPT Post" section (around line 272). The documentation should include:
 
-### 6. Delete CPT Post
-**DELETE** `/wp-json/cpt/v1/{post_type}/{id}`
+- Endpoint: DELETE /wp-json/cpt/v1/{post_type}/{id}
+- Description: Permanently deletes a specific post from the Custom Post Type
+- Success Response (200 OK) with deleted post data
+- Error responses (404, 403)
+- cURL example
+- JavaScript fetch example
 
-Permanently deletes a specific post from the Custom Post Type.
-
-**Example:**
-```
-DELETE /wp-json/cpt/v1/product/123
-```
-
-**Success Response (200 OK):**
-```json
-{
-  "deleted": true,
-  "previous": {
-    "id": 123,
-    "title": "Sample Product",
-    "content": "Product description...",
-    "excerpt": "Short description...",
-    "slug": "sample-product",
-    "status": "publish",
-    "type": "product",
-    "date": "2024-01-15 10:30:00",
-    "modified": "2024-01-16 14:20:00",
-    "author": "1",
-    "featured_media": 456,
-    "meta": {
-      "custom_field_1": "value1",
-      "custom_field_2": "value2"
-    }
-  }
-}
-```
-
-Include error responses section and usage examples for both cURL and JavaScript (fetch), following the existing documentation style.
+Follow the existing documentation style and formatting.
 ```
 
 **Verification Criteria**:
@@ -370,22 +392,12 @@ Activation function in `src/wp-cpt-rest-api.php` only initializes 3 of 5 require
 
 **Ready-to-Use Prompt**:
 ```
-Update the activate_wp_cpt_restapi() function in src/wp-cpt-rest-api.php (around line 31) to initialize ALL plugin options on activation. Add the following missing initializations:
+Update the activate_wp_cpt_restapi() function in src/wp-cpt-rest-api.php (around line 31) to initialize ALL plugin options on activation. Add missing initializations for:
 
-1. After line 47, add:
-```php
-// Initialize base segment option
-if ( ! get_option( 'cpt_rest_api_base_segment' ) ) {
-    add_option( 'cpt_rest_api_base_segment', 'cpt' );
-}
+1. cpt_rest_api_base_segment (default: 'cpt')
+2. cpt_rest_api_include_nonpublic_cpts (default: empty array)
 
-// Initialize include non-public CPTs option
-if ( ! get_option( 'cpt_rest_api_include_nonpublic_cpts' ) ) {
-    add_option( 'cpt_rest_api_include_nonpublic_cpts', array() );
-}
-```
-
-Ensure all 5 plugin options are initialized with proper default values matching the specification.
+Add these after the existing option initializations around line 47, using add_option() to avoid overwriting existing values.
 ```
 
 **Verification Criteria**:
@@ -419,11 +431,10 @@ Correct name is: `cpt_rest_api_include_nonpublic_cpts`
 ```
 Fix the incorrect option name in CLAUDE.md at line 49. Change:
 
-FROM: `cpt_rest_api_include_non_public`: Boolean for including non-public CPTs
+FROM: cpt_rest_api_include_non_public (Boolean)
+TO: cpt_rest_api_include_nonpublic_cpts (Array)
 
-TO: `cpt_rest_api_include_nonpublic_cpts`: Array of non-public CPT visibility types to include
-
-Also update the description to reflect that it's an array, not a boolean. The array can contain: 'publicly_queryable', 'show_ui', 'private'.
+Update the description to reflect that it's an array containing visibility types: 'publicly_queryable', 'show_ui', 'private'.
 ```
 
 **Verification Criteria**:
@@ -455,16 +466,15 @@ OpenAPI generator needs to include DELETE method in path generation for CPT endp
 ```
 After implementing the DELETE endpoint for CPT posts, update the OpenAPI specification generator in src/swagger/class-wp-cpt-restapi-openapi.php to include DELETE operations.
 
-In the generate_paths() method where CPT endpoints are defined, add a DELETE operation for the `/{cpt}/{id}` path with:
+Add a DELETE operation for the /{cpt}/{id} path with:
 - operationId: deleteCptPost
 - summary: Delete a specific CPT post
 - parameters: cpt and id path parameters
-- responses: 200 (success with deleted post), 404 (not found), 403 (forbidden)
+- responses: 200 (success), 404 (not found), 403 (forbidden)
 - security: bearerAuth required
-- requestBody: none
 - tags: [Custom Post Types]
 
-Follow the same pattern used for GET, POST, PUT operations in the existing OpenAPI generator.
+Follow the same pattern used for GET, POST, PUT operations.
 ```
 
 **Verification Criteria**:
@@ -497,25 +507,7 @@ CLAUDE.md shows API_ENDPOINTS.md and OPENAPI.md at project root, but they're act
 
 **Ready-to-Use Prompt**:
 ```
-Update the file structure in CLAUDE.md (lines 96-111) to reflect the actual location of documentation files. Move API_ENDPOINTS.md and OPENAPI.md inside the src/ directory:
-
-```
-wp-cpt-rest-api/
-├── src/
-│   ├── wp-cpt-rest-api.php (main plugin file)
-│   ├── includes/ (core classes)
-│   ├── admin/ (admin interface)
-│   ├── rest-api/ (REST endpoint handlers)
-│   ├── swagger/ (OpenAPI generation)
-│   ├── assets/ (frontend assets)
-│   ├── readme.txt (WordPress plugin readme)
-│   ├── API_ENDPOINTS.md (comprehensive API documentation)
-│   └── OPENAPI.md (OpenAPI specification docs)
-├── docs/ (project documentation)
-│   └── SPECS.md (project specification)
-├── tasks/ (empty directory)
-└── wp-cpt-rest-api.zip (distribution package)
-```
+Update the file structure in CLAUDE.md (lines 96-111) to reflect the actual location of documentation files. Move API_ENDPOINTS.md and OPENAPI.md inside the src/ directory in the file structure diagram.
 ```
 
 **Verification Criteria**:
@@ -546,27 +538,7 @@ Example response shows version "0.1" but plugin is at version 0.2.
 
 **Ready-to-Use Prompt**:
 ```
-Update the version number in src/API_ENDPOINTS.md at line 34. Change the example response from:
-
-```json
-{
-  "namespace": "cpt/v1",
-  "description": "WordPress Custom Post Types REST API",
-  "version": "0.1"
-}
-```
-
-TO:
-
-```json
-{
-  "namespace": "cpt/v1",
-  "description": "WordPress Custom Post Types REST API",
-  "version": "0.2"
-}
-```
-
-Verify there are no other instances of version "0.1" in the documentation that should be updated to "0.2".
+Update the version number in src/API_ENDPOINTS.md at line 34. Change version from "0.1" to "0.2" in the example response. Verify there are no other instances of version "0.1" in the documentation that should be updated to "0.2".
 ```
 
 **Verification Criteria**:
@@ -602,25 +574,14 @@ Need to audit implementation against WordPress REST API Controller standards for
 ```
 Perform a comprehensive audit of the REST API implementation in src/rest-api/class-wp-cpt-restapi-rest.php to ensure compliance with WordPress REST API best practices:
 
-1. Verify error codes match WordPress conventions:
-   - rest_forbidden
-   - rest_not_logged_in
-   - rest_post_invalid_id
-   - rest_cannot_create
-   - rest_cannot_update
-   - rest_cannot_delete (for new DELETE endpoint)
-
+1. Verify error codes match WordPress conventions (rest_forbidden, rest_post_invalid_id, rest_cannot_create, rest_cannot_update, rest_cannot_delete)
 2. Check response formats follow WP_REST_Response patterns
+3. Ensure permission callbacks are used correctly
+4. Verify sanitization uses WordPress functions (sanitize_text_field, wp_kses_post, etc.)
+5. Check capability checks align with WordPress post capabilities
+6. Compare with WP_REST_Posts_Controller for consistency
 
-3. Ensure permission callbacks are used correctly (currently using __return_true everywhere - verify this is intentional)
-
-4. Verify sanitization callbacks use WordPress functions (sanitize_text_field, wp_kses_post, etc.)
-
-5. Check that capability checks align with WordPress post capabilities (edit_post, delete_post, etc.)
-
-6. Compare implementation with WP_REST_Posts_Controller for consistency
-
-Document any deviations from WordPress standards and recommend corrections if needed.
+Document any deviations from WordPress standards and recommend corrections.
 ```
 
 **Verification Criteria**:
@@ -656,13 +617,11 @@ CLAUDE.md mentions assets/css/ and assets/js/ directories. Need to verify they e
 ```
 Verify the assets directory structure in the WordPress Custom Post Types REST API plugin:
 
-1. Check if C:\dev\perso\wp-cpt-rest-api\src\assets\css\ exists and contains admin CSS files
-2. Check if C:\dev\perso\wp-cpt-rest-api\src\assets\js\ exists and contains admin JavaScript files
-3. Verify the files referenced in class-wp-cpt-restapi-admin.php:
-   - assets/css/wp-cpt-restapi-admin.css (line 107)
-   - assets/js/wp-cpt-restapi-admin.js (line 128)
+1. Check if src/assets/css/ exists and contains admin CSS files
+2. Check if src/assets/js/ exists and contains admin JavaScript files
+3. Verify the files referenced in class-wp-cpt-restapi-admin.php (assets/css/wp-cpt-restapi-admin.css and assets/js/wp-cpt-restapi-admin.js)
 
-If directories or files are missing or structure is different, update the file structure diagram in CLAUDE.md to reflect the actual structure.
+If directories or files are missing or structure is different, update the file structure diagram in CLAUDE.md.
 ```
 
 **Verification Criteria**:
