@@ -88,5 +88,17 @@ function run_wp_cpt_restapi() {
     }
 }
 
+/**
+ * Load plugin text domain for translations.
+ */
+function wp_cpt_restapi_load_textdomain() {
+	load_plugin_textdomain(
+		'wp-cpt-restapi',
+		false,
+		dirname( plugin_basename( __FILE__ ) ) . '/languages'
+	);
+}
+add_action( 'plugins_loaded', 'wp_cpt_restapi_load_textdomain' );
+
 // Start the plugin
 add_action( 'plugins_loaded', 'run_wp_cpt_restapi' );
