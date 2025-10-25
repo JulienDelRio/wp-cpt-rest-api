@@ -7,9 +7,12 @@
  * Author: Julien DELRIO
  * Author URI: https://juliendelrio.fr
  * License: Apache 2.0
+ * License URI: http://www.apache.org/licenses/LICENSE-2.0
  * Requires at least: 6.0
  * Tested up to: 6.6
  * Requires PHP: 7.4
+ * Text Domain: wp-cpt-restapi
+ * Domain Path: /languages
  *
  * @package WP_CPT_RestAPI
  */
