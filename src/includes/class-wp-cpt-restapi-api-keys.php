@@ -196,19 +196,21 @@ class WP_CPT_RestAPI_API_Keys {
     /**
      * Validate an API key.
      *
+     * Uses hash_equals() for constant-time comparison to prevent timing attacks.
+     *
      * @since    0.1
      * @param    string    $key    The API key to validate.
      * @return   boolean           True if the key is valid, false otherwise.
      */
     public function validate_key($key) {
         $keys = $this->get_keys();
-        
+
         foreach ($keys as $key_data) {
-            if ($key_data['key'] === $key) {
+            if (hash_equals($key_data['key'], $key)) {
                 return true;
             }
         }
-        
+
         return false;
     }
 }
