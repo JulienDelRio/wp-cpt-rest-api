@@ -936,9 +936,11 @@ class WP_CPT_RestAPI_Admin {
      * @since    0.1
      */
     public function ajax_add_key() {
-        // Check nonce
-        check_ajax_referer( 'cpt_rest_api', 'nonce' );
-        
+        // Check nonce with proper sanitization
+        if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'cpt_rest_api' ) ) {
+            wp_send_json_error( array( 'message' => __( 'Security check failed.', 'wp-cpt-restapi' ) ) );
+        }
+
         // Check user capabilities
         if ( ! current_user_can( 'manage_options' ) ) {
             wp_send_json_error( array( 'message' => __( 'You do not have permission to perform this action.', 'wp-cpt-restapi' ) ) );
@@ -971,9 +973,11 @@ class WP_CPT_RestAPI_Admin {
      * @since    0.1
      */
     public function ajax_delete_key() {
-        // Check nonce
-        check_ajax_referer( 'cpt_rest_api', 'nonce' );
-        
+        // Check nonce with proper sanitization
+        if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'cpt_rest_api' ) ) {
+            wp_send_json_error( array( 'message' => __( 'Security check failed.', 'wp-cpt-restapi' ) ) );
+        }
+
         // Check user capabilities
         if ( ! current_user_can( 'manage_options' ) ) {
             wp_send_json_error( array( 'message' => __( 'You do not have permission to perform this action.', 'wp-cpt-restapi' ) ) );
@@ -1003,9 +1007,11 @@ class WP_CPT_RestAPI_Admin {
      * @since    0.1
      */
     public function ajax_reset_cpts() {
-        // Check nonce
-        check_ajax_referer( 'cpt_rest_api', 'nonce' );
-        
+        // Check nonce with proper sanitization
+        if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'cpt_rest_api' ) ) {
+            wp_send_json_error( array( 'message' => __( 'Security check failed.', 'wp-cpt-restapi' ) ) );
+        }
+
         // Check user capabilities
         if ( ! current_user_can( 'manage_options' ) ) {
             wp_send_json_error( array( 'message' => __( 'You do not have permission to perform this action.', 'wp-cpt-restapi' ) ) );

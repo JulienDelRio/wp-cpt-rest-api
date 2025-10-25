@@ -952,14 +952,14 @@ Display admin notices when no CPTs are enabled or no API keys exist to guide use
 ## Progress Tracking Table
 
 **Last Updated**: 2025-10-25
-**Progress**: 3/23 issues resolved (13%)
+**Progress**: 4/23 issues resolved (17%)
 
 | Status | ID | Task | Files | Priority | Effort | Notes |
 |--------|-----|------|-------|----------|--------|-------|
 | ✅ | CRITICAL-001 | Add text domain loading | src/wp-cpt-rest-api.php | Critical | Small | **COMPLETED** - Added `wp_cpt_restapi_load_textdomain()` at lines 91-101 |
 | ✅ | CRITICAL-002 | Add Text Domain header | src/wp-cpt-rest-api.php | Critical | Small | **COMPLETED** - Added Text Domain, Domain Path, and License URI headers |
 | ✅ | CRITICAL-003 | Fix SQL injection | src/rest-api/class-wp-cpt-restapi-rest.php | Critical | Medium | **COMPLETED** - Fixed 4 instances using $wpdb->prepare() |
-| ⬜ | CRITICAL-004 | Fix nonce sanitization | src/admin/class-wp-cpt-restapi-admin.php | Critical | Small | CSRF protection issue |
+| ✅ | CRITICAL-004 | Fix nonce sanitization | src/admin/class-wp-cpt-restapi-admin.php | Critical | Small | **COMPLETED** - Fixed 3 AJAX handlers with proper nonce sanitization |
 | ⬜ | CRITICAL-005 | Create uninstall.php | src/uninstall.php | Critical | Small | WordPress.org requirement |
 | ⬜ | CRITICAL-006 | Update changelog | src/readme.txt | Critical | Small | WordPress.org requirement |
 | ⬜ | CRITICAL-007 | Remove insecure rand() | src/includes/class-wp-cpt-restapi-api-keys.php | Critical | Small | Security vulnerability |
@@ -1093,14 +1093,46 @@ Fixed 4 instances of SQL injection vulnerabilities in Toolset relationship queri
 
 ---
 
+#### ✅ CRITICAL-004: Fix nonce sanitization in AJAX handlers (2025-10-25)
+**Status**: Completed
+**File**: [src/admin/class-wp-cpt-restapi-admin.php](../src/admin/class-wp-cpt-restapi-admin.php)
+**Changes**:
+Fixed all 3 AJAX handlers to properly sanitize nonce values before verification:
+
+1. **Line 939-942**: `ajax_add_key()` method
+   - Before: Used deprecated `check_ajax_referer()` without sanitization
+   - After: Explicit `wp_verify_nonce()` with `sanitize_text_field()` and `wp_unslash()`
+
+2. **Line 976-979**: `ajax_delete_key()` method
+   - Before: Used deprecated `check_ajax_referer()` without sanitization
+   - After: Explicit `wp_verify_nonce()` with proper sanitization
+
+3. **Line 1010-1013**: `ajax_reset_cpts()` method
+   - Before: Used deprecated `check_ajax_referer()` without sanitization
+   - After: Explicit `wp_verify_nonce()` with proper sanitization
+
+All handlers now follow WordPress Coding Standards:
+- Check `isset($_POST['nonce'])` before accessing
+- Use `sanitize_text_field(wp_unslash($_POST['nonce']))` to sanitize
+- Use `wp_verify_nonce()` instead of deprecated `check_ajax_referer()`
+- Return consistent error message: "Security check failed."
+
+**Impact**:
+- Meets WordPress Coding Standards for nonce handling
+- Prevents CSRF attacks with proper validation
+- Eliminates deprecated function usage
+- 4 of 7 critical blockers now resolved (57%)
+
+---
+
 ### Outstanding Issues
 
-**Critical**: 4 remaining (CRITICAL-004 through CRITICAL-007)
+**Critical**: 3 remaining (CRITICAL-005 through CRITICAL-007)
 **High Priority**: 8 remaining (HIGH-001 through HIGH-008)
 **Medium Priority**: 5 remaining (MEDIUM-001 through MEDIUM-005)
 **Low Priority**: 3 remaining (LOW-001 through LOW-003)
 
-**Next Priority**: CRITICAL-004 - Fix nonce sanitization in AJAX handlers
+**Next Priority**: CRITICAL-005 - Create uninstall.php for database cleanup
 
 ---
 
