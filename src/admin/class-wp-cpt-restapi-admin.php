@@ -138,13 +138,13 @@ class WP_CPT_RestAPI_Admin {
             array(
                 'nonce'  => wp_create_nonce( 'cpt_rest_api' ),
                 'i18n'   => array(
-                    'emptyLabel'   => __( 'Please enter a label for the API key.', 'wp-cpt-restapi' ),
-                    'generating'   => __( 'Generating...', 'wp-cpt-restapi' ),
-                    'generateKey'  => __( 'Generate API Key', 'wp-cpt-restapi' ),
-                    'copy'         => __( 'Copy', 'wp-cpt-restapi' ),
-                    'copied'       => __( 'Copied!', 'wp-cpt-restapi' ),
-                    'copyFailed'   => __( 'Failed to copy. Please try again.', 'wp-cpt-restapi' ),
-                    'ajaxError'    => __( 'An error occurred. Please try again.', 'wp-cpt-restapi' ),
+                    'emptyLabel'   => esc_js( __( 'Please enter a label for the API key.', 'wp-cpt-restapi' ) ),
+                    'generating'   => esc_js( __( 'Generating...', 'wp-cpt-restapi' ) ),
+                    'generateKey'  => esc_js( __( 'Generate API Key', 'wp-cpt-restapi' ) ),
+                    'copy'         => esc_js( __( 'Copy', 'wp-cpt-restapi' ) ),
+                    'copied'       => esc_js( __( 'Copied!', 'wp-cpt-restapi' ) ),
+                    'copyFailed'   => esc_js( __( 'Failed to copy. Please try again.', 'wp-cpt-restapi' ) ),
+                    'ajaxError'    => esc_js( __( 'An error occurred. Please try again.', 'wp-cpt-restapi' ) ),
                 ),
             )
         );
