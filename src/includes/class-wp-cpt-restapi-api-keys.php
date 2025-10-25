@@ -93,18 +93,6 @@ class WP_CPT_RestAPI_API_Keys {
     }
     
     /**
-     * Get a random character from a string.
-     *
-     * @since    0.1
-     * @param    string    $chars    The string of characters to choose from.
-     * @return   string              A random character from the string.
-     */
-    private function get_random_char($chars) {
-        $index = rand(0, strlen($chars) - 1);
-        return $chars[$index];
-    }
-
-    /**
      * Add a new API key.
      *
      * @since    0.1
