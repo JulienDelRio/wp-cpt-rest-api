@@ -5,9 +5,52 @@
       "Write(./**)",
       "Bash(mkdir:*)",
       "Bash(tree:*)",
-      "Bash(git:*)"
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(pwd:*)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(git status:*)",
+      "Bash(git log:*)",
+      "Bash(git diff:*)",
+      "Bash(git branch:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git checkout:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run:*)",
+      "Bash(npm test:*)",
+      "Bash(yarn:*)",
+      "Bash(pnpm:*)",
+      "Bash(pip install:*)",
+      "Bash(python:*)",
+      "Bash(node:*)",
+      "Bash(npx:*)",
+      "Bash(docker ps:*)",
+      "Bash(docker logs:*)"
     ],
-    "deny": [],
-    "ask": []
+    "ask": [
+      "Bash(git push:*)",
+      "Bash(git pull:*)",
+      "Bash(git merge:*)",
+      "Bash(git rebase:*)",
+      "Bash(git reset:*)",
+      "Bash(rm -rf:*)",
+      "Bash(rm -r:*)",
+      "Bash(docker run:*)",
+      "Bash(docker-compose:*)",
+      "Bash(sudo:*)",
+      "Bash(chmod:*)",
+      "Bash(chown:*)",
+      "Write(.env*)",
+      "Write(config/*.prod*)",
+      "Write(package.json:*)",
+      "Write(package-lock.json:*)"
+    ],
+    "deny": [
+      "Bash(rm -rf /:*)",
+      "Bash(rm -rf ~:*)",
+      "Bash(:(){ :|:& };::*)"
+    ]
   }
 }
