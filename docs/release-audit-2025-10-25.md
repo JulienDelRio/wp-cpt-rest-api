@@ -952,13 +952,13 @@ Display admin notices when no CPTs are enabled or no API keys exist to guide use
 ## Progress Tracking Table
 
 **Last Updated**: 2025-10-25
-**Progress**: 2/23 issues resolved (9%)
+**Progress**: 3/23 issues resolved (13%)
 
 | Status | ID | Task | Files | Priority | Effort | Notes |
 |--------|-----|------|-------|----------|--------|-------|
 | ✅ | CRITICAL-001 | Add text domain loading | src/wp-cpt-rest-api.php | Critical | Small | **COMPLETED** - Added `wp_cpt_restapi_load_textdomain()` at lines 91-101 |
 | ✅ | CRITICAL-002 | Add Text Domain header | src/wp-cpt-rest-api.php | Critical | Small | **COMPLETED** - Added Text Domain, Domain Path, and License URI headers |
-| ⬜ | CRITICAL-003 | Fix SQL injection | src/rest-api/class-wp-cpt-restapi-rest.php | Critical | Medium | Security vulnerability |
+| ✅ | CRITICAL-003 | Fix SQL injection | src/rest-api/class-wp-cpt-restapi-rest.php | Critical | Medium | **COMPLETED** - Fixed 4 instances using $wpdb->prepare() |
 | ⬜ | CRITICAL-004 | Fix nonce sanitization | src/admin/class-wp-cpt-restapi-admin.php | Critical | Small | CSRF protection issue |
 | ⬜ | CRITICAL-005 | Create uninstall.php | src/uninstall.php | Critical | Small | WordPress.org requirement |
 | ⬜ | CRITICAL-006 | Update changelog | src/readme.txt | Critical | Small | WordPress.org requirement |
@@ -1063,14 +1063,44 @@ The plugin has **7 critical blockers** that MUST be addressed before releasing t
 
 ---
 
+#### ✅ CRITICAL-003: Fix SQL injection in Toolset relationships (2025-10-25)
+**Status**: Completed
+**File**: [src/rest-api/class-wp-cpt-restapi-rest.php](../src/rest-api/class-wp-cpt-restapi-rest.php)
+**Changes**:
+Fixed 4 instances of SQL injection vulnerabilities in Toolset relationship queries:
+
+1. **Line 1145-1146**: `get_toolset_relationships()` method
+   - Before: `"SHOW TABLES LIKE '$table_name'"` and `"SELECT * FROM $table_name WHERE active = 1"`
+   - After: Used `$wpdb->prepare()` with `%s` and `%d` placeholders
+
+2. **Line 1411-1421**: `get_relationship_instances()` method
+   - Before: `"SHOW TABLES LIKE '$table_name'"` and direct variable interpolation
+   - After: Used `$wpdb->prepare()` with proper placeholders and `{$wpdb->prefix}` format
+
+3. **Line 1496-1509**: `create_toolset_relationship()` method
+   - Before: Direct table name in SHOW TABLES and SELECT queries
+   - After: Parameterized all queries using `$wpdb->prepare()`
+
+4. **Line 1622-1627**: `delete_toolset_relationship()` method
+   - Before: Direct table name in SHOW TABLES and SELECT queries
+   - After: Parameterized all queries using `$wpdb->prepare()`
+
+**Impact**:
+- Eliminates critical SQL injection vulnerability (OWASP Top 10)
+- Prevents potential database compromise
+- Meets WordPress.org security requirements
+- 3 of 7 critical blockers now resolved
+
+---
+
 ### Outstanding Issues
 
-**Critical**: 5 remaining (CRITICAL-003 through CRITICAL-007)
+**Critical**: 4 remaining (CRITICAL-004 through CRITICAL-007)
 **High Priority**: 8 remaining (HIGH-001 through HIGH-008)
 **Medium Priority**: 5 remaining (MEDIUM-001 through MEDIUM-005)
 **Low Priority**: 3 remaining (LOW-001 through LOW-003)
 
-**Next Priority**: CRITICAL-005 - Create uninstall.php for database cleanup
+**Next Priority**: CRITICAL-004 - Fix nonce sanitization in AJAX handlers
 
 ---
 

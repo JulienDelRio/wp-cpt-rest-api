@@ -1142,8 +1142,8 @@ class WP_CPT_RestAPI_REST {
         if ( empty( $relationships ) ) {
             global $wpdb;
             $table_name = $wpdb->prefix . 'toolset_relationships';
-            if ( $wpdb->get_var( "SHOW TABLES LIKE '$table_name'" ) === $table_name ) {
-                $results = $wpdb->get_results( "SELECT * FROM $table_name WHERE active = 1" );
+            if ( $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $table_name ) ) === $table_name ) {
+                $results = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}toolset_relationships WHERE active = %d", 1 ) );
                 foreach ( $results as $relationship ) {
                     $relationships[] = $this->format_db_relationship_data( $relationship );
                 }
@@ -1408,17 +1408,17 @@ class WP_CPT_RestAPI_REST {
                 global $wpdb;
                 $table_name = $wpdb->prefix . 'toolset_associations';
                 
-                if ( $wpdb->get_var( "SHOW TABLES LIKE '$table_name'" ) === $table_name ) {
+                if ( $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $table_name ) ) === $table_name ) {
                     // Get relationship definition ID
-                    $relationship_def_table = $wpdb->prefix . 'toolset_relationships';
                     $relationship_def = $wpdb->get_row( $wpdb->prepare(
-                        "SELECT id FROM $relationship_def_table WHERE slug = %s AND active = 1",
-                        $relation_slug
+                        "SELECT id FROM {$wpdb->prefix}toolset_relationships WHERE slug = %s AND active = %d",
+                        $relation_slug,
+                        1
                     ) );
-                    
+
                     if ( $relationship_def ) {
                         $associations = $wpdb->get_results( $wpdb->prepare(
-                            "SELECT parent_id, child_id FROM $table_name WHERE relationship_id = %d",
+                            "SELECT parent_id, child_id FROM {$wpdb->prefix}toolset_associations WHERE relationship_id = %d",
                             $relationship_def->id
                         ) );
                         
@@ -1493,19 +1493,20 @@ class WP_CPT_RestAPI_REST {
                 $associations_table = $wpdb->prefix . 'toolset_associations';
                 
                 // Check if tables exist
-                if ( $wpdb->get_var( "SHOW TABLES LIKE '$relationship_def_table'" ) === $relationship_def_table &&
-                     $wpdb->get_var( "SHOW TABLES LIKE '$associations_table'" ) === $associations_table ) {
-                    
+                if ( $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $relationship_def_table ) ) === $relationship_def_table &&
+                     $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $associations_table ) ) === $associations_table ) {
+
                     // Get relationship definition ID
                     $relationship_def = $wpdb->get_row( $wpdb->prepare(
-                        "SELECT id FROM $relationship_def_table WHERE slug = %s AND active = 1",
-                        $relation_slug
+                        "SELECT id FROM {$wpdb->prefix}toolset_relationships WHERE slug = %s AND active = %d",
+                        $relation_slug,
+                        1
                     ) );
-                    
+
                     if ( $relationship_def ) {
                         // Check if relationship already exists
                         $existing = $wpdb->get_var( $wpdb->prepare(
-                            "SELECT id FROM $associations_table WHERE relationship_id = %d AND parent_id = %d AND child_id = %d",
+                            "SELECT id FROM {$wpdb->prefix}toolset_associations WHERE relationship_id = %d AND parent_id = %d AND child_id = %d",
                             $relationship_def->id,
                             $parent_id,
                             $child_id
@@ -1618,13 +1619,14 @@ class WP_CPT_RestAPI_REST {
                 $associations_table = $wpdb->prefix . 'toolset_associations';
                 
                 // Check if tables exist
-                if ( $wpdb->get_var( "SHOW TABLES LIKE '$relationship_def_table'" ) === $relationship_def_table &&
-                     $wpdb->get_var( "SHOW TABLES LIKE '$associations_table'" ) === $associations_table ) {
-                    
+                if ( $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $relationship_def_table ) ) === $relationship_def_table &&
+                     $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $associations_table ) ) === $associations_table ) {
+
                     // Get relationship definition ID
                     $relationship_def = $wpdb->get_row( $wpdb->prepare(
-                        "SELECT id FROM $relationship_def_table WHERE slug = %s AND active = 1",
-                        $relation_slug
+                        "SELECT id FROM {$wpdb->prefix}toolset_relationships WHERE slug = %s AND active = %d",
+                        $relation_slug,
+                        1
                     ) );
                     
                     if ( $relationship_def ) {
