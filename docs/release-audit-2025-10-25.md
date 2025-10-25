@@ -952,7 +952,7 @@ Display admin notices when no CPTs are enabled or no API keys exist to guide use
 ## Progress Tracking Table
 
 **Last Updated**: 2025-10-25
-**Progress**: 10/23 issues resolved (43%)
+**Progress**: 11/23 issues resolved (48%)
 
 | Status | ID | Task | Files | Priority | Effort | Notes |
 |--------|-----|------|-------|----------|--------|-------|
@@ -966,7 +966,7 @@ Display admin notices when no CPTs are enabled or no API keys exist to guide use
 | ✅ | HIGH-001 | Optimize key validation | src/includes/class-wp-cpt-restapi-api-keys.php | High | Small | **COMPLETED** - Added early return, type casting, proper hash_equals() order |
 | ✅ | HIGH-002 | Replace WPINC checks | All class files | High | Small | **COMPLETED** - Replaced WPINC with ABSPATH in 7 files, changed die to exit |
 | ✅ | HIGH-003 | Improve $_SERVER handling | src/rest-api/class-wp-cpt-restapi-rest.php | High | Medium | **COMPLETED** - Used esc_url_raw for REQUEST_URI, added REDIRECT_HTTP_AUTHORIZATION support |
-| ⬜ | HIGH-004 | Add rate limiting | src/admin/class-wp-cpt-restapi-admin.php | High | Medium | Abuse prevention |
+| ✅ | HIGH-004 | Add rate limiting | src/admin/class-wp-cpt-restapi-admin.php | High | Medium | **COMPLETED** - Added transient-based rate limiting (10 keys/hour per user) |
 | ⬜ | HIGH-005 | Escape section titles | src/admin/class-wp-cpt-restapi-admin.php | High | Small | XSS prevention |
 | ⬜ | HIGH-006 | Standardize DB queries | src/rest-api/class-wp-cpt-restapi-rest.php | High | Medium | Security best practice |
 | ⬜ | HIGH-007 | Add esc_js() calls | src/admin/class-wp-cpt-restapi-admin.php | High | Small | XSS prevention |
@@ -1347,10 +1347,63 @@ Improved $_SERVER variable handling for better security and compatibility:
 
 ---
 
+#### ✅ HIGH-004: Add rate limiting to API key generation (2025-10-25)
+**Status**: Completed
+**File**: [src/admin/class-wp-cpt-restapi-admin.php:949-962](../src/admin/class-wp-cpt-restapi-admin.php#L949-L962)
+**Changes**:
+Added transient-based rate limiting to prevent API key generation abuse:
+
+**Implementation Details**:
+
+```php
+// Rate limiting: max 10 keys per hour per user
+$user_id = get_current_user_id();
+$transient_key = 'cpt_rest_api_key_generation_' . $user_id;
+$generation_count = get_transient( $transient_key );
+
+if ( $generation_count && $generation_count >= 10 ) {
+    wp_send_json_error( array(
+        'message' => __( 'Rate limit exceeded. Please wait before generating more keys.', 'wp-cpt-restapi' )
+    ) );
+}
+
+// Increment counter
+$new_count = $generation_count ? $generation_count + 1 : 1;
+set_transient( $transient_key, $new_count, HOUR_IN_SECONDS );
+```
+
+**How It Works**:
+1. **Per-user tracking**: Uses current user ID for rate limit tracking
+2. **Transient storage**: Leverages WordPress transients (auto-cleanup after 1 hour)
+3. **10 keys/hour limit**: Prevents abuse while allowing legitimate use
+4. **Graceful error**: Returns clear message when limit exceeded
+5. **Auto-reset**: Counter automatically expires after 1 hour
+
+**Why This Matters**:
+- **Prevents database flooding**: Stops attackers from creating thousands of keys
+- **Protects against abuse**: Rate limit prevents system enumeration
+- **Minimal implementation cost**: Uses WordPress native transient API
+- **No performance impact**: Transients are cached and auto-expire
+- **User-friendly**: Legitimate users rarely hit the limit
+
+**Security Benefits**:
+- Prevents brute-force key generation attacks
+- Stops database bloat from malicious key creation
+- Protects against automated abuse scripts
+- Maintains system performance under attack
+
+**Impact**:
+- Professional security practice (OWASP recommended)
+- No impact on legitimate usage (10 keys/hour is generous)
+- Automatic cleanup via WordPress transients
+- No breaking changes to existing functionality
+
+---
+
 ### Outstanding Issues
 
 **Critical**: 0 remaining - **ALL CRITICAL ISSUES RESOLVED! 🎉**
-**High Priority**: 5 remaining (HIGH-004 through HIGH-008)
+**High Priority**: 4 remaining (HIGH-005 through HIGH-008)
 **Medium Priority**: 5 remaining (MEDIUM-001 through MEDIUM-005)
 **Low Priority**: 3 remaining (LOW-001 through LOW-003)
 

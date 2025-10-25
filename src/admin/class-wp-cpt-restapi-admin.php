@@ -945,7 +945,22 @@ class WP_CPT_RestAPI_Admin {
         if ( ! current_user_can( 'manage_options' ) ) {
             wp_send_json_error( array( 'message' => __( 'You do not have permission to perform this action.', 'wp-cpt-restapi' ) ) );
         }
-        
+
+        // Rate limiting: max 10 keys per hour per user
+        $user_id = get_current_user_id();
+        $transient_key = 'cpt_rest_api_key_generation_' . $user_id;
+        $generation_count = get_transient( $transient_key );
+
+        if ( $generation_count && $generation_count >= 10 ) {
+            wp_send_json_error( array(
+                'message' => __( 'Rate limit exceeded. Please wait before generating more keys.', 'wp-cpt-restapi' )
+            ) );
+        }
+
+        // Increment counter
+        $new_count = $generation_count ? $generation_count + 1 : 1;
+        set_transient( $transient_key, $new_count, HOUR_IN_SECONDS );
+
         // Get the label from the request
         $label = isset( $_POST['label'] ) ? sanitize_text_field( wp_unslash( $_POST['label'] ) ) : '';
         
