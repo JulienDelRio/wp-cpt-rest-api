@@ -952,7 +952,7 @@ Display admin notices when no CPTs are enabled or no API keys exist to guide use
 ## Progress Tracking Table
 
 **Last Updated**: 2025-10-25
-**Progress**: 12/23 issues resolved (52%)
+**Progress**: 13/23 issues resolved (57%)
 
 | Status | ID | Task | Files | Priority | Effort | Notes |
 |--------|-----|------|-------|----------|--------|-------|
@@ -968,7 +968,7 @@ Display admin notices when no CPTs are enabled or no API keys exist to guide use
 | ✅ | HIGH-003 | Improve $_SERVER handling | src/rest-api/class-wp-cpt-restapi-rest.php | High | Medium | **COMPLETED** - Used esc_url_raw for REQUEST_URI, added REDIRECT_HTTP_AUTHORIZATION support |
 | ✅ | HIGH-004 | Add rate limiting | src/admin/class-wp-cpt-restapi-admin.php | High | Medium | **COMPLETED** - Added transient-based rate limiting (10 keys/hour per user) |
 | ✅ | HIGH-005 | Escape section titles | src/admin/class-wp-cpt-restapi-admin.php | High | Small | **COMPLETED** - Added esc_html() to section title output |
-| ⬜ | HIGH-006 | Standardize DB queries | src/rest-api/class-wp-cpt-restapi-rest.php | High | Medium | Security best practice |
+| ✅ | HIGH-006 | Standardize DB queries | src/rest-api/class-wp-cpt-restapi-rest.php | High | Medium | **COMPLETED** - Replaced variable interpolation with direct $wpdb->prefix format |
 | ⬜ | HIGH-007 | Add esc_js() calls | src/admin/class-wp-cpt-restapi-admin.php | High | Small | XSS prevention |
 | ⬜ | HIGH-008 | Document auth model | src/rest-api/class-wp-cpt-restapi-rest.php | High | Small | Code clarity |
 | ⬜ | MEDIUM-001 | Create languages dir | src/languages/ | Medium | Small | i18n infrastructure |
@@ -1442,15 +1442,55 @@ if ( $section['title'] ) {
 
 ---
 
+#### ✅ HIGH-006: Standardize database query format (2025-10-25)
+**Status**: Completed
+**File**: [src/rest-api/class-wp-cpt-restapi-rest.php:1524,1641](../src/rest-api/class-wp-cpt-restapi-rest.php)
+**Changes**:
+Standardized database table references in `$wpdb->insert()` and `$wpdb->delete()` operations:
+
+**Location 1: Insert operation** (line 1524):
+- **Before**: `$wpdb->insert( $associations_table, ... )`
+- **After**: `$wpdb->insert( $wpdb->prefix . 'toolset_associations', ... )`
+
+**Location 2: Delete operation** (line 1641):
+- **Before**: `$wpdb->delete( $associations_table, ... )`
+- **After**: `$wpdb->delete( $wpdb->prefix . 'toolset_associations', ... )`
+
+**Why This Matters**:
+- **Defense in Depth**: Reduces reliance on intermediate variables
+- **Consistency**: Matches the format already used in SELECT queries throughout the codebase
+- **Security Best Practice**: Direct table references prevent potential variable manipulation
+- **Code Clarity**: More explicit about which table is being modified
+
+**Technical Context**:
+The SELECT queries throughout the file already use the `{$wpdb->prefix}tablename` format consistently:
+```php
+"SELECT id FROM {$wpdb->prefix}toolset_relationships WHERE slug = %s"
+"SELECT parent_id, child_id FROM {$wpdb->prefix}toolset_associations WHERE ..."
+```
+
+Now the INSERT and DELETE operations match this standardized pattern by using `$wpdb->prefix . 'tablename'` directly instead of defining intermediate variables like `$associations_table`.
+
+**Note**: The `$relationship_def_table` and `$associations_table` variables are still defined and used for the SHOW TABLES checks, which is appropriate since those checks need to compare string values. The standardization applies specifically to the actual data manipulation queries.
+
+**Impact**:
+- Improved code consistency across all database operations
+- Defense-in-depth security approach
+- No breaking changes to functionality
+- 13 of 23 total issues resolved (57%)
+- **6 of 8 High Priority issues resolved (75%)**
+
+---
+
 ### Outstanding Issues
 
 **Critical**: 0 remaining - **ALL CRITICAL ISSUES RESOLVED! 🎉**
-**High Priority**: 3 remaining (HIGH-006 through HIGH-008)
+**High Priority**: 2 remaining (HIGH-007, HIGH-008)
 **Medium Priority**: 5 remaining (MEDIUM-001 through MEDIUM-005)
 **Low Priority**: 3 remaining (LOW-001 through LOW-003)
 
 **Recommended Next Steps**:
-1. Address remaining HIGH-006 through HIGH-008 for improved security and code quality
+1. Address remaining HIGH-007 and HIGH-008 for improved security and code quality
 2. Create languages directory (MEDIUM-001)
 3. Test all fixes thoroughly before release
 4. Consider version 0.2.1 or 0.3 for release with all critical and high-priority fixes

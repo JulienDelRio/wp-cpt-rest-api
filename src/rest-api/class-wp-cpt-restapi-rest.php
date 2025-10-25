@@ -1498,7 +1498,7 @@ class WP_CPT_RestAPI_REST {
                 global $wpdb;
                 $relationship_def_table = $wpdb->prefix . 'toolset_relationships';
                 $associations_table = $wpdb->prefix . 'toolset_associations';
-                
+
                 // Check if tables exist
                 if ( $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $relationship_def_table ) ) === $relationship_def_table &&
                      $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $associations_table ) ) === $associations_table ) {
@@ -1518,10 +1518,10 @@ class WP_CPT_RestAPI_REST {
                             $parent_id,
                             $child_id
                         ) );
-                        
+
                         if ( ! $existing ) {
                             $result = $wpdb->insert(
-                                $associations_table,
+                                $wpdb->prefix . 'toolset_associations',
                                 array(
                                     'relationship_id' => $relationship_def->id,
                                     'parent_id' => $parent_id,
@@ -1624,7 +1624,7 @@ class WP_CPT_RestAPI_REST {
                 global $wpdb;
                 $relationship_def_table = $wpdb->prefix . 'toolset_relationships';
                 $associations_table = $wpdb->prefix . 'toolset_associations';
-                
+
                 // Check if tables exist
                 if ( $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $relationship_def_table ) ) === $relationship_def_table &&
                      $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $associations_table ) ) === $associations_table ) {
@@ -1635,10 +1635,10 @@ class WP_CPT_RestAPI_REST {
                         $relation_slug,
                         1
                     ) );
-                    
+
                     if ( $relationship_def ) {
                         $result = $wpdb->delete(
-                            $associations_table,
+                            $wpdb->prefix . 'toolset_associations',
                             array(
                                 'relationship_id' => $relationship_def->id,
                                 'parent_id' => $parent_id,
