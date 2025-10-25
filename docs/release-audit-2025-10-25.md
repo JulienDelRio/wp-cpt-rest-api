@@ -952,7 +952,7 @@ Display admin notices when no CPTs are enabled or no API keys exist to guide use
 ## Progress Tracking Table
 
 **Last Updated**: 2025-10-25
-**Progress**: 5/23 issues resolved (22%)
+**Progress**: 6/23 issues resolved (26%)
 
 | Status | ID | Task | Files | Priority | Effort | Notes |
 |--------|-----|------|-------|----------|--------|-------|
@@ -961,7 +961,7 @@ Display admin notices when no CPTs are enabled or no API keys exist to guide use
 | ✅ | CRITICAL-003 | Fix SQL injection | src/rest-api/class-wp-cpt-restapi-rest.php | Critical | Medium | **COMPLETED** - Fixed 4 instances using $wpdb->prepare() |
 | ✅ | CRITICAL-004 | Fix nonce sanitization | src/admin/class-wp-cpt-restapi-admin.php | Critical | Small | **COMPLETED** - Fixed 3 AJAX handlers with proper nonce sanitization |
 | ✅ | CRITICAL-005 | Create uninstall.php | src/uninstall.php | Critical | Small | **COMPLETED** - Created complete uninstall handler with multisite support |
-| ⬜ | CRITICAL-006 | Update changelog | src/readme.txt | Critical | Small | WordPress.org requirement |
+| ✅ | CRITICAL-006 | Update changelog | src/readme.txt | Critical | Small | **COMPLETED** - Added comprehensive version 0.2 changelog and upgrade notice |
 | ⬜ | CRITICAL-007 | Remove insecure rand() | src/includes/class-wp-cpt-restapi-api-keys.php | Critical | Small | Security vulnerability |
 | ⬜ | HIGH-001 | Optimize key validation | src/includes/class-wp-cpt-restapi-api-keys.php | High | Small | Performance improvement |
 | ⬜ | HIGH-002 | Replace WPINC checks | All class files | High | Small | Best practice |
@@ -1154,14 +1154,47 @@ Created comprehensive uninstall handler that cleans up all plugin data:
 
 ---
 
+#### ✅ CRITICAL-006: Update readme.txt changelog for version 0.2 (2025-10-25)
+**Status**: Completed
+**File**: [src/readme.txt:49-71](../src/readme.txt#L49-L71)
+**Changes**:
+Updated readme.txt with comprehensive version 0.2 documentation:
+
+**Changelog Section** (lines 51-60):
+Added 9 bullet points documenting all version 0.2 changes:
+- API key authentication system for secure API access
+- Toolset relationships support with full CRUD operations
+- OpenAPI 3.0.3 specification endpoint for API documentation
+- Support for non-public CPTs selection in admin interface
+- Enhanced meta field handling (root-level and nested formats)
+- Security improvements (SQL injection fixes, nonce sanitization, validation)
+- Internationalization (text domain loading and proper i18n headers)
+- Comprehensive uninstall handler for database cleanup
+- Improved WordPress Coding Standards compliance
+
+**Upgrade Notice Section** (lines 67-68):
+Added compelling upgrade notice:
+- Highlights major features: API key authentication, Toolset relationships, OpenAPI docs
+- Emphasizes critical security improvements
+- Recommends upgrade for all users
+
+**Impact**:
+- Meets WordPress.org plugin directory requirements
+- Provides clear communication of changes to users
+- Documents security improvements for transparency
+- Professional plugin documentation standards
+- 6 of 7 critical blockers now resolved (86%)
+
+---
+
 ### Outstanding Issues
 
-**Critical**: 2 remaining (CRITICAL-006, CRITICAL-007)
+**Critical**: 1 remaining (CRITICAL-007)
 **High Priority**: 8 remaining (HIGH-001 through HIGH-008)
 **Medium Priority**: 5 remaining (MEDIUM-001 through MEDIUM-005)
 **Low Priority**: 3 remaining (LOW-001 through LOW-003)
 
-**Next Priority**: CRITICAL-006 - Update readme.txt changelog for version 0.2
+**Next Priority**: CRITICAL-007 - Remove insecure rand() usage (FINAL CRITICAL BLOCKER!)
 
 ---
 

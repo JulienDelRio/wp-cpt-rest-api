@@ -48,10 +48,24 @@ Yes, the plugin provides access to all associated metadata for your Custom Post 
 
 == Changelog ==
 
+= 0.2 =
+* Added API key authentication system for secure API access
+* Added Toolset relationships support with full CRUD operations
+* Added OpenAPI 3.0.3 specification endpoint for API documentation
+* Added support for non-public CPTs selection in admin interface
+* Enhanced meta field handling (both root-level and nested formats)
+* Security improvements: SQL injection fixes, nonce sanitization, proper input validation
+* Internationalization: Added text domain loading and proper i18n headers
+* Added comprehensive uninstall handler for database cleanup
+* Improved WordPress Coding Standards compliance
+
 = 0.1 =
 * Initial release
 
 == Upgrade Notice ==
+
+= 0.2 =
+Major update with API key authentication, Toolset relationships support, OpenAPI documentation, and critical security improvements. Recommended upgrade for all users.
 
 = 0.1 =
 Initial release of the plugin.
