@@ -146,17 +146,33 @@ class WP_CPT_RestAPI_REST {
     /**
      * Check if request has read access to CPT posts.
      *
+     * AUTHORIZATION MODEL:
+     * This plugin uses a binary API key authentication model where valid API keys
+     * grant full access to all enabled Custom Post Types. There are no granular
+     * permissions per key (e.g., read-only keys are not supported).
+     *
+     * - API keys are validated at the rest_authentication_errors filter level
+     * - Valid API key = full access to ALL operations (GET, POST, PUT, PATCH, DELETE)
+     * - Valid API key = access to ALL enabled CPTs (configured in Settings > CPT REST API)
+     * - This intentional design supports external API integration use cases
+     * - For security: generate separate keys per service, revoke if compromised
+     *
      * @since    0.2
      * @param    WP_REST_Request    $request    Full details about the request.
      * @return   bool|WP_Error                  True if the request has read access, WP_Error object otherwise.
      */
     public function get_items_permissions_check( $request ) {
         // API key already validated in authenticate_api_key()
+        // Valid key provides full access by design (see authorization model above)
         return true;
     }
 
     /**
      * Check if request has access to create CPT posts.
+     *
+     * AUTHORIZATION MODEL:
+     * Valid API keys grant full access to create posts in all enabled CPTs.
+     * See get_items_permissions_check() for complete authorization model documentation.
      *
      * @since    0.2
      * @param    WP_REST_Request    $request    Full details about the request.
@@ -164,11 +180,16 @@ class WP_CPT_RestAPI_REST {
      */
     public function create_item_permissions_check( $request ) {
         // API key already validated in authenticate_api_key()
+        // Valid key provides full access by design (see authorization model in get_items_permissions_check)
         return true;
     }
 
     /**
      * Check if request has access to update a CPT post.
+     *
+     * AUTHORIZATION MODEL:
+     * Valid API keys grant full access to update posts in all enabled CPTs.
+     * See get_items_permissions_check() for complete authorization model documentation.
      *
      * @since    0.2
      * @param    WP_REST_Request    $request    Full details about the request.
@@ -183,11 +204,17 @@ class WP_CPT_RestAPI_REST {
                 array( 'status' => 404 )
             );
         }
+        // API key already validated in authenticate_api_key()
+        // Valid key provides full access by design (see authorization model in get_items_permissions_check)
         return true;
     }
 
     /**
      * Check if request has access to delete a CPT post.
+     *
+     * AUTHORIZATION MODEL:
+     * Valid API keys grant full access to delete posts in all enabled CPTs.
+     * See get_items_permissions_check() for complete authorization model documentation.
      *
      * @since    0.2
      * @param    WP_REST_Request    $request    Full details about the request.
@@ -202,6 +229,8 @@ class WP_CPT_RestAPI_REST {
                 array( 'status' => 404 )
             );
         }
+        // API key already validated in authenticate_api_key()
+        // Valid key provides full access by design (see authorization model in get_items_permissions_check)
         return true;
     }
 
