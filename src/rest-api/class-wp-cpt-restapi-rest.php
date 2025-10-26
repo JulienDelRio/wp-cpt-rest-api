@@ -120,23 +120,15 @@ class WP_CPT_RestAPI_REST {
         
         // Check if the Authorization header is present and starts with 'Bearer '
         if ( empty( $auth_header ) || strpos( $auth_header, 'Bearer ' ) !== 0 ) {
-            return new WP_Error(
-                'rest_not_logged_in',
-                __( 'You are not logged in and no valid API key was provided.', 'wp-cpt-restapi' ),
-                array( 'status' => 401 )
-            );
+            return $this->create_error_response( 'auth', 'no_auth' );
         }
-        
+
         // Extract the token from the Authorization header
         $token = trim( substr( $auth_header, 7 ) );
-        
+
         // Validate the token
         if ( ! $this->api_keys->validate_key( $token ) ) {
-            return new WP_Error(
-                'rest_forbidden',
-                __( 'Invalid API key.', 'wp-cpt-restapi' ),
-                array( 'status' => 403 )
-            );
+            return $this->create_error_response( 'auth', 'invalid_key' );
         }
         
         // If we get here, the API key is valid
@@ -198,11 +190,7 @@ class WP_CPT_RestAPI_REST {
     public function update_item_permissions_check( $request ) {
         $post = get_post( $request['id'] );
         if ( ! $post ) {
-            return new WP_Error(
-                'rest_post_invalid_id',
-                __( 'Invalid post ID.', 'wp-cpt-restapi' ),
-                array( 'status' => 404 )
-            );
+            return $this->create_error_response( 'post', 'invalid_id' );
         }
         // API key already validated in authenticate_api_key()
         // Valid key provides full access by design (see authorization model in get_items_permissions_check)
@@ -223,15 +211,135 @@ class WP_CPT_RestAPI_REST {
     public function delete_item_permissions_check( $request ) {
         $post = get_post( $request['id'] );
         if ( ! $post ) {
-            return new WP_Error(
-                'rest_post_invalid_id',
-                __( 'Invalid post ID.', 'wp-cpt-restapi' ),
-                array( 'status' => 404 )
-            );
+            return $this->create_error_response( 'post', 'invalid_id' );
         }
         // API key already validated in authenticate_api_key()
         // Valid key provides full access by design (see authorization model in get_items_permissions_check)
         return true;
+    }
+
+    /**
+     * Create a standardized WP_Error response with consistent formatting.
+     *
+     * This centralizes all error message creation to ensure consistency across the API.
+     * All errors include a code, message, and HTTP status code in a standardized format.
+     *
+     * @since    0.2.1
+     * @param    string    $error_type       The type of error (auth, cpt, post, toolset, server).
+     * @param    string    $specific_error   Specific error identifier.
+     * @param    array     $context          Additional context (e.g., message details).
+     * @return   WP_Error                    Standardized error object.
+     */
+    private function create_error_response( $error_type, $specific_error, $context = array() ) {
+        $error_messages = array(
+            'auth' => array(
+                'no_auth' => array(
+                    'code' => 'cpt_rest_api_auth_missing',
+                    'message' => __( 'Authentication required. Please provide a valid API key in the Authorization header.', 'wp-cpt-restapi' ),
+                    'status' => 401,
+                ),
+                'invalid_key' => array(
+                    'code' => 'cpt_rest_api_auth_invalid',
+                    'message' => __( 'Invalid API key provided.', 'wp-cpt-restapi' ),
+                    'status' => 403,
+                ),
+            ),
+            'cpt' => array(
+                'not_available' => array(
+                    'code' => 'cpt_rest_api_cpt_forbidden',
+                    'message' => __( 'This Custom Post Type is not enabled for API access.', 'wp-cpt-restapi' ),
+                    'status' => 403,
+                ),
+            ),
+            'post' => array(
+                'invalid_id' => array(
+                    'code' => 'cpt_rest_api_post_invalid',
+                    'message' => __( 'Invalid post ID provided.', 'wp-cpt-restapi' ),
+                    'status' => 404,
+                ),
+                'wrong_type' => array(
+                    'code' => 'cpt_rest_api_post_type_mismatch',
+                    'message' => __( 'Post ID does not match the specified Custom Post Type.', 'wp-cpt-restapi' ),
+                    'status' => 404,
+                ),
+                'not_published' => array(
+                    'code' => 'cpt_rest_api_post_forbidden',
+                    'message' => __( 'Access denied. This post is not published.', 'wp-cpt-restapi' ),
+                    'status' => 403,
+                ),
+                'cannot_create' => array(
+                    'code' => 'cpt_rest_api_post_create_failed',
+                    'message' => __( 'Failed to create post. Please check your input and try again.', 'wp-cpt-restapi' ),
+                    'status' => 500,
+                ),
+                'cannot_read' => array(
+                    'code' => 'cpt_rest_api_post_read_failed',
+                    'message' => __( 'Post operation completed but failed to retrieve post data.', 'wp-cpt-restapi' ),
+                    'status' => 500,
+                ),
+                'cannot_update' => array(
+                    'code' => 'cpt_rest_api_post_update_failed',
+                    'message' => __( 'Failed to update post. Please check your input and try again.', 'wp-cpt-restapi' ),
+                    'status' => 500,
+                ),
+                'cannot_delete' => array(
+                    'code' => 'cpt_rest_api_post_delete_failed',
+                    'message' => __( 'Failed to delete post. Please try again.', 'wp-cpt-restapi' ),
+                    'status' => 500,
+                ),
+            ),
+            'toolset' => array(
+                'not_available' => array(
+                    'code' => 'cpt_rest_api_toolset_unavailable',
+                    'message' => __( 'Toolset plugin is not active or Toolset support is not enabled.', 'wp-cpt-restapi' ),
+                    'status' => 503,
+                ),
+                'error' => array(
+                    'code' => 'cpt_rest_api_toolset_error',
+                    'message' => __( 'Toolset operation failed.', 'wp-cpt-restapi' ),
+                    'status' => 500,
+                ),
+                'exists' => array(
+                    'code' => 'cpt_rest_api_relationship_exists',
+                    'message' => __( 'Relationship already exists between these posts.', 'wp-cpt-restapi' ),
+                    'status' => 409,
+                ),
+                'not_found' => array(
+                    'code' => 'cpt_rest_api_relationship_not_found',
+                    'message' => __( 'Relationship not found or invalid relationship ID.', 'wp-cpt-restapi' ),
+                    'status' => 404,
+                ),
+                'invalid_id' => array(
+                    'code' => 'cpt_rest_api_relationship_invalid_id',
+                    'message' => __( 'Invalid relationship ID format.', 'wp-cpt-restapi' ),
+                    'status' => 400,
+                ),
+            ),
+        );
+
+        // Get the error configuration
+        if ( ! isset( $error_messages[ $error_type ][ $specific_error ] ) ) {
+            // Fallback to generic error
+            return new WP_Error(
+                'cpt_rest_api_error',
+                __( 'An error occurred. Please try again.', 'wp-cpt-restapi' ),
+                array( 'status' => 500 )
+            );
+        }
+
+        $error_config = $error_messages[ $error_type ][ $specific_error ];
+        $message = $error_config['message'];
+
+        // Append additional details if provided
+        if ( isset( $context['details'] ) && ! empty( $context['details'] ) ) {
+            $message .= ' ' . $context['details'];
+        }
+
+        return new WP_Error(
+            $error_config['code'],
+            $message,
+            array( 'status' => $error_config['status'] )
+        );
     }
 
     /**
@@ -591,11 +699,7 @@ class WP_CPT_RestAPI_REST {
         // Validate CPT is active
         $active_cpts = $this->get_active_cpts();
         if ( ! in_array( $cpt, $active_cpts, true ) ) {
-            return new WP_Error(
-                'rest_forbidden',
-                __( 'This Custom Post Type is not available via the API.', 'wp-cpt-restapi' ),
-                array( 'status' => 403 )
-            );
+            return $this->create_error_response( 'cpt', 'not_available' );
         }
         
         // Query posts
@@ -642,22 +746,14 @@ class WP_CPT_RestAPI_REST {
         // Validate CPT is active
         $active_cpts = $this->get_active_cpts();
         if ( ! in_array( $cpt, $active_cpts, true ) ) {
-            return new WP_Error(
-                'rest_forbidden',
-                __( 'This Custom Post Type is not available via the API.', 'wp-cpt-restapi' ),
-                array( 'status' => 403 )
-            );
+            return $this->create_error_response( 'cpt', 'not_available' );
         }
         
         // Get the post
         $post = get_post( $id );
         
         if ( ! $post || $post->post_type !== $cpt || $post->post_status !== 'publish' ) {
-            return new WP_Error(
-                'rest_post_invalid_id',
-                __( 'Invalid post ID.', 'wp-cpt-restapi' ),
-                array( 'status' => 404 )
-            );
+            return $this->create_error_response( 'post', 'invalid_id' );
         }
         
         return rest_ensure_response( $this->prepare_post_data( $post ) );
@@ -676,11 +772,7 @@ class WP_CPT_RestAPI_REST {
         // Validate CPT is active
         $active_cpts = $this->get_active_cpts();
         if ( ! in_array( $cpt, $active_cpts, true ) ) {
-            return new WP_Error(
-                'rest_forbidden',
-                __( 'This Custom Post Type is not available via the API.', 'wp-cpt-restapi' ),
-                array( 'status' => 403 )
-            );
+            return $this->create_error_response( 'cpt', 'not_available' );
         }
         
         // Prepare post data
@@ -706,11 +798,7 @@ class WP_CPT_RestAPI_REST {
         $post_id = wp_insert_post( $post_data, true );
         
         if ( is_wp_error( $post_id ) ) {
-            return new WP_Error(
-                'rest_cannot_create',
-                __( 'The post cannot be created.', 'wp-cpt-restapi' ),
-                array( 'status' => 500 )
-            );
+            return $this->create_error_response( 'post', 'cannot_create' );
         }
         
         // Handle meta fields from both 'meta' object and root-level fields
@@ -719,11 +807,7 @@ class WP_CPT_RestAPI_REST {
         // Get the created post
         $created_post = get_post( $post_id );
         if ( ! $created_post ) {
-            return new WP_Error(
-                'rest_cannot_read',
-                __( 'The post was created but cannot be read.', 'wp-cpt-restapi' ),
-                array( 'status' => 500 )
-            );
+            return $this->create_error_response( 'post', 'cannot_read' );
         }
         
         // Return the created post data with 201 status
@@ -746,31 +830,19 @@ class WP_CPT_RestAPI_REST {
         // Validate CPT is active
         $active_cpts = $this->get_active_cpts();
         if ( ! in_array( $cpt, $active_cpts, true ) ) {
-            return new WP_Error(
-                'rest_forbidden',
-                __( 'This Custom Post Type is not available via the API.', 'wp-cpt-restapi' ),
-                array( 'status' => 403 )
-            );
+            return $this->create_error_response( 'cpt', 'not_available' );
         }
 
         // Get the existing post
         $existing_post = get_post( $id );
 
         if ( ! $existing_post || $existing_post->post_type !== $cpt ) {
-            return new WP_Error(
-                'rest_post_invalid_id',
-                __( 'Invalid post ID or post does not belong to this Custom Post Type.', 'wp-cpt-restapi' ),
-                array( 'status' => 404 )
-            );
+            return $this->create_error_response( 'post', 'wrong_type' );
         }
 
         // Check if post is published (only allow deleting published posts for security)
         if ( $existing_post->post_status !== 'publish' ) {
-            return new WP_Error(
-                'rest_cannot_delete',
-                __( 'Sorry, you are not allowed to delete this post.', 'wp-cpt-restapi' ),
-                array( 'status' => 403 )
-            );
+            return $this->create_error_response( 'post', 'not_published' );
         }
 
         // Prepare the post data before deletion for the response
@@ -780,11 +852,7 @@ class WP_CPT_RestAPI_REST {
         $deleted = wp_delete_post( $id, true );
 
         if ( ! $deleted ) {
-            return new WP_Error(
-                'rest_cannot_delete',
-                __( 'The post cannot be deleted.', 'wp-cpt-restapi' ),
-                array( 'status' => 500 )
-            );
+            return $this->create_error_response( 'post', 'cannot_delete' );
         }
 
         // Return the deleted post data with 200 status
@@ -805,31 +873,19 @@ class WP_CPT_RestAPI_REST {
         // Validate CPT is active
         $active_cpts = $this->get_active_cpts();
         if ( ! in_array( $cpt, $active_cpts, true ) ) {
-            return new WP_Error(
-                'rest_forbidden',
-                __( 'This Custom Post Type is not available via the API.', 'wp-cpt-restapi' ),
-                array( 'status' => 403 )
-            );
+            return $this->create_error_response( 'cpt', 'not_available' );
         }
         
         // Get the existing post
         $existing_post = get_post( $id );
-        
+
         if ( ! $existing_post || $existing_post->post_type !== $cpt ) {
-            return new WP_Error(
-                'rest_post_invalid_id',
-                __( 'Invalid post ID or post does not belong to this Custom Post Type.', 'wp-cpt-restapi' ),
-                array( 'status' => 404 )
-            );
+            return $this->create_error_response( 'post', 'wrong_type' );
         }
-        
+
         // Check if post is published (only allow updating published posts for security)
         if ( $existing_post->post_status !== 'publish' ) {
-            return new WP_Error(
-                'rest_cannot_edit',
-                __( 'Sorry, you are not allowed to edit this post.', 'wp-cpt-restapi' ),
-                array( 'status' => 403 )
-            );
+            return $this->create_error_response( 'post', 'not_published' );
         }
         
         // Prepare post data for update
@@ -858,24 +914,16 @@ class WP_CPT_RestAPI_REST {
         $updated_post_id = wp_update_post( $post_data, true );
         
         if ( is_wp_error( $updated_post_id ) ) {
-            return new WP_Error(
-                'rest_cannot_update',
-                __( 'The post cannot be updated.', 'wp-cpt-restapi' ),
-                array( 'status' => 500 )
-            );
+            return $this->create_error_response( 'post', 'cannot_update' );
         }
-        
+
         // Handle meta fields using the same flexible approach as create
         $this->handle_meta_fields( $request, $id, $cpt );
-        
+
         // Get the updated post
         $updated_post = get_post( $id );
         if ( ! $updated_post ) {
-            return new WP_Error(
-                'rest_cannot_read',
-                __( 'The post was updated but cannot be read.', 'wp-cpt-restapi' ),
-                array( 'status' => 500 )
-            );
+            return $this->create_error_response( 'post', 'cannot_read' );
         }
         
         // Return the updated post data with 200 status
@@ -1095,11 +1143,7 @@ class WP_CPT_RestAPI_REST {
     public function get_toolset_relationships( $request ) {
         // Check if Toolset is active and available
         if ( ! $this->is_toolset_available() ) {
-            return new WP_Error(
-                'toolset_not_available',
-                __( 'Toolset plugin is not active or available.', 'wp-cpt-restapi' ),
-                array( 'status' => 503 )
-            );
+            return $this->create_error_response( 'toolset', 'not_available' );
         }
 
         try {
@@ -1115,11 +1159,7 @@ class WP_CPT_RestAPI_REST {
             return rest_ensure_response( $response );
             
         } catch ( Exception $e ) {
-            return new WP_Error(
-                'toolset_error',
-                __( 'Error fetching Toolset relationships: ', 'wp-cpt-restapi' ) . $e->getMessage(),
-                array( 'status' => 500 )
-            );
+            return $this->create_error_response( 'toolset', 'error', array( 'details' => $e->getMessage() ) );
         }
     }
 
@@ -1368,11 +1408,7 @@ class WP_CPT_RestAPI_REST {
         
         // Check if Toolset is available
         if ( ! $this->is_toolset_available() ) {
-            return new WP_Error(
-                'toolset_not_available',
-                __( 'Toolset plugin is not active or available.', 'wp-cpt-restapi' ),
-                array( 'status' => 503 )
-            );
+            return $this->create_error_response( 'toolset', 'not_available' );
         }
 
         try {
@@ -1480,11 +1516,7 @@ class WP_CPT_RestAPI_REST {
             return rest_ensure_response( $response );
             
         } catch ( Exception $e ) {
-            return new WP_Error(
-                'toolset_error',
-                __( 'Error fetching relationship instances: ', 'wp-cpt-restapi' ) . $e->getMessage(),
-                array( 'status' => 500 )
-            );
+            return $this->create_error_response( 'toolset', 'error', array( 'details' => $e->getMessage() ) );
         }
     }
 
@@ -1502,11 +1534,7 @@ class WP_CPT_RestAPI_REST {
         
         // Check if Toolset is available
         if ( ! $this->is_toolset_available() ) {
-            return new WP_Error(
-                'toolset_not_available',
-                __( 'Toolset plugin is not active or available.', 'wp-cpt-restapi' ),
-                array( 'status' => 503 )
-            );
+            return $this->create_error_response( 'toolset', 'not_available' );
         }
 
         try {
@@ -1561,11 +1589,7 @@ class WP_CPT_RestAPI_REST {
                             
                             $success = $result !== false;
                         } else {
-                            return new WP_Error(
-                                'relationship_exists',
-                                __( 'Relationship already exists between these posts.', 'wp-cpt-restapi' ),
-                                array( 'status' => 409 )
-                            );
+                            return $this->create_error_response( 'toolset', 'exists' );
                         }
                     }
                 }
@@ -1587,19 +1611,11 @@ class WP_CPT_RestAPI_REST {
                 $rest_response->set_status( 201 );
                 return $rest_response;
             } else {
-                return new WP_Error(
-                    'relationship_creation_failed',
-                    __( 'Failed to create relationship.', 'wp-cpt-restapi' ),
-                    array( 'status' => 500 )
-                );
+                return $this->create_error_response( 'toolset', 'error', array( 'details' => __( 'Failed to create relationship.', 'wp-cpt-restapi' ) ) );
             }
             
         } catch ( Exception $e ) {
-            return new WP_Error(
-                'toolset_error',
-                __( 'Error creating relationship: ', 'wp-cpt-restapi' ) . $e->getMessage(),
-                array( 'status' => 500 )
-            );
+            return $this->create_error_response( 'toolset', 'error', array( 'details' => $e->getMessage() ) );
         }
     }
 
@@ -1616,22 +1632,14 @@ class WP_CPT_RestAPI_REST {
         
         // Check if Toolset is available
         if ( ! $this->is_toolset_available() ) {
-            return new WP_Error(
-                'toolset_not_available',
-                __( 'Toolset plugin is not active or available.', 'wp-cpt-restapi' ),
-                array( 'status' => 503 )
-            );
+            return $this->create_error_response( 'toolset', 'not_available' );
         }
 
         try {
             // Parse relationship ID to get parent and child IDs
             $parsed_ids = $this->parse_relationship_id( $relationship_id, $relation_slug );
             if ( ! $parsed_ids ) {
-                return new WP_Error(
-                    'invalid_relationship_id',
-                    __( 'Invalid relationship ID format.', 'wp-cpt-restapi' ),
-                    array( 'status' => 400 )
-                );
+                return $this->create_error_response( 'toolset', 'invalid_id' );
             }
             
             $parent_id = $parsed_ids['parent_id'];
@@ -1693,19 +1701,11 @@ class WP_CPT_RestAPI_REST {
                 
                 return rest_ensure_response( $response );
             } else {
-                return new WP_Error(
-                    'relationship_not_found',
-                    __( 'Relationship not found or could not be deleted.', 'wp-cpt-restapi' ),
-                    array( 'status' => 404 )
-                );
+                return $this->create_error_response( 'toolset', 'not_found' );
             }
-            
+
         } catch ( Exception $e ) {
-            return new WP_Error(
-                'toolset_error',
-                __( 'Error deleting relationship: ', 'wp-cpt-restapi' ) . $e->getMessage(),
-                array( 'status' => 500 )
-            );
+            return $this->create_error_response( 'toolset', 'error', array( 'details' => $e->getMessage() ) );
         }
     }
 

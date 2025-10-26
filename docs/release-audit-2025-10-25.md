@@ -952,7 +952,7 @@ Display admin notices when no CPTs are enabled or no API keys exist to guide use
 ## Progress Tracking Table
 
 **Last Updated**: 2025-10-26
-**Progress**: 17/23 issues resolved (74%)
+**Progress**: 18/23 issues resolved (78%)
 
 | Status | ID | Task | Files | Priority | Effort | Notes |
 |--------|-----|------|-------|----------|--------|-------|
@@ -973,7 +973,7 @@ Display admin notices when no CPTs are enabled or no API keys exist to guide use
 | ✅ | HIGH-008 | Document auth model | src/rest-api/class-wp-cpt-restapi-rest.php | High | Small | **COMPLETED** - Added comprehensive authorization model documentation to all 4 permission callbacks |
 | ✅ | MEDIUM-001 | Create languages dir | src/languages/ | Medium | Small | **COMPLETED** - Created directory with README.md and .gitkeep |
 | ✅ | MEDIUM-002 | Add length validation | src/admin/class-wp-cpt-restapi-admin.php | Medium | Small | **COMPLETED** - Added 100 character limit validation for API key labels |
-| ⬜ | MEDIUM-003 | Standardize errors | src/rest-api/class-wp-cpt-restapi-rest.php | Medium | Medium | API consistency |
+| ✅ | MEDIUM-003 | Standardize errors | src/rest-api/class-wp-cpt-restapi-rest.php | Medium | Medium | **COMPLETED** - Created centralized error response system with consistent codes and messages |
 | ⬜ | MEDIUM-004 | Add security logging | Throughout | Medium | Medium | Audit trail |
 | ⬜ | MEDIUM-005 | Complete PHPDoc | Various files | Medium | Medium | Code documentation |
 
@@ -1688,11 +1688,91 @@ if ( strlen( $label ) > 100 ) {
 
 ---
 
+#### ✅ MEDIUM-003: Standardize error messages with centralized system (2025-10-26)
+**Status**: Completed
+**File**: [src/rest-api/class-wp-cpt-restapi-rest.php:237-359](../src/rest-api/class-wp-cpt-restapi-rest.php#L237-L359)
+**Changes**:
+Created a centralized error response system to ensure consistency across all API endpoints:
+
+**New Centralized Error Helper Method** (lines 237-359):
+```php
+private function create_error_response( $error_type, $specific_error, $context = array() )
+```
+
+**Error Categories Implemented**:
+1. **Authentication Errors** (`auth`):
+   - `no_auth` - Missing API key (401)
+   - `invalid_key` - Invalid API key provided (403)
+
+2. **CPT Errors** (`cpt`):
+   - `not_available` - CPT not enabled for API access (403)
+
+3. **Post Errors** (`post`):
+   - `invalid_id` - Invalid post ID (404)
+   - `wrong_type` - Post doesn't match CPT (404)
+   - `not_published` - Post not published (403)
+   - `cannot_create` - Post creation failed (500)
+   - `cannot_read` - Post read failed (500)
+   - `cannot_update` - Post update failed (500)
+   - `cannot_delete` - Post deletion failed (500)
+
+4. **Toolset Errors** (`toolset`):
+   - `not_available` - Toolset not active (503)
+   - `error` - Generic Toolset operation failed (500)
+   - `exists` - Relationship already exists (409)
+   - `not_found` - Relationship not found (404)
+   - `invalid_id` - Invalid relationship ID (400)
+
+**Standardized Error Format**:
+All errors now include:
+- **Consistent error codes**: Prefixed with `cpt_rest_api_` (e.g., `cpt_rest_api_auth_invalid`)
+- **User-friendly messages**: Clear, actionable error messages
+- **Proper HTTP status codes**: 400-series for client errors, 500-series for server errors
+- **Optional context**: Additional details can be appended (e.g., exception messages)
+
+**Errors Replaced**: 38+ instances throughout the file
+- 2 authentication errors
+- 2 permission check errors
+- 5 CPT validation errors
+- 16 post CRUD operation errors
+- 13+ Toolset relationship errors
+
+**Before** (inconsistent):
+```php
+return new WP_Error(
+    'rest_forbidden',
+    __( 'This Custom Post Type is not available via the API.', 'wp-cpt-restapi' ),
+    array( 'status' => 403 )
+);
+```
+
+**After** (standardized):
+```php
+return $this->create_error_response( 'cpt', 'not_available' );
+```
+
+**Why This Matters**:
+- **Better Developer Experience**: Consistent error codes for API consumers
+- **Easier Debugging**: Predictable error format across all endpoints
+- **Professional API Design**: Industry-standard error response patterns
+- **Maintainability**: Single source of truth for all error messages
+- **Internationalization**: All error messages properly wrapped in `__()`
+
+**Impact**:
+- Improved API consistency and professional quality
+- Easier for API consumers to handle errors programmatically
+- Simplified maintenance with centralized error definitions
+- Better documentation potential (all errors in one place)
+- 18 of 23 total issues resolved (78%)
+- **3 of 5 Medium Priority issues resolved (60%)**
+
+---
+
 ### Outstanding Issues
 
 **Critical**: 0 remaining - **ALL CRITICAL ISSUES RESOLVED! 🎉**
 **High Priority**: 0 remaining - **ALL HIGH PRIORITY ISSUES RESOLVED! 🎉**
-**Medium Priority**: 3 remaining (MEDIUM-003 through MEDIUM-005)
+**Medium Priority**: 2 remaining (MEDIUM-004 and MEDIUM-005)
 **Low Priority**: 3 remaining (LOW-001 through LOW-003)
 
 **Plugin Release Readiness**: ✅ **READY FOR WORDPRESS.ORG SUBMISSION**
@@ -1700,13 +1780,13 @@ if ( strlen( $label ) > 100 ) {
 - All high priority issues resolved (8/8)
 - i18n infrastructure complete (MEDIUM-001)
 - Input validation implemented (MEDIUM-002)
+- Error message standardization complete (MEDIUM-003)
 - Plugin meets WordPress.org standards and security requirements
 
 **Recommended Next Steps**:
 1. Test all fixes thoroughly before release
 2. **Release version 0.2.1 or 0.3** with all critical and high-priority fixes
 3. Consider addressing remaining medium priority improvements in future releases:
-   - MEDIUM-003: Error message standardization
    - MEDIUM-004: Security event logging
    - MEDIUM-005: PHPDoc completion
 
