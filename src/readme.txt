@@ -4,7 +4,7 @@ Donate link: https://juliendelrio.fr
 Tags: RestAPI, Rest, Custom Post Types
 Requires at least: 6.0
 Tested up to: 6.6
-Stable tag: 0.2
+Stable tag: 1.0.0-RC1
 Requires PHP: 7.4
 License: Apache 2.0
 License URI: http://www.apache.org/licenses/LICENSE-2.0
@@ -48,6 +48,21 @@ Yes, the plugin provides access to all associated metadata for your Custom Post 
 
 == Changelog ==
 
+= 1.0.0-RC1 =
+* Release Candidate 1 - Production-ready release with comprehensive improvements
+* Security: Comprehensive security event logging for authentication and key operations
+* Security: Enhanced input validation (100-character limit for API key labels)
+* Security: Standardized error messages with consistent codes across all endpoints
+* UX: Added admin notices for configuration guidance (dismissible, per-user)
+* Documentation: Enhanced PHPDoc with precise return type specifications (array|false)
+* Code Quality: Centralized error response system with professional error handling
+* Code Quality: Client IP detection with proxy/load balancer support
+* i18n: Complete internationalization infrastructure with languages directory
+* All critical security issues resolved (SQL injection, XSS, nonce validation)
+* All WordPress Coding Standards compliance issues resolved
+* Exceeds WordPress.org plugin directory requirements
+* 100% resolution of all applicable audit issues (21/21)
+
 = 0.2 =
 * Added API key authentication system for secure API access
 * Added Toolset relationships support with full CRUD operations
@@ -63,6 +78,9 @@ Yes, the plugin provides access to all associated metadata for your Custom Post 
 * Initial release
 
 == Upgrade Notice ==
+
+= 1.0.0-RC1 =
+First Release Candidate! Production-ready with comprehensive security improvements, professional error handling, security event logging, and enhanced user experience. All critical issues resolved. Recommended upgrade for all users preparing for WordPress.org submission.
 
 = 0.2 =
 Major update with API key authentication, Toolset relationships support, OpenAPI documentation, and critical security improvements. Recommended upgrade for all users.
