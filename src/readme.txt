@@ -4,7 +4,7 @@ Donate link: https://juliendelrio.fr
 Tags: RestAPI, Rest, Custom Post Types
 Requires at least: 6.0
 Tested up to: 6.6
-Stable tag: 1.0.0-RC1
+Stable tag: 1.0.0
 Requires PHP: 7.4
 License: Apache 2.0
 License URI: http://www.apache.org/licenses/LICENSE-2.0
@@ -48,6 +48,12 @@ Yes, the plugin provides access to all associated metadata for your Custom Post 
 
 == Changelog ==
 
+= 1.0.0 =
+* Official stable release - Production ready
+* Packaging: Fixed ZIP structure to use forward slashes for cross-platform compatibility
+* Documentation: Added support section with GitHub issues link
+* All features from 1.0.0-RC1 included and verified
+
 = 1.0.0-RC1 =
 * Release Candidate 1 - Production-ready release with comprehensive improvements
 * Security: Comprehensive security event logging for authentication and key operations
@@ -78,6 +84,9 @@ Yes, the plugin provides access to all associated metadata for your Custom Post 
 * Initial release
 
 == Upgrade Notice ==
+
+= 1.0.0 =
+Official stable release! Production-ready with all security improvements, professional error handling, security event logging, and enhanced user experience. Fixed packaging for proper WordPress installation. Recommended for all users.
 
 = 1.0.0-RC1 =
 First Release Candidate! Production-ready with comprehensive security improvements, professional error handling, security event logging, and enhanced user experience. All critical issues resolved. Recommended upgrade for all users preparing for WordPress.org submission.

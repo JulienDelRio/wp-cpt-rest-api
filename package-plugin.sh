@@ -3,7 +3,7 @@
 # Creates a clean distribution package for wp-cpt-rest-api plugin
 
 PLUGIN_NAME="wp-cpt-rest-api"
-VERSION="1.0.0-RC1"
+VERSION="1.0.0"
 BUILD_DIR="build"
 PACKAGE_NAME="${PLUGIN_NAME}-${VERSION}"
 

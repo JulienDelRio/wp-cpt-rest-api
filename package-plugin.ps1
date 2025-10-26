@@ -2,7 +2,7 @@
 # Creates a clean distribution package for wp-cpt-rest-api plugin
 
 $PluginName = "wp-cpt-rest-api"
-$Version = "1.0.0-RC1"
+$Version = "1.0.0"
 $BuildDir = "build"
 $PackageName = "$PluginName-$Version"
 
