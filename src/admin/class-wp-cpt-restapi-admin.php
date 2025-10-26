@@ -81,13 +81,19 @@ class WP_CPT_RestAPI_Admin {
     public function __construct() {
         // Initialize API Keys manager
         $this->api_keys = new WP_CPT_RestAPI_API_Keys();
-        
+
         // Add AJAX handlers for API key management
         add_action( 'wp_ajax_cpt_rest_api_add_key', array( $this, 'ajax_add_key' ) );
         add_action( 'wp_ajax_cpt_rest_api_delete_key', array( $this, 'ajax_delete_key' ) );
-        
+
         // Add AJAX handler for CPT reset
         add_action( 'wp_ajax_cpt_rest_api_reset_cpts', array( $this, 'ajax_reset_cpts' ) );
+
+        // Add AJAX handler for dismissing admin notices
+        add_action( 'wp_ajax_cpt_rest_api_dismiss_notice', array( $this, 'ajax_dismiss_notice' ) );
+
+        // Add admin notices for configuration guidance
+        add_action( 'admin_notices', array( $this, 'display_admin_notices' ) );
     }
 
     /**
@@ -1072,6 +1078,143 @@ class WP_CPT_RestAPI_Admin {
      */
     public function is_toolset_relationships_enabled() {
         return (bool) get_option( $this->toolset_option_name, false );
+    }
+
+    /**
+     * Display admin notices for configuration guidance.
+     *
+     * Shows helpful notices when:
+     * - No Custom Post Types are enabled
+     * - No API keys have been created
+     *
+     * @since    0.2.1
+     * @return   void
+     */
+    public function display_admin_notices() {
+        // Only show notices to users who can manage options
+        if ( ! current_user_can( 'manage_options' ) ) {
+            return;
+        }
+
+        // Get current screen
+        $screen = get_current_screen();
+        if ( ! $screen ) {
+            return;
+        }
+
+        // Only show on plugin settings page and dashboard
+        $show_on_pages = array(
+            'settings_page_cpt-rest-api-settings', // Plugin settings page
+            'dashboard',                             // Dashboard
+        );
+
+        if ( ! in_array( $screen->id, $show_on_pages, true ) ) {
+            return;
+        }
+
+        // Check if user has dismissed notices
+        $dismissed_notices = get_user_meta( get_current_user_id(), 'cpt_rest_api_dismissed_notices', true );
+        if ( ! is_array( $dismissed_notices ) ) {
+            $dismissed_notices = array();
+        }
+
+        // Notice for no CPTs enabled
+        $active_cpts = get_option( $this->cpt_option_name, array() );
+        if ( empty( $active_cpts ) && ! in_array( 'no_cpts', $dismissed_notices, true ) ) {
+            $settings_url = admin_url( 'options-general.php?page=cpt-rest-api-settings' );
+            ?>
+            <div class="notice notice-warning is-dismissible" data-notice-id="no_cpts">
+                <p>
+                    <strong><?php esc_html_e( 'CPT REST API:', 'wp-cpt-restapi' ); ?></strong>
+                    <?php
+                    printf(
+                        /* translators: %s: Settings page URL */
+                        esc_html__( 'No Custom Post Types are currently enabled for the REST API. %s to get started.', 'wp-cpt-restapi' ),
+                        '<a href="' . esc_url( $settings_url ) . '">' . esc_html__( 'Configure settings', 'wp-cpt-restapi' ) . '</a>'
+                    );
+                    ?>
+                </p>
+            </div>
+            <?php
+        }
+
+        // Notice for no API keys created
+        $api_keys = $this->api_keys->get_keys();
+        if ( empty( $api_keys ) && ! in_array( 'no_keys', $dismissed_notices, true ) ) {
+            $settings_url = admin_url( 'options-general.php?page=cpt-rest-api-settings#api-keys' );
+            ?>
+            <div class="notice notice-info is-dismissible" data-notice-id="no_keys">
+                <p>
+                    <strong><?php esc_html_e( 'CPT REST API:', 'wp-cpt-restapi' ); ?></strong>
+                    <?php
+                    printf(
+                        /* translators: %s: Settings page URL */
+                        esc_html__( 'No API keys have been created yet. You need at least one API key to access the REST API endpoints. %s', 'wp-cpt-restapi' ),
+                        '<a href="' . esc_url( $settings_url ) . '">' . esc_html__( 'Create an API key', 'wp-cpt-restapi' ) . '</a>'
+                    );
+                    ?>
+                </p>
+            </div>
+            <?php
+        }
+
+        // Add inline script to handle notice dismissal
+        if ( ( empty( $active_cpts ) && ! in_array( 'no_cpts', $dismissed_notices, true ) ) ||
+             ( empty( $api_keys ) && ! in_array( 'no_keys', $dismissed_notices, true ) ) ) {
+            ?>
+            <script type="text/javascript">
+            jQuery(document).ready(function($) {
+                $('.notice[data-notice-id]').on('click', '.notice-dismiss', function() {
+                    var noticeId = $(this).parent().data('notice-id');
+                    $.post(ajaxurl, {
+                        action: 'cpt_rest_api_dismiss_notice',
+                        notice_id: noticeId,
+                        nonce: '<?php echo esc_js( wp_create_nonce( 'cpt_rest_api_dismiss_notice' ) ); ?>'
+                    });
+                });
+            });
+            </script>
+            <?php
+        }
+    }
+
+    /**
+     * AJAX handler for dismissing admin notices.
+     *
+     * @since    0.2.1
+     * @return   void
+     */
+    public function ajax_dismiss_notice() {
+        // Check nonce
+        if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'cpt_rest_api_dismiss_notice' ) ) {
+            wp_die( esc_html__( 'Security check failed.', 'wp-cpt-restapi' ) );
+        }
+
+        // Check user capabilities
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_die( esc_html__( 'You do not have permission to perform this action.', 'wp-cpt-restapi' ) );
+        }
+
+        // Get notice ID
+        $notice_id = isset( $_POST['notice_id'] ) ? sanitize_text_field( wp_unslash( $_POST['notice_id'] ) ) : '';
+
+        if ( empty( $notice_id ) ) {
+            wp_die( esc_html__( 'Invalid notice ID.', 'wp-cpt-restapi' ) );
+        }
+
+        // Get current dismissed notices
+        $dismissed_notices = get_user_meta( get_current_user_id(), 'cpt_rest_api_dismissed_notices', true );
+        if ( ! is_array( $dismissed_notices ) ) {
+            $dismissed_notices = array();
+        }
+
+        // Add notice to dismissed list
+        if ( ! in_array( $notice_id, $dismissed_notices, true ) ) {
+            $dismissed_notices[] = $notice_id;
+            update_user_meta( get_current_user_id(), 'cpt_rest_api_dismissed_notices', $dismissed_notices );
+        }
+
+        wp_die(); // Success
     }
 
     /**

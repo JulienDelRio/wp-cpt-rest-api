@@ -952,7 +952,7 @@ Display admin notices when no CPTs are enabled or no API keys exist to guide use
 ## Progress Tracking Table
 
 **Last Updated**: 2025-10-26
-**Progress**: 20/23 issues resolved (87%)
+**Progress**: 21/23 issues resolved (91%)
 
 | Status | ID | Task | Files | Priority | Effort | Notes |
 |--------|-----|------|-------|----------|--------|-------|
@@ -976,6 +976,9 @@ Display admin notices when no CPTs are enabled or no API keys exist to guide use
 | ✅ | MEDIUM-003 | Standardize errors | src/rest-api/class-wp-cpt-restapi-rest.php | Medium | Medium | **COMPLETED** - Created centralized error response system with consistent codes and messages |
 | ✅ | MEDIUM-004 | Add security logging | src/rest-api/class-wp-cpt-restapi-rest.php, src/admin/class-wp-cpt-restapi-admin.php | Medium | Medium | **COMPLETED** - Implemented security event logging for auth failures and key operations |
 | ✅ | MEDIUM-005 | Complete PHPDoc | src/includes/class-wp-cpt-restapi-api-keys.php | Medium | Medium | **COMPLETED** - Enhanced return type specifications for better type safety |
+| ⬜ | LOW-001 | Use WordPress HTTP API | Throughout | Low | Medium | Optional enhancement |
+| ⬜ | LOW-002 | Add WP-CLI support | New files | Low | Large | Optional enhancement |
+| ✅ | LOW-003 | Add admin notices | src/admin/class-wp-cpt-restapi-admin.php | Low | Small | **COMPLETED** - Added dismissible notices for no CPTs/keys configured |
 
 ---
 
@@ -1895,17 +1898,97 @@ Implemented comprehensive security event logging for audit trail and attack dete
 
 ---
 
+#### ✅ LOW-003: Add admin notices for configuration guidance (2025-10-26)
+**Status**: Completed
+**File**: src/admin/class-wp-cpt-restapi-admin.php
+**Changes**:
+Implemented helpful admin notices to guide users through initial plugin setup:
+
+**Admin Notices Added**:
+
+1. **No CPTs Enabled Notice** (Warning):
+   - Shows when no Custom Post Types are enabled for the API
+   - Appears on: Dashboard and plugin settings page
+   - Message: "No Custom Post Types are currently enabled for the REST API. Configure settings to get started."
+   - Includes direct link to settings page
+   - Dismissible with user preference saved
+
+2. **No API Keys Notice** (Info):
+   - Shows when no API keys have been created
+   - Appears on: Dashboard and plugin settings page
+   - Message: "No API keys have been created yet. You need at least one API key to access the REST API endpoints. Create an API key"
+   - Includes direct link to API keys section
+   - Dismissible with user preference saved
+
+**Implementation Details**:
+
+**display_admin_notices() method** (lines 1080-1176):
+- Checks user capability (manage_options)
+- Shows notices only on dashboard and settings page
+- Respects per-user dismissed notices (stored in user meta)
+- Provides helpful links to relevant settings sections
+- Uses proper WordPress notice classes (notice-warning, notice-info)
+- Fully internationalized with esc_html_e() and printf()
+
+**ajax_dismiss_notice() method** (lines 1178-1215):
+- Handles AJAX request to dismiss notices
+- Validates nonce for security
+- Checks user capabilities
+- Stores dismissed status in user meta
+- Per-user preferences (each admin can dismiss independently)
+
+**Notice Dismissal**:
+- Uses WordPress is-dismissible class
+- Inline jQuery to handle dismiss button clicks
+- AJAX call to save preference
+- Properly sanitized and escaped
+- User meta key: `cpt_rest_api_dismissed_notices`
+
+**AJAX Handler Registration** (line 93):
+- Registered in constructor
+- Action: `cpt_rest_api_dismiss_notice`
+- Secure with nonce verification
+
+**Hook Registration** (line 96):
+- Registered in constructor
+- Action: `admin_notices`
+- Standard WordPress admin notice hook
+
+**Why This Matters**:
+- **Better UX**: Guides users through initial setup
+- **Reduces Support**: Clear instructions prevent common mistakes
+- **Professional**: Standard WordPress admin notice patterns
+- **Non-Intrusive**: Dismissible and respects user preferences
+- **Contextual**: Shows only when configuration is needed
+
+**User Experience**:
+- New installations immediately see what needs configuration
+- Clear calls-to-action with direct links
+- Can dismiss notices once configuration is complete
+- Dismissed state is per-user (doesn't affect other admins)
+- Notices only show to users with manage_options capability
+
+**Impact**:
+- Improved onboarding experience for new users
+- Reduces confusion about plugin setup
+- Professional WordPress admin integration
+- 21 of 23 total issues resolved (91%)
+- **1 of 3 Low Priority issues resolved (33%)**
+
+---
+
 ### Outstanding Issues
 
 **Critical**: 0 remaining - **ALL CRITICAL ISSUES RESOLVED! 🎉**
 **High Priority**: 0 remaining - **ALL HIGH PRIORITY ISSUES RESOLVED! 🎉**
 **Medium Priority**: 0 remaining - **ALL MEDIUM PRIORITY ISSUES RESOLVED! 🎉🎉🎉**
-**Low Priority**: 3 remaining (LOW-001 through LOW-003)
+**Low Priority**: 2 remaining (LOW-001, LOW-002)
 
 **Plugin Release Readiness**: ✅✅✅ **READY FOR WORDPRESS.ORG SUBMISSION**
 - All critical blockers resolved (7/7) ✅
 - All high priority issues resolved (8/8) ✅
 - All medium priority issues resolved (5/5) ✅
+- Admin notices for configuration guidance (LOW-003) ✅
 - i18n infrastructure complete (MEDIUM-001)
 - Input validation implemented (MEDIUM-002)
 - Error message standardization complete (MEDIUM-003)
@@ -1916,7 +1999,9 @@ Implemented comprehensive security event logging for audit trail and attack dete
 **Recommended Next Steps**:
 1. Test all fixes thoroughly before release
 2. **Release version 0.2.1 or 0.3** with all critical, high, and medium priority fixes
-3. Low priority items can be addressed in future releases (optional enhancements)
+3. Remaining low priority items are optional enhancements for future releases:
+   - LOW-001: Use WordPress HTTP API (currently not applicable)
+   - LOW-002: Add WP-CLI support (nice-to-have, large effort)
 
 ---
 
