@@ -38,17 +38,45 @@ Get-ChildItem -Path "$BuildDir/$PluginName" -Recurse -Force |
     Where-Object { $_.Name -eq '.vscode' -or $_.Name -eq 'tests' -or $_.Name -eq '.DS_Store' } |
     Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
 
-# Create ZIP package
+# Create ZIP package using .NET System.IO.Compression for cross-platform compatibility
 Write-Host "Creating ZIP package..." -ForegroundColor Cyan
 if (Test-Path "$PackageName.zip") {
     Remove-Item "$PackageName.zip" -Force
 }
 
-# Change to build directory and compress from there to avoid nesting issues
-$CurrentDir = Get-Location
-Set-Location $BuildDir
-Compress-Archive -Path $PluginName -DestinationPath "../$PackageName.zip" -Force
-Set-Location $CurrentDir
+# Load .NET compression assemblies
+Add-Type -AssemblyName System.IO.Compression
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+
+# Create ZIP with proper forward slashes for WordPress compatibility
+$SourcePath = Resolve-Path "$BuildDir/$PluginName"
+$DestinationPath = Join-Path -Path (Get-Location) -ChildPath "$PackageName.zip"
+
+# Create ZIP archive manually to control path separators
+$zip = [System.IO.Compression.ZipFile]::Open($DestinationPath, [System.IO.Compression.ZipArchiveMode]::Create)
+
+try {
+    # Get all files and add them with forward slashes
+    Get-ChildItem -Path $SourcePath -Recurse -File | ForEach-Object {
+        $relativePath = $_.FullName.Substring($SourcePath.Path.Length + 1)
+        # Replace backslashes with forward slashes for cross-platform compatibility
+        $zipEntryName = "$PluginName/" + $relativePath.Replace('\', '/')
+        [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $_.FullName, $zipEntryName, [System.IO.Compression.CompressionLevel]::Optimal) | Out-Null
+    }
+
+    # Add empty directories
+    Get-ChildItem -Path $SourcePath -Recurse -Directory | ForEach-Object {
+        $relativePath = $_.FullName.Substring($SourcePath.Path.Length + 1)
+        # Replace backslashes with forward slashes and add trailing slash for directories
+        $zipEntryName = "$PluginName/" + $relativePath.Replace('\', '/') + '/'
+        # Only add if directory is empty
+        if ((Get-ChildItem -Path $_.FullName -Force | Measure-Object).Count -eq 0) {
+            $zip.CreateEntry($zipEntryName) | Out-Null
+        }
+    }
+} finally {
+    $zip.Dispose()
+}
 
 $FileSize = (Get-Item "$PackageName.zip").Length / 1KB
 Write-Host "`nPackage created: $PackageName.zip" -ForegroundColor Green
