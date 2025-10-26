@@ -963,10 +963,15 @@ class WP_CPT_RestAPI_Admin {
 
         // Get the label from the request
         $label = isset( $_POST['label'] ) ? sanitize_text_field( wp_unslash( $_POST['label'] ) ) : '';
-        
+
         // Validate the label
         if ( empty( $label ) ) {
             wp_send_json_error( array( 'message' => __( 'Label is required.', 'wp-cpt-restapi' ) ) );
+        }
+
+        // Validate label length (max 100 characters)
+        if ( strlen( $label ) > 100 ) {
+            wp_send_json_error( array( 'message' => __( 'Label must be 100 characters or less.', 'wp-cpt-restapi' ) ) );
         }
         
         // Add the new key
