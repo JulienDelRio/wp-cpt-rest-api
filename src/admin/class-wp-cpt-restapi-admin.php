@@ -976,8 +976,15 @@ class WP_CPT_RestAPI_Admin {
         
         // Add the new key
         $new_key = $this->api_keys->add_key( $label );
-        
+
         if ( $new_key ) {
+            // Log successful API key creation
+            $this->log_security_event( 'key_created', array(
+                'label' => $label,
+                'key_id' => $new_key['id'],
+                'user' => wp_get_current_user()->user_login,
+            ) );
+
             wp_send_json_success( array(
                 'key' => $new_key,
                 'message' => __( 'API key created successfully.', 'wp-cpt-restapi' ),
@@ -1011,10 +1018,20 @@ class WP_CPT_RestAPI_Admin {
             wp_send_json_error( array( 'message' => __( 'Key ID is required.', 'wp-cpt-restapi' ) ) );
         }
         
+        // Get key info before deletion for logging
+        $key_info = $this->api_keys->get_key( $key_id );
+
         // Delete the key
         $deleted = $this->api_keys->delete_key( $key_id );
-        
+
         if ( $deleted ) {
+            // Log successful API key deletion
+            $this->log_security_event( 'key_deleted', array(
+                'key_id' => $key_id,
+                'label' => $key_info ? $key_info['label'] : 'unknown',
+                'user' => wp_get_current_user()->user_login,
+            ) );
+
             wp_send_json_success( array( 'message' => __( 'API key deleted successfully.', 'wp-cpt-restapi' ) ) );
         } else {
             wp_send_json_error( array( 'message' => __( 'Failed to delete API key.', 'wp-cpt-restapi' ) ) );
@@ -1055,6 +1072,45 @@ class WP_CPT_RestAPI_Admin {
      */
     public function is_toolset_relationships_enabled() {
         return (bool) get_option( $this->toolset_option_name, false );
+    }
+
+    /**
+     * Log security events to WordPress debug log.
+     *
+     * Only logs when WP_DEBUG_LOG is enabled. Creates standardized
+     * security event log entries for audit trail purposes.
+     *
+     * @since    0.2.1
+     * @param    string    $event_type    The type of security event (key_created, key_deleted).
+     * @param    array     $context       Additional context data for the event.
+     * @return   void
+     */
+    private function log_security_event( $event_type, $context = array() ) {
+        // Only log when WordPress debug logging is enabled
+        if ( ! defined( 'WP_DEBUG_LOG' ) || ! WP_DEBUG_LOG ) {
+            return;
+        }
+
+        $event_messages = array(
+            'key_created' => 'API key created',
+            'key_deleted' => 'API key deleted',
+        );
+
+        $message = isset( $event_messages[ $event_type ] ) ? $event_messages[ $event_type ] : 'Security event';
+
+        // Build context string
+        $context_parts = array();
+        foreach ( $context as $key => $value ) {
+            $context_parts[] = sprintf( '%s=%s', $key, $value );
+        }
+        $context_string = ! empty( $context_parts ) ? ' | ' . implode( ', ', $context_parts ) : '';
+
+        // Log the event
+        error_log( sprintf(
+            '[CPT REST API Security] %s%s',
+            $message,
+            $context_string
+        ) );
     }
 
 }

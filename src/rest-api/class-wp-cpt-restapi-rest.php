@@ -120,6 +120,11 @@ class WP_CPT_RestAPI_REST {
         
         // Check if the Authorization header is present and starts with 'Bearer '
         if ( empty( $auth_header ) || strpos( $auth_header, 'Bearer ' ) !== 0 ) {
+            // Log missing authentication attempt
+            $this->log_security_event( 'auth_missing', array(
+                'ip' => $this->get_client_ip(),
+                'endpoint' => $current_route,
+            ) );
             return $this->create_error_response( 'auth', 'no_auth' );
         }
 
@@ -128,6 +133,12 @@ class WP_CPT_RestAPI_REST {
 
         // Validate the token
         if ( ! $this->api_keys->validate_key( $token ) ) {
+            // Log failed authentication attempt
+            $this->log_security_event( 'auth_failed', array(
+                'ip' => $this->get_client_ip(),
+                'token_prefix' => substr( $token, 0, 8 ),
+                'endpoint' => $current_route,
+            ) );
             return $this->create_error_response( 'auth', 'invalid_key' );
         }
         
@@ -216,6 +227,76 @@ class WP_CPT_RestAPI_REST {
         // API key already validated in authenticate_api_key()
         // Valid key provides full access by design (see authorization model in get_items_permissions_check)
         return true;
+    }
+
+    /**
+     * Get the client IP address.
+     *
+     * Attempts to get the real client IP even behind proxies/load balancers.
+     *
+     * @since    0.2.1
+     * @return   string    The client IP address.
+     */
+    private function get_client_ip() {
+        $ip = '';
+
+        // Check for shared internet/ISP IP
+        if ( ! empty( $_SERVER['HTTP_CLIENT_IP'] ) && filter_var( $_SERVER['HTTP_CLIENT_IP'], FILTER_VALIDATE_IP ) ) {
+            $ip = sanitize_text_field( wp_unslash( $_SERVER['HTTP_CLIENT_IP'] ) );
+        }
+        // Check for IPs passing through proxies
+        elseif ( ! empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
+            // Can contain multiple IPs (client, proxy1, proxy2)
+            $ip_list = explode( ',', sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) );
+            $ip = trim( $ip_list[0] );
+        }
+        // Standard REMOTE_ADDR
+        elseif ( ! empty( $_SERVER['REMOTE_ADDR'] ) && filter_var( $_SERVER['REMOTE_ADDR'], FILTER_VALIDATE_IP ) ) {
+            $ip = sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) );
+        }
+
+        return $ip ? $ip : 'unknown';
+    }
+
+    /**
+     * Log security events to WordPress debug log.
+     *
+     * Only logs when WP_DEBUG_LOG is enabled. Creates standardized
+     * security event log entries for audit trail purposes.
+     *
+     * @since    0.2.1
+     * @param    string    $event_type    The type of security event (auth_failed, auth_missing, key_created, key_deleted).
+     * @param    array     $context       Additional context data for the event.
+     * @return   void
+     */
+    private function log_security_event( $event_type, $context = array() ) {
+        // Only log when WordPress debug logging is enabled
+        if ( ! defined( 'WP_DEBUG_LOG' ) || ! WP_DEBUG_LOG ) {
+            return;
+        }
+
+        $event_messages = array(
+            'auth_failed' => 'Failed authentication attempt',
+            'auth_missing' => 'Missing authentication header',
+            'key_created' => 'API key created',
+            'key_deleted' => 'API key deleted',
+        );
+
+        $message = isset( $event_messages[ $event_type ] ) ? $event_messages[ $event_type ] : 'Security event';
+
+        // Build context string
+        $context_parts = array();
+        foreach ( $context as $key => $value ) {
+            $context_parts[] = sprintf( '%s=%s', $key, $value );
+        }
+        $context_string = ! empty( $context_parts ) ? ' | ' . implode( ', ', $context_parts ) : '';
+
+        // Log the event
+        error_log( sprintf(
+            '[CPT REST API Security] %s%s',
+            $message,
+            $context_string
+        ) );
     }
 
     /**

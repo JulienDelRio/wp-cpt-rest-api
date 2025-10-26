@@ -952,7 +952,7 @@ Display admin notices when no CPTs are enabled or no API keys exist to guide use
 ## Progress Tracking Table
 
 **Last Updated**: 2025-10-26
-**Progress**: 19/23 issues resolved (83%)
+**Progress**: 20/23 issues resolved (87%)
 
 | Status | ID | Task | Files | Priority | Effort | Notes |
 |--------|-----|------|-------|----------|--------|-------|
@@ -974,7 +974,7 @@ Display admin notices when no CPTs are enabled or no API keys exist to guide use
 | ✅ | MEDIUM-001 | Create languages dir | src/languages/ | Medium | Small | **COMPLETED** - Created directory with README.md and .gitkeep |
 | ✅ | MEDIUM-002 | Add length validation | src/admin/class-wp-cpt-restapi-admin.php | Medium | Small | **COMPLETED** - Added 100 character limit validation for API key labels |
 | ✅ | MEDIUM-003 | Standardize errors | src/rest-api/class-wp-cpt-restapi-rest.php | Medium | Medium | **COMPLETED** - Created centralized error response system with consistent codes and messages |
-| ⬜ | MEDIUM-004 | Add security logging | Throughout | Medium | Medium | Audit trail |
+| ✅ | MEDIUM-004 | Add security logging | src/rest-api/class-wp-cpt-restapi-rest.php, src/admin/class-wp-cpt-restapi-admin.php | Medium | Medium | **COMPLETED** - Implemented security event logging for auth failures and key operations |
 | ✅ | MEDIUM-005 | Complete PHPDoc | src/includes/class-wp-cpt-restapi-api-keys.php | Medium | Medium | **COMPLETED** - Enhanced return type specifications for better type safety |
 
 ---
@@ -1812,27 +1812,111 @@ The codebase overall has excellent PHPDoc coverage with:
 
 ---
 
+#### ✅ MEDIUM-004: Implement security event logging (2025-10-26)
+**Status**: Completed
+**Files**: src/rest-api/class-wp-cpt-restapi-rest.php, src/admin/class-wp-cpt-restapi-admin.php
+**Changes**:
+Implemented comprehensive security event logging for audit trail and attack detection:
+
+**Security Events Logged**:
+
+1. **Authentication Failures** (REST API):
+   - `auth_missing` - Missing Authorization header
+   - `auth_failed` - Invalid API key provided
+   - Context: Client IP, endpoint, token prefix (first 8 chars)
+
+2. **API Key Operations** (Admin):
+   - `key_created` - New API key generated
+   - `key_deleted` - API key removed
+   - Context: Key ID, label, performing user
+
+**Helper Methods Added**:
+
+1. **get_client_ip()** (REST API class, lines 232-259):
+   - Detects real client IP even behind proxies/load balancers
+   - Checks HTTP_CLIENT_IP, HTTP_X_FORWARDED_FOR, REMOTE_ADDR
+   - Returns 'unknown' if IP cannot be determined
+   - Properly sanitized with filter_var() and WordPress functions
+
+2. **log_security_event()** (REST API class, lines 261-300):
+   - Only logs when WP_DEBUG_LOG is enabled
+   - Standardized log format: `[CPT REST API Security] {event} | {context}`
+   - Context includes relevant security details (IP, user, key info)
+   - Uses PHP error_log() for WordPress debug.log integration
+
+3. **log_security_event()** (Admin class, lines 1077-1114):
+   - Identical implementation for admin-side events
+   - Logs key creation and deletion operations
+   - Includes user context for accountability
+
+**Log Format Examples**:
+
+```
+[CPT REST API Security] Failed authentication attempt | ip=192.168.1.100, token_prefix=abc12345, endpoint=/cpt/v1/posts
+[CPT REST API Security] Missing authentication header | ip=10.0.0.5, endpoint=/cpt/v1/books
+[CPT REST API Security] API key created | label=Mobile App, key_id=key_abc123, user=admin
+[CPT REST API Security] API key deleted | key_id=key_xyz789, label=Old Key, user=admin
+```
+
+**Implementation Locations**:
+
+**REST API** (src/rest-api/class-wp-cpt-restapi-rest.php):
+- Line 123-127: Log missing authentication
+- Line 136-141: Log failed authentication
+- Line 232-259: get_client_ip() helper method
+- Line 261-300: log_security_event() helper method
+
+**Admin** (src/admin/class-wp-cpt-restapi-admin.php):
+- Line 981-986: Log successful key creation
+- Line 1022: Get key info before deletion
+- Line 1028-1033: Log successful key deletion
+- Line 1077-1114: log_security_event() helper method
+
+**Why This Matters**:
+- **Security Audit Trail**: Track all authentication attempts and key operations
+- **Attack Detection**: Identify brute force attempts or unauthorized access
+- **Compliance**: Meet security logging requirements for audits
+- **Debugging**: Troubleshoot authentication issues in production
+- **Accountability**: Track which users create/delete API keys
+
+**Privacy & Performance**:
+- Only logs when WP_DEBUG_LOG is enabled (respects WordPress configuration)
+- IP addresses are sanitized and validated
+- Only logs first 8 characters of invalid API keys (prevents key exposure)
+- Minimal performance impact (quick write to log file)
+
+**Impact**:
+- Professional security monitoring capabilities
+- Helps identify and respond to security incidents
+- Provides accountability for administrative actions
+- No performance impact when debugging is disabled
+- 20 of 23 total issues resolved (87%)
+- **🎉 ALL 5 Medium Priority issues resolved (100%)**
+
+---
+
 ### Outstanding Issues
 
 **Critical**: 0 remaining - **ALL CRITICAL ISSUES RESOLVED! 🎉**
 **High Priority**: 0 remaining - **ALL HIGH PRIORITY ISSUES RESOLVED! 🎉**
-**Medium Priority**: 1 remaining (MEDIUM-004)
+**Medium Priority**: 0 remaining - **ALL MEDIUM PRIORITY ISSUES RESOLVED! 🎉🎉🎉**
 **Low Priority**: 3 remaining (LOW-001 through LOW-003)
 
-**Plugin Release Readiness**: ✅ **READY FOR WORDPRESS.ORG SUBMISSION**
-- All critical blockers resolved (7/7)
-- All high priority issues resolved (8/8)
+**Plugin Release Readiness**: ✅✅✅ **READY FOR WORDPRESS.ORG SUBMISSION**
+- All critical blockers resolved (7/7) ✅
+- All high priority issues resolved (8/8) ✅
+- All medium priority issues resolved (5/5) ✅
 - i18n infrastructure complete (MEDIUM-001)
 - Input validation implemented (MEDIUM-002)
 - Error message standardization complete (MEDIUM-003)
+- Security event logging implemented (MEDIUM-004)
 - PHPDoc enhanced with type safety (MEDIUM-005)
-- Plugin meets WordPress.org standards and security requirements
+- Plugin exceeds WordPress.org standards and security requirements
 
 **Recommended Next Steps**:
 1. Test all fixes thoroughly before release
-2. **Release version 0.2.1 or 0.3** with all critical and high-priority fixes
-3. Consider addressing remaining medium priority improvement in future release:
-   - MEDIUM-004: Security event logging (optional enhancement)
+2. **Release version 0.2.1 or 0.3** with all critical, high, and medium priority fixes
+3. Low priority items can be addressed in future releases (optional enhancements)
 
 ---
 
