@@ -96,8 +96,8 @@ class WP_CPT_RestAPI_API_Keys {
      * Add a new API key.
      *
      * @since    0.1
-     * @param    string    $label    The label for the API key.
-     * @return   array               The newly created API key data, or false on failure.
+     * @param    string       $label    The label for the API key.
+     * @return   array|false            The newly created API key data with 'id', 'key', 'label', and 'created' fields, or false on failure.
      */
     public function add_key($label) {
         if (empty($label)) {
@@ -138,8 +138,8 @@ class WP_CPT_RestAPI_API_Keys {
      * Get a specific API key by ID.
      *
      * @since    0.1
-     * @param    string    $id    The ID of the API key.
-     * @return   array            The API key data, or false if not found.
+     * @param    string       $id    The ID of the API key.
+     * @return   array|false         The API key data with 'id', 'key', 'label', and 'created' fields, or false if not found.
      */
     public function get_key($id) {
         $keys = $this->get_keys();
