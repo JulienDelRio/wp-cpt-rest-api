@@ -95,3 +95,15 @@ Initial release of the plugin.
 == Privacy Policy ==
 
 This plugin does not collect any personal data.
+
+== Support ==
+
+Support is not guaranteed but issues can be opened on the GitHub repository:
+https://github.com/JulienDelRio/wp-cpt-rest-api/issues
+
+Please provide as much detail as possible when reporting issues, including:
+* WordPress version
+* PHP version
+* Plugin version
+* Steps to reproduce the issue
+* Expected behavior vs actual behavior
