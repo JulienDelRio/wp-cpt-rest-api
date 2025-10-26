@@ -46,3 +46,29 @@ wp-config.php
 # Note: If you wish to whitelist themes,
 # uncomment the next line
 #/wp-content/themes
+
+# Development & IDE files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Dependencies
+/node_modules/
+/vendor/
+
+# Build files
+/dist/
+/build/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Composer
+composer.phar
+/src/wp-cpt-rest-api.zip
+/wp-cpt-rest-api*.zip

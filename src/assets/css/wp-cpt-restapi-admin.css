@@ -1,0 +1,304 @@
+/**
+ * Admin styles for the WP CPT REST API plugin
+ */
+
+.cpt-rest-api-field-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+/* Tooltip container */
+.tooltip {
+    position: relative;
+    display: inline-block;
+    margin-left: 10px;
+    cursor: help;
+}
+
+/* Tooltip icon */
+.tooltip .dashicons {
+    color: #0073aa;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+}
+
+/* Tooltip text */
+.tooltip .tooltip-text {
+    visibility: hidden;
+    width: 300px;
+    background-color: #333;
+    color: #fff;
+    text-align: left;
+    border-radius: 4px;
+    padding: 10px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -150px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+/* Tooltip arrow */
+.tooltip .tooltip-text::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #333 transparent transparent transparent;
+}
+
+/* Show the tooltip text when hovering */
+.tooltip:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* API Keys Management Styles */
+.cpt-rest-api-keys-container {
+    margin-top: 20px;
+}
+
+.cpt-rest-api-keys-list {
+    margin-bottom: 30px;
+}
+
+.cpt-rest-api-no-keys {
+    padding: 10px;
+    background-color: #f0f0f1;
+    border-left: 4px solid #72aee6;
+    margin-bottom: 20px;
+}
+
+.api-key-code {
+    background-color: #f0f0f1;
+    padding: 5px 8px;
+    font-size: 13px;
+    border-radius: 3px;
+    word-break: break-all;
+    display: inline-block;
+    min-width: 200px;
+}
+
+.cpt-rest-api-create-key {
+    background-color: #fff;
+    border: 1px solid #dcdcde;
+    padding: 20px;
+    border-radius: 4px;
+}
+
+.cpt-rest-api-create-key h3 {
+    margin-top: 0;
+}
+
+.cpt-rest-api-create-key-form label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.cpt-rest-api-create-key-form input[type="text"] {
+    width: 100%;
+    max-width: 400px;
+    margin-bottom: 10px;
+}
+
+.cpt-rest-api-key-generated {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #f0f7ff;
+    border-left: 4px solid #72aee6;
+}
+
+.cpt-rest-api-key-display {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.cpt-rest-api-key-display code {
+    flex-grow: 1;
+    padding: 10px;
+    background-color: #fff;
+    border: 1px solid #dcdcde;
+    margin-right: 10px;
+    font-size: 14px;
+}
+
+.cpt-rest-api-key-display .button {
+    flex-shrink: 0;
+}
+
+/* Style for the REST API URL preview */
+#rest-api-preview {
+    background-color: #f0f0f1;
+    padding: 5px 8px;
+    font-size: 13px;
+    border-radius: 3px;
+    word-break: break-all;
+}
+
+/* Error styling for the input field */
+input.error {
+    border-color: #d63638;
+}
+
+/* Success message styling */
+.settings-error.updated {
+    border-left-color: #00a32a;
+}
+
+/* Styling for separated sections */
+.cpt-rest-api-section-separator {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #dcdcde;
+}
+
+/* Ensure proper spacing for the API Keys section when separated */
+.cpt-rest-api-keys-container {
+    margin-top: 0;
+}
+
+/* CPT Management Styles */
+.cpt-rest-api-cpts-container {
+    margin-top: 20px;
+}
+
+.cpt-rest-api-cpts-table {
+    margin-bottom: 20px;
+}
+
+.cpt-rest-api-cpts-table th {
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.cpt-rest-api-cpts-table td {
+    vertical-align: middle;
+}
+
+.cpt-rest-api-cpts-table .description {
+    color: #646970;
+    font-style: italic;
+    margin: 0;
+}
+
+.cpt-rest-api-cpts-table code {
+    background-color: #f0f0f1;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 12px;
+}
+
+/* Toggle Switch Styles */
+.cpt-rest-api-toggle-switch {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+}
+
+.cpt-rest-api-toggle-switch input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.cpt-rest-api-toggle-slider {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+    background-color: #dcdcde;
+    border-radius: 24px;
+    transition: background-color 0.3s ease;
+    margin-right: 10px;
+}
+
+.cpt-rest-api-toggle-slider::before {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    background-color: #fff;
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.cpt-rest-api-toggle-switch input[type="checkbox"]:checked + .cpt-rest-api-toggle-slider {
+    background-color: #2271b1;
+}
+
+.cpt-rest-api-toggle-switch input[type="checkbox"]:checked + .cpt-rest-api-toggle-slider::before {
+    transform: translateX(26px);
+}
+
+.cpt-rest-api-toggle-switch input[type="checkbox"]:focus + .cpt-rest-api-toggle-slider,
+.cpt-rest-api-toggle-slider.focused {
+    box-shadow: 0 0 0 2px #2271b1;
+}
+
+.cpt-rest-api-toggle-label {
+    font-weight: 600;
+    color: #1d2327;
+}
+
+/* CPT Actions */
+.cpt-rest-api-cpts-actions {
+    padding: 15px;
+    background-color: #f6f7f7;
+    border: 1px solid #dcdcde;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.cpt-rest-api-cpts-actions .button {
+    margin-bottom: 10px;
+}
+
+.cpt-rest-api-cpts-actions .description {
+    margin: 0;
+    font-size: 13px;
+    color: #646970;
+}
+
+/* Responsive adjustments */
+@media (max-width: 782px) {
+    .cpt-rest-api-cpts-table th,
+    .cpt-rest-api-cpts-table td {
+        padding: 8px 4px;
+        font-size: 13px;
+    }
+    
+    .cpt-rest-api-toggle-label {
+        display: none;
+    }
+    
+    .cpt-rest-api-toggle-slider {
+        margin-right: 0;
+    }
+}
+
+/* Field wrapper styling to replace form table structure */
+.cpt-rest-api-field-wrapper {
+    margin-bottom: 20px;
+    padding: 0;
+}
+
+.cpt-rest-api-field-wrapper:last-child {
+    margin-bottom: 0;
+}

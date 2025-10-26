@@ -1,0 +1,72 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(./**)",
+      "Write(./**)",
+      "Write(C:/dev/perso/wp-cpt-rest-api/**)",
+      "Read(C:/dev/perso/wp-cpt-rest-api/**)",
+
+      "Bash(mkdir:*)",
+      "Bash(tree:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(pwd:*)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(cd:*)",
+      "Bash(cd C:/dev/perso/wp-cpt-rest-api*:*)",
+
+      "Bash(git status*:*)",
+      "Bash(git log*:*)",
+      "Bash(git diff*:*)",
+      "Bash(git branch*:*)",
+      "Bash(git add*:*)",
+      "Bash(git commit*:*)",
+
+      "Bash(npm run:*)",
+      "Bash(npm test:*)",
+
+      "Bash(docker ps:*)",
+      "Bash(docker logs:*)"
+    ],
+    "ask": [
+      "Bash(git push:*)",
+      "Bash(git pull:*)",
+      "Bash(git merge:*)",
+      "Bash(git rebase:*)",
+      "Bash(git reset:*)",
+      "Bash(git clean:*)",
+      "Bash(git checkout:*)",
+      "Bash(git switch:*)",
+
+      "Bash(rm:*)",
+      "Bash(rm -r:*)",
+      "Bash(rm -rf:*)",
+
+      "Bash(docker run:*)",
+      "Bash(docker-compose:*)",
+      "Bash(docker compose:*)",
+      "Bash(sudo:*)",
+      "Bash(chmod:*)",
+      "Bash(chown:*)",
+
+      "Bash(npm install:*)",
+      "Bash(pip install:*)",
+      "Bash(yarn:*)",
+      "Bash(pnpm:*)",
+      "Bash(node:*)",
+      "Bash(npx:*)",
+
+      "Write(.env*)",
+      "Write(config/*.prod*)",
+      "Write(package.json:*)",
+      "Write(package-lock.json:*)",
+      "Write(../**)",
+      "Write(C:/**)",
+      "Write(/**)",
+      "Read(C:/**)",
+      "Read(/**)"
+    ],
+    "deny": ["Bash(rm -rf /:*)", "Bash(rm -rf ~:*)", "Bash(:(){ :|:& };::*)"]
+  }
+}
