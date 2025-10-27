@@ -6,8 +6,8 @@ Requires at least: 6.0
 Tested up to: 6.6
 Stable tag: 1.0.0
 Requires PHP: 7.4
-License: GPLv2 or later
-License URI: https://www.gnu.org/licenses/gpl-2.0.html
+License: Apache 2.0
+License URI: http://www.apache.org/licenses/LICENSE-2.0
 
 A robust WordPress plugin that extends the native REST API functionalities to provide comprehensive endpoints for Custom Post Types and their associated metadata.
 
