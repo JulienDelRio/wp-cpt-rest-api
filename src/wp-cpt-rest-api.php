@@ -11,7 +11,7 @@
  * Requires at least: 6.0
  * Tested up to: 6.6
  * Requires PHP: 7.4
- * Text Domain: wp-cpt-restapi
+ * Text Domain: wp-cpt-rest-api
  * Domain Path: /languages
  *
  * @package WP_CPT_RestAPI
@@ -96,7 +96,7 @@ function run_wp_cpt_restapi() {
  */
 function wp_cpt_restapi_load_textdomain() {
 	load_plugin_textdomain(
-		'wp-cpt-restapi',
+		'wp-cpt-rest-api',
 		false,
 		dirname( plugin_basename( __FILE__ ) ) . '/languages'
 	);
