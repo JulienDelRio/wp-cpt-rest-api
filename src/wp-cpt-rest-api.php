@@ -93,6 +93,12 @@ function run_wp_cpt_restapi() {
 
 /**
  * Load plugin text domain for translations.
+ *
+ * Note: As of WordPress 4.6+, WordPress.org automatically loads translations
+ * for plugins hosted in the directory. This function is maintained for backwards
+ * compatibility and for installations from other sources (e.g., GitHub, manual installs).
+ *
+ * @since 0.1
  */
 function wp_cpt_restapi_load_textdomain() {
 	load_plugin_textdomain(
