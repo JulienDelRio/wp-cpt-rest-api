@@ -35,7 +35,7 @@ For more detailed information, please refer to the [readme.txt](src/readme.txt) 
 
 ## License
 
-This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the GNU General Public License v2.0 or later - see the [LICENSE](LICENSE) file for details.
 
 ## Author
 
