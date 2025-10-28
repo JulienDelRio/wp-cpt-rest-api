@@ -2,7 +2,7 @@
 
 ## Overview
 
-The WordPress Custom Post Types REST API plugin uses a **binary API key authentication model** designed for external API integration scenarios (mobile apps, third-party services, integrations).
+The Custom Post Types REST API plugin uses a **binary API key authentication model** designed for external API integration scenarios (mobile apps, third-party services, integrations).
 
 ## API Key Access Model
 

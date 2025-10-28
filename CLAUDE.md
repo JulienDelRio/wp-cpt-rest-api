@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-WordPress Custom Post Types RestAPI is a WordPress plugin that extends the native REST API to provide comprehensive endpoints for Custom Post Types and their metadata. The plugin is currently at version 0.2 and requires WordPress 6.0+ and PHP 7.4+.
+Custom Post Types RestAPI is a WordPress plugin that extends the native REST API to provide comprehensive endpoints for Custom Post Types and their metadata. The plugin is currently at version 0.2 and requires WordPress 6.0+ and PHP 7.4+.
 
 ## Development Workflow
 
