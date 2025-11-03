@@ -94,6 +94,10 @@ class WP_CPT_RestAPI_Admin {
 
         // Add admin notices for configuration guidance
         add_action( 'admin_notices', array( $this, 'display_admin_notices' ) );
+
+        // Add migration hooks for API key security update
+        add_action( 'admin_init', array( $this, 'handle_key_migration' ) );
+        add_action( 'admin_notices', array( $this, 'display_migration_notice' ) );
     }
 
     /**
@@ -1271,6 +1275,43 @@ class WP_CPT_RestAPI_Admin {
             $message,
             $context_string
         ) );
+    }
+
+    /**
+     * Handle key migration form submission.
+     *
+     * @since    0.3
+     */
+    public function handle_key_migration() {
+        if (!isset($_POST['cpt_rest_api_migrate_keys'])) {
+            return;
+        }
+
+        // Verify nonce
+        if (!isset($_POST['cpt_rest_api_migrate_nonce']) ||
+            !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['cpt_rest_api_migrate_nonce'])), 'cpt_rest_api_migrate_keys')) {
+            wp_die(__('Security check failed.', 'wp-cpt-rest-api'));
+        }
+
+        // Check capabilities
+        if (!current_user_can('manage_options')) {
+            wp_die(__('Insufficient permissions.', 'wp-cpt-rest-api'));
+        }
+
+        // Perform migration
+        $result = $this->api_keys->migrate_to_hashed_keys();
+
+        // Show result
+        add_settings_error(
+            'cpt_rest_api_migration',
+            'migration_complete',
+            $result['message'],
+            $result['success'] ? 'updated' : 'info'
+        );
+
+        // Redirect
+        wp_redirect(admin_url('options-general.php?page=cpt-rest-api'));
+        exit;
     }
 
     /**
