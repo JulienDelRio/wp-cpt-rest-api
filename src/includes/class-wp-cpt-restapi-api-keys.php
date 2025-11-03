@@ -103,24 +103,35 @@ class WP_CPT_RestAPI_API_Keys {
         if (empty($label)) {
             return false;
         }
-        
+
         $keys = $this->get_keys();
         $key = $this->generate_key();
-        
+
+        // Hash the key before storage (security improvement for version 0.3)
+        $key_hash = wp_hash_password($key);
+        $key_prefix = substr($key, 0, 4);
+
         // Create a new key entry
         $new_key = array(
             'id'         => uniqid('key_'),
             'label'      => sanitize_text_field($label),
-            'key'        => $key,
+            'key_hash'   => $key_hash,      // Store hash instead of plaintext
+            'key_prefix' => $key_prefix,    // Store prefix for display
             'created_at' => current_time('mysql'),
         );
-        
+
         $keys[] = $new_key;
-        
+
         // Update the option
         $updated = update_option($this->option_name, $keys);
-        
-        return $updated ? $new_key : false;
+
+        if ($updated) {
+            // Return plaintext key ONLY once (not stored in database)
+            $new_key['key'] = $key;
+            return $new_key;
+        }
+
+        return false;
     }
 
     /**
