@@ -124,9 +124,9 @@ array(
 - ✅ **Task 2**: Update API Keys Class - Key Validation (Completed: 2025-11-03)
 - ✅ **Task 3**: Update Admin Class - Table Display (Completed: 2025-11-03)
 - ✅ **Task 4**: Update Admin Class - Key Creation Display (Completed: 2025-11-03)
+- ✅ **Task 5**: Create Migration Function (Completed: 2025-11-03)
 
 ### In Progress
-- ⏳ Task 5: Create Migration Function
 - ⏳ Task 6: Add Migration Admin Notice
 - ⏳ Task 7: Add Migration Handler
 - ⏳ Task 8: Update JavaScript
@@ -289,7 +289,7 @@ public function validate_key($key) {
 
 ---
 
-### Task 5: Create Migration Function
+### Task 5: Create Migration Function ✅ COMPLETED
 **File**: `src/includes/class-wp-cpt-restapi-api-keys.php`
 **New Method**: `migrate_to_hashed_keys()`
 

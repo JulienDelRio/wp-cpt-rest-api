@@ -219,4 +219,58 @@ class WP_CPT_RestAPI_API_Keys {
 
         return false;
     }
+
+    /**
+     * Migrate existing plaintext keys to hashed format.
+     *
+     * WARNING: This is a destructive operation. All existing plaintext keys
+     * will be deleted. Users must regenerate their API keys.
+     *
+     * @since    0.3
+     * @return   array    Migration results.
+     */
+    public function migrate_to_hashed_keys() {
+        $keys = $this->get_keys();
+        $plaintext_count = 0;
+
+        // Check for old format (plaintext 'key' field)
+        foreach ($keys as $key_data) {
+            if (isset($key_data['key']) && !isset($key_data['key_hash'])) {
+                $plaintext_count++;
+            }
+        }
+
+        // Delete all plaintext keys
+        if ($plaintext_count > 0) {
+            update_option($this->option_name, array());
+
+            // Log migration
+            if (defined('WP_DEBUG_LOG') && WP_DEBUG_LOG) {
+                error_log(sprintf(
+                    '[CPT REST API Security] Migration: Deleted %d plaintext API keys',
+                    $plaintext_count
+                ));
+            }
+
+            return array(
+                'success' => true,
+                'deleted_count' => $plaintext_count,
+                'message' => sprintf(
+                    _n(
+                        'Security update: %d plaintext key was deleted. Please regenerate your API keys.',
+                        'Security update: %d plaintext keys were deleted. Please regenerate your API keys.',
+                        $plaintext_count,
+                        'wp-cpt-rest-api'
+                    ),
+                    $plaintext_count
+                )
+            );
+        }
+
+        return array(
+            'success' => false,
+            'deleted_count' => 0,
+            'message' => __('No migration needed.', 'wp-cpt-rest-api')
+        );
+    }
 }
