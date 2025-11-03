@@ -867,7 +867,7 @@ class WP_CPT_RestAPI_Admin {
                         <thead>
                             <tr>
                                 <th><?php echo esc_html__( 'Label', 'wp-cpt-rest-api' ); ?></th>
-                                <th><?php echo esc_html__( 'API Key', 'wp-cpt-rest-api' ); ?></th>
+                                <th><?php echo esc_html__( 'Key Prefix', 'wp-cpt-rest-api' ); ?></th>
                                 <th><?php echo esc_html__( 'Created', 'wp-cpt-rest-api' ); ?></th>
                                 <th><?php echo esc_html__( 'Actions', 'wp-cpt-rest-api' ); ?></th>
                             </tr>
@@ -877,7 +877,15 @@ class WP_CPT_RestAPI_Admin {
                                 <tr>
                                     <td><?php echo esc_html( $key['label'] ); ?></td>
                                     <td>
-                                        <code class="api-key-code"><?php echo esc_html( $key['key'] ); ?></code>
+                                        <code class="api-key-prefix">
+                                            <?php
+                                            $prefix = isset($key['key_prefix']) ? $key['key_prefix'] : '****';
+                                            echo esc_html( $prefix );
+                                            ?>••••••••••••••••••••••••••••
+                                        </code>
+                                        <span class="description" style="display: block; margin-top: 5px; font-style: italic;">
+                                            <?php echo esc_html__( 'Full key hidden for security', 'wp-cpt-rest-api' ); ?>
+                                        </span>
                                     </td>
                                     <td><?php echo esc_html( date_i18n( get_option( 'date_format' ), strtotime( $key['created_at'] ) ) ); ?></td>
                                     <td>
