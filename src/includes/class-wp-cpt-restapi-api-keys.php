@@ -195,9 +195,8 @@ class WP_CPT_RestAPI_API_Keys {
     /**
      * Validate an API key.
      *
-     * Uses hash_equals() for constant-time comparison to prevent timing attacks.
-     * The parameters to hash_equals() are ordered with known value first, user input second
-     * for best security practices.
+     * Uses wp_check_password() for secure bcrypt hash verification with constant-time comparison
+     * to prevent timing attacks.
      *
      * @since    0.1
      * @param    string    $key    The API key to validate.
@@ -212,8 +211,8 @@ class WP_CPT_RestAPI_API_Keys {
         }
 
         foreach ($keys as $key_data) {
-            // hash_equals parameters: compare known string first, user input second
-            if ( hash_equals( (string) $key_data['key'], (string) $key ) ) {
+            // Use wp_check_password for bcrypt verification (constant-time comparison built-in)
+            if ( isset($key_data['key_hash']) && wp_check_password( $key, $key_data['key_hash'] ) ) {
                 return true;
             }
         }
