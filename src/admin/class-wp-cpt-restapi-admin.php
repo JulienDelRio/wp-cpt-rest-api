@@ -961,6 +961,9 @@ class WP_CPT_RestAPI_Admin {
                         <p style="margin: 8px 0 0 0;">
                             <?php echo esc_html__( 'Copy it now and store it securely. If you lose this key, you will need to generate a new one.', 'wp-cpt-rest-api' ); ?>
                         </p>
+                        <p style="margin: 8px 0 0 0;">
+                            <em><?php echo esc_html__( 'Note: Refresh the page to see this key in the list below.', 'wp-cpt-rest-api' ); ?></em>
+                        </p>
                     </div>
                     <div class="cpt-rest-api-key-display">
                         <code id="cpt_rest_api_new_key" style="display: block; padding: 10px; background: #f0f0f1; font-size: 14px; word-break: break-all;"></code>

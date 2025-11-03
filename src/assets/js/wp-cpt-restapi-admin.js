@@ -90,10 +90,8 @@
                         // Clear the label field
                         $('#cpt_rest_api_key_label').val('');
 
-                        // Reload the page after a delay to show the updated list
-                        setTimeout(function() {
-                            location.reload();
-                        }, 5000);
+                        // Note: Key remains visible until page is manually refreshed
+                        // This gives users time to copy and store the key securely
                     } else {
                         alert(response.data.message);
                     }
