@@ -928,14 +928,23 @@ class WP_CPT_RestAPI_Admin {
                 </div>
                 
                 <div class="cpt-rest-api-key-generated" style="display: none;">
-                    <h4><?php echo esc_html__( 'API Key Generated', 'wp-cpt-rest-api' ); ?></h4>
-                    <p class="description">
-                        <?php echo esc_html__( 'Make sure to copy your API key now. You won\'t be able to see it again!', 'wp-cpt-rest-api' ); ?>
-                    </p>
+                    <div class="notice notice-warning inline" style="margin: 0 0 15px 0; padding: 12px;">
+                        <h4 style="margin-top: 0;">
+                            <span class="dashicons dashicons-warning" style="color: #f56e28;"></span>
+                            <?php echo esc_html__( 'Important: Save Your API Key Now', 'wp-cpt-rest-api' ); ?>
+                        </h4>
+                        <p style="margin: 8px 0;">
+                            <strong><?php echo esc_html__( 'This key will only be displayed once and cannot be recovered.', 'wp-cpt-rest-api' ); ?></strong>
+                        </p>
+                        <p style="margin: 8px 0 0 0;">
+                            <?php echo esc_html__( 'Copy it now and store it securely. If you lose this key, you will need to generate a new one.', 'wp-cpt-rest-api' ); ?>
+                        </p>
+                    </div>
                     <div class="cpt-rest-api-key-display">
-                        <code id="cpt_rest_api_new_key"></code>
-                        <button type="button" class="button cpt-rest-api-copy-key">
-                            <?php echo esc_html__( 'Copy', 'wp-cpt-rest-api' ); ?>
+                        <code id="cpt_rest_api_new_key" style="display: block; padding: 10px; background: #f0f0f1; font-size: 14px; word-break: break-all;"></code>
+                        <button type="button" class="button cpt-rest-api-copy-key" style="margin-top: 10px;">
+                            <span class="dashicons dashicons-clipboard"></span>
+                            <?php echo esc_html__( 'Copy Key', 'wp-cpt-rest-api' ); ?>
                         </button>
                     </div>
                 </div>
