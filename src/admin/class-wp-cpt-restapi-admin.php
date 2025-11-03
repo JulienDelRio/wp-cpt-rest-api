@@ -112,9 +112,14 @@ class WP_CPT_RestAPI_Admin {
             return;
         }
 
-        // Use file modification time as version for cache busting during development
-        $css_file = WP_CPT_RESTAPI_PLUGIN_DIR . 'assets/css/wp-cpt-restapi-admin.css';
-        $version = file_exists( $css_file ) ? filemtime( $css_file ) : WP_CPT_RESTAPI_VERSION;
+        // Determine version for cache busting
+        // In development mode: use file modification time for automatic cache invalidation
+        // In production mode: use plugin version for stability
+        $version = WP_CPT_RESTAPI_VERSION;
+        if ( defined( 'WP_CPT_RESTAPI_DEV_MODE' ) && WP_CPT_RESTAPI_DEV_MODE ) {
+            $css_file = WP_CPT_RESTAPI_PLUGIN_DIR . 'assets/css/wp-cpt-restapi-admin.css';
+            $version = file_exists( $css_file ) ? filemtime( $css_file ) : WP_CPT_RESTAPI_VERSION;
+        }
 
         wp_enqueue_style(
             'wp-cpt-restapi-admin',
@@ -137,9 +142,14 @@ class WP_CPT_RestAPI_Admin {
             return;
         }
 
-        // Use file modification time as version for cache busting during development
-        $js_file = WP_CPT_RESTAPI_PLUGIN_DIR . 'assets/js/wp-cpt-restapi-admin.js';
-        $version = file_exists( $js_file ) ? filemtime( $js_file ) : WP_CPT_RESTAPI_VERSION;
+        // Determine version for cache busting
+        // In development mode: use file modification time for automatic cache invalidation
+        // In production mode: use plugin version for stability
+        $version = WP_CPT_RESTAPI_VERSION;
+        if ( defined( 'WP_CPT_RESTAPI_DEV_MODE' ) && WP_CPT_RESTAPI_DEV_MODE ) {
+            $js_file = WP_CPT_RESTAPI_PLUGIN_DIR . 'assets/js/wp-cpt-restapi-admin.js';
+            $version = file_exists( $js_file ) ? filemtime( $js_file ) : WP_CPT_RESTAPI_VERSION;
+        }
 
         wp_enqueue_script(
             'wp-cpt-restapi-admin',

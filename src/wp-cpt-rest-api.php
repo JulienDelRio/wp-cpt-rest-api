@@ -28,6 +28,17 @@ define( 'WP_CPT_RESTAPI_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'WP_CPT_RESTAPI_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'WP_CPT_RESTAPI_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
 
+// Load development configuration if it exists (not tracked in version control)
+$dev_config_file = WP_CPT_RESTAPI_PLUGIN_DIR . 'dev-config.php';
+if ( file_exists( $dev_config_file ) ) {
+    require_once $dev_config_file;
+}
+
+// Set default development mode if not defined
+if ( ! defined( 'WP_CPT_RESTAPI_DEV_MODE' ) ) {
+    define( 'WP_CPT_RESTAPI_DEV_MODE', false );
+}
+
 /**
  * The code that runs during plugin activation.
  */
