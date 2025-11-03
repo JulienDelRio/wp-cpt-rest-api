@@ -773,12 +773,30 @@ class WP_CPT_RestAPI_Admin {
                 submit_button( __( 'Save Settings', 'wp-cpt-rest-api' ) );
                 ?>
             </form>
-            
+
             <hr>
-            
+
             <!-- Section 2: API Keys Management -->
             <h2><?php echo esc_html__( 'API Keys Management', 'wp-cpt-rest-api' ); ?></h2>
-            
+
+            <?php
+            // Check if migration is needed
+            $keys = $this->api_keys->get_keys();
+            $needs_migration = false;
+            $plaintext_keys = array();
+
+            foreach ($keys as $key_data) {
+                if (isset($key_data['key']) && !isset($key_data['key_hash'])) {
+                    $needs_migration = true;
+                    $plaintext_keys[] = $key_data;
+                }
+            }
+
+            if ($needs_migration) {
+                $this->render_migration_section($plaintext_keys);
+            }
+            ?>
+
             <div class="cpt-rest-api-section-separator">
                 <h3><?php echo esc_html__( 'API Keys', 'wp-cpt-rest-api' ); ?></h3>
                 <p><?php echo esc_html__( 'Create and manage API keys for accessing the REST API endpoints.', 'wp-cpt-rest-api' ); ?></p>
@@ -1315,12 +1333,83 @@ class WP_CPT_RestAPI_Admin {
     }
 
     /**
+     * Render the migration section on the plugin settings page.
+     *
+     * @since    1.0.1
+     * @param    array    $plaintext_keys    Array of keys that need migration.
+     */
+    private function render_migration_section($plaintext_keys) {
+        ?>
+        <div class="notice notice-error inline" style="margin: 20px 0; padding: 15px;">
+            <h3 style="margin-top: 0;">
+                <span class="dashicons dashicons-shield-alt" style="color: #d63638;"></span>
+                <?php echo esc_html__('Critical Security Update Required', 'wp-cpt-rest-api'); ?>
+            </h3>
+            <p>
+                <strong><?php echo esc_html__('Your API keys are stored insecurely and must be migrated to secure hashed storage.', 'wp-cpt-rest-api'); ?></strong>
+            </p>
+            <p>
+                <?php echo esc_html__('The plugin now uses industry-standard bcrypt hashing for API keys. Your existing keys are stored in plaintext and are vulnerable if your database is compromised.', 'wp-cpt-rest-api'); ?>
+            </p>
+
+            <h4><?php echo esc_html__('Existing Keys to be Removed:', 'wp-cpt-rest-api'); ?></h4>
+            <p><?php echo esc_html__('Review the list of keys below. These will be permanently deleted during migration. Make note of where each key is used so you can update your services with new keys after migration.', 'wp-cpt-rest-api'); ?></p>
+
+            <table class="widefat striped" style="margin: 10px 0; max-width: 600px;">
+                <thead>
+                    <tr>
+                        <th><?php echo esc_html__('Label', 'wp-cpt-rest-api'); ?></th>
+                        <th><?php echo esc_html__('Key Prefix', 'wp-cpt-rest-api'); ?></th>
+                        <th><?php echo esc_html__('Created', 'wp-cpt-rest-api'); ?></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($plaintext_keys as $key_data): ?>
+                        <tr>
+                            <td><strong><?php echo esc_html($key_data['label']); ?></strong></td>
+                            <td><code><?php echo esc_html(substr($key_data['key'], 0, 4)) . '...'; ?></code></td>
+                            <td><?php echo esc_html(date_i18n(get_option('date_format') . ' ' . get_option('time_format'), strtotime($key_data['created_at']))); ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+
+            <h4><?php echo esc_html__('What will happen during migration:', 'wp-cpt-rest-api'); ?></h4>
+            <ul style="list-style: disc; margin-left: 25px;">
+                <li><?php echo esc_html__('All existing API keys listed above will be permanently deleted', 'wp-cpt-rest-api'); ?></li>
+                <li><?php echo esc_html__('You must regenerate new secure keys after migration', 'wp-cpt-rest-api'); ?></li>
+                <li><?php echo esc_html__('All services using the API must be updated with new keys', 'wp-cpt-rest-api'); ?></li>
+                <li><?php echo esc_html__('New keys will only be visible once upon creation (store them securely)', 'wp-cpt-rest-api'); ?></li>
+                <li><?php echo esc_html__('New keys will be stored as secure bcrypt hashes', 'wp-cpt-rest-api'); ?></li>
+            </ul>
+
+            <form method="post" action="" style="margin-top: 20px;">
+                <?php wp_nonce_field('cpt_rest_api_migrate_keys', 'cpt_rest_api_migrate_nonce'); ?>
+                <input type="hidden" name="cpt_rest_api_migrate_keys" value="1">
+                <p>
+                    <button type="submit" class="button button-primary button-large" onclick="return confirm('<?php echo esc_js(__('Are you sure you want to migrate? All existing keys will be deleted and you will need to regenerate new keys.', 'wp-cpt-rest-api')); ?>');">
+                        <span class="dashicons dashicons-update" style="margin-top: 3px;"></span>
+                        <?php echo esc_html__('Migrate to Secure Keys Now', 'wp-cpt-rest-api'); ?>
+                    </button>
+                </p>
+            </form>
+        </div>
+        <?php
+    }
+
+    /**
      * Display admin notice for required key migration.
      *
      * @since    0.3
      */
     public function display_migration_notice() {
         if (!current_user_can('manage_options')) {
+            return;
+        }
+
+        // Don't show on plugin settings page - migration UI is there
+        $screen = get_current_screen();
+        if ($screen && $screen->id === 'settings_page_cpt-rest-api') {
             return;
         }
 
@@ -1339,6 +1428,7 @@ class WP_CPT_RestAPI_Admin {
             return;
         }
 
+        $settings_url = admin_url('options-general.php?page=cpt-rest-api');
         ?>
         <div class="notice notice-error">
             <h3 style="margin-top: 12px;">
@@ -1351,22 +1441,11 @@ class WP_CPT_RestAPI_Admin {
             <p>
                 <?php echo esc_html__('This plugin now uses secure hashing for API keys. Your existing keys are stored in plaintext and vulnerable.', 'wp-cpt-rest-api'); ?>
             </p>
-            <h4><?php echo esc_html__('What will happen:', 'wp-cpt-rest-api'); ?></h4>
-            <ul style="list-style: disc; margin-left: 25px;">
-                <li><?php echo esc_html__('All existing API keys will be permanently deleted', 'wp-cpt-rest-api'); ?></li>
-                <li><?php echo esc_html__('You must regenerate new secure keys', 'wp-cpt-rest-api'); ?></li>
-                <li><?php echo esc_html__('All services using the API must be updated with new keys', 'wp-cpt-rest-api'); ?></li>
-                <li><?php echo esc_html__('New keys will only be visible once upon creation', 'wp-cpt-rest-api'); ?></li>
-            </ul>
-            <form method="post" action="" style="margin-top: 15px;">
-                <?php wp_nonce_field('cpt_rest_api_migrate_keys', 'cpt_rest_api_migrate_nonce'); ?>
-                <input type="hidden" name="cpt_rest_api_migrate_keys" value="1">
-                <p>
-                    <button type="submit" class="button button-primary button-large">
-                        <?php echo esc_html__('Migrate to Secure Keys Now', 'wp-cpt-rest-api'); ?>
-                    </button>
-                </p>
-            </form>
+            <p>
+                <a href="<?php echo esc_url($settings_url); ?>" class="button button-primary button-large">
+                    <?php echo esc_html__('Go to Plugin Settings to Migrate Keys', 'wp-cpt-rest-api'); ?>
+                </a>
+            </p>
         </div>
         <?php
     }
