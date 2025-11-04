@@ -112,10 +112,10 @@ class WP_CPT_RestAPI_REST {
         // Get the Authorization header - preserve Bearer token format
         $auth_header = '';
         if ( isset( $_SERVER['HTTP_AUTHORIZATION'] ) ) {
-            $auth_header = wp_unslash( $_SERVER['HTTP_AUTHORIZATION'] );
+            $auth_header = sanitize_text_field( wp_unslash( $_SERVER['HTTP_AUTHORIZATION'] ) );
         } elseif ( isset( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) ) {
             // Some server configs use REDIRECT_HTTP_AUTHORIZATION
-            $auth_header = wp_unslash( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] );
+            $auth_header = sanitize_text_field( wp_unslash( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) );
         }
         
         // Check if the Authorization header is present and starts with 'Bearer '
