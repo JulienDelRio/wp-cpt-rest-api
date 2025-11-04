@@ -166,13 +166,16 @@ class WP_CPT_RestAPI_Admin {
             array(
                 'nonce'  => wp_create_nonce( 'cpt_rest_api' ),
                 'i18n'   => array(
-                    'emptyLabel'   => esc_js( __( 'Please enter a label for the API key.', 'wp-cpt-rest-api' ) ),
-                    'generating'   => esc_js( __( 'Generating...', 'wp-cpt-rest-api' ) ),
-                    'generateKey'  => esc_js( __( 'Generate API Key', 'wp-cpt-rest-api' ) ),
-                    'copy'         => esc_js( __( 'Copy', 'wp-cpt-rest-api' ) ),
-                    'copied'       => esc_js( __( 'Copied!', 'wp-cpt-rest-api' ) ),
-                    'copyFailed'   => esc_js( __( 'Failed to copy. Please try again.', 'wp-cpt-rest-api' ) ),
-                    'ajaxError'    => esc_js( __( 'An error occurred. Please try again.', 'wp-cpt-rest-api' ) ),
+                    'emptyLabel'       => esc_js( __( 'Please enter a label for the API key.', 'wp-cpt-rest-api' ) ),
+                    'generating'       => esc_js( __( 'Generating...', 'wp-cpt-rest-api' ) ),
+                    'generateKey'      => esc_js( __( 'Generate API Key', 'wp-cpt-rest-api' ) ),
+                    'copy'             => esc_js( __( 'Copy', 'wp-cpt-rest-api' ) ),
+                    'copied'           => esc_js( __( 'Copied!', 'wp-cpt-rest-api' ) ),
+                    'copyFailed'       => esc_js( __( 'Failed to copy. Please try again.', 'wp-cpt-rest-api' ) ),
+                    'ajaxError'        => esc_js( __( 'An error occurred. Please try again.', 'wp-cpt-rest-api' ) ),
+                    'resetCptsConfirm' => esc_js( __( 'Are you sure you want to deactivate all Custom Post Types? This action will uncheck all toggle switches.', 'wp-cpt-rest-api' ) ),
+                    'resetting'        => esc_js( __( 'Resetting...', 'wp-cpt-rest-api' ) ),
+                    'resetAll'         => esc_js( __( 'Reset All', 'wp-cpt-rest-api' ) ),
                 ),
             )
         );

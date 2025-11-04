@@ -181,12 +181,12 @@
         
         // Reset All CPTs
         $('.cpt-rest-api-reset-cpts').on('click', function() {
-            const confirmMessage = 'Are you sure you want to deactivate all Custom Post Types? This action will uncheck all toggle switches.';
-            
+            const confirmMessage = cptRestApiAdmin.i18n.resetCptsConfirm;
+
             if (!confirm(confirmMessage)) {
                 return;
             }
-            
+
             $.ajax({
                 url: ajaxurl,
                 type: 'POST',
@@ -195,13 +195,13 @@
                     nonce: cptRestApiAdmin.nonce
                 },
                 beforeSend: function() {
-                    $('.cpt-rest-api-reset-cpts').prop('disabled', true).text('Resetting...');
+                    $('.cpt-rest-api-reset-cpts').prop('disabled', true).text(cptRestApiAdmin.i18n.resetting);
                 },
                 success: function(response) {
                     if (response.success) {
                         // Uncheck all CPT toggles
                         $('.cpt-rest-api-toggle-switch input[type="checkbox"]').prop('checked', false);
-                        
+
                         // Show success message
                         alert(response.data.message);
                     } else {
@@ -212,7 +212,7 @@
                     alert(cptRestApiAdmin.i18n.ajaxError);
                 },
                 complete: function() {
-                    $('.cpt-rest-api-reset-cpts').prop('disabled', false).text('Reset All');
+                    $('.cpt-rest-api-reset-cpts').prop('disabled', false).text(cptRestApiAdmin.i18n.resetAll);
                 }
             });
         });
