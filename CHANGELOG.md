@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Added translators comment for `_n()` pluralization function to help translators understand context.
+- Improved output escaping in error messages by using `esc_html__()` instead of `__()` in `wp_die()` calls.
+- Removed `load_plugin_textdomain()` function call for WordPress.org compliance (WordPress automatically loads translations since 4.6+).
+
+### Changed
+
+- Updated Plugin Check compliance to resolve all critical errors for WordPress.org submission.
+- Enhanced i18n implementation with proper translator comments for pluralization.
+
 ## [1.1.0] - 2025-11-04
 
 ### Added
