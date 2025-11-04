@@ -256,6 +256,7 @@ class WP_CPT_RestAPI_API_Keys {
                 'success' => true,
                 'deleted_count' => $plaintext_count,
                 'message' => sprintf(
+                    /* translators: %d: number of plaintext API keys that were deleted */
                     _n(
                         'Security update: %d plaintext key was deleted. Please regenerate your API keys.',
                         'Security update: %d plaintext keys were deleted. Please regenerate your API keys.',

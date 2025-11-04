@@ -1334,12 +1334,12 @@ class WP_CPT_RestAPI_Admin {
         // Verify nonce
         if (!isset($_POST['cpt_rest_api_migrate_nonce']) ||
             !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['cpt_rest_api_migrate_nonce'])), 'cpt_rest_api_migrate_keys')) {
-            wp_die(__('Security check failed.', 'wp-cpt-rest-api'));
+            wp_die(esc_html__('Security check failed.', 'wp-cpt-rest-api'));
         }
 
         // Check capabilities
         if (!current_user_can('manage_options')) {
-            wp_die(__('Insufficient permissions.', 'wp-cpt-rest-api'));
+            wp_die(esc_html__('Insufficient permissions.', 'wp-cpt-rest-api'));
         }
 
         // Perform migration
