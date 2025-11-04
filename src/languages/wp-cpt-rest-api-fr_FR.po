@@ -2,10 +2,10 @@
 # This file is distributed under the same license as the Custom Post Types RestAPI plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Custom Post Types RestAPI 1.0.0\n"
+"Project-Id-Version: Custom Post Types RestAPI 1.0.1\n"
 "Report-Msgid-Bugs-To: https://github.com/JulienDelRio/wp-cpt-rest-api/issues\n"
 "POT-Creation-Date: 2025-10-27 12:00+0000\n"
-"PO-Revision-Date: 2025-10-27 12:35+0100\n"
+"PO-Revision-Date: 2025-11-04 12:00+0100\n"
 "Last-Translator: Julien DELRIO\n"
 "Language-Team: French\n"
 "Language: fr_FR\n"
@@ -422,3 +422,255 @@ msgstr "L'ID de la relation est obligatoire."
 #: src/rest-api/class-wp-cpt-restapi-rest.php
 msgid "Failed to delete relationship."
 msgstr "Échec de la suppression de la relation."
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "API Settings"
+msgstr "Paramètres de l'API"
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "Toolset Relationships"
+msgstr "Relations Toolset"
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "Enable support for Toolset relationship functionality in the REST API."
+msgstr "Activer la prise en charge de la fonctionnalité de relations Toolset dans l'API REST."
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "Non-Public Custom Post Types"
+msgstr "Types de publication personnalisés non publics"
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "Control whether non-public Custom Post Types should be available for selection."
+msgstr "Contrôler si les types de publication personnalisés non publics doivent être disponibles pour sélection."
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "Select which Custom Post Types should be available through the REST API."
+msgstr "Sélectionnez les types de publication personnalisés qui doivent être disponibles via l'API REST."
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "API Keys Management"
+msgstr "Gestion des clés API"
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "Create and manage API keys for accessing the REST API endpoints."
+msgstr "Créer et gérer les clés API pour accéder aux points de terminaison de l'API REST."
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "API keys can be used to authenticate requests to the REST API using the Bearer authentication method."
+msgstr "Les clés API peuvent être utilisées pour authentifier les requêtes vers l'API REST en utilisant la méthode d'authentification Bearer."
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "Post Type"
+msgstr "Type de publication"
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "Description"
+msgstr "Description"
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "Slug"
+msgstr "Identifiant"
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "Visibility"
+msgstr "Visibilité"
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "Status"
+msgstr "Statut"
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "No description available"
+msgstr "Aucune description disponible"
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "Public"
+msgstr "Public"
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "Activate"
+msgstr "Activer"
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "Your API Keys"
+msgstr "Vos clés API"
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "Key Prefix"
+msgstr "Préfixe de clé"
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "Full key hidden for security"
+msgstr "Clé complète masquée pour la sécurité"
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "Create a New API Key"
+msgstr "Créer une nouvelle clé API"
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "Enter a label for your API key"
+msgstr "Entrez un libellé pour votre clé API"
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "A descriptive name to help you identify this key."
+msgstr "Un nom descriptif pour vous aider à identifier cette clé."
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "Important: Save Your API Key Now"
+msgstr "Important : Enregistrez votre clé API maintenant"
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "Reset All"
+msgstr "Tout réinitialiser"
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "Reset All will deactivate all Custom Post Types."
+msgstr "Tout réinitialiser désactivera tous les types de publication personnalisés."
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "Save Settings"
+msgstr "Enregistrer les paramètres"
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "Copy Key"
+msgstr "Copier la clé"
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "This key will only be displayed once and cannot be recovered."
+msgstr "Cette clé ne sera affichée qu'une seule fois et ne peut pas être récupérée."
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "Copy it now and store it securely. If you lose this key, you will need to generate a new one."
+msgstr "Copiez-la maintenant et stockez-la en toute sécurité. Si vous perdez cette clé, vous devrez en générer une nouvelle."
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "Publicly Queryable"
+msgstr "Interrogeable publiquement"
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "Admin Only (Show UI)"
+msgstr "Administration uniquement (Afficher l'interface)"
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "Private"
+msgstr "Privé"
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "When enabled, this will add REST API endpoints for managing Toolset relationships between Custom Post Types. Requires Toolset Types plugin to be installed and active."
+msgstr "Lorsqu'activé, cela ajoutera des points de terminaison API REST pour gérer les relations Toolset entre les types de publication personnalisés. Nécessite que le plugin Toolset Types soit installé et actif."
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "Select which types of non-public Custom Post Types should be available for selection:"
+msgstr "Sélectionnez les types de publications personnalisées non publiques qui doivent être disponibles pour sélection :"
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "Choose which types of non-public CPTs to make available for API exposure. Publicly Queryable CPTs can be queried but aren't fully public. Admin Only CPTs show in WordPress admin. Private CPTs are completely hidden from public access."
+msgstr "Choisissez les types de CPT non publics à rendre disponibles pour l'exposition API. Les CPT interrogeables publiquement peuvent être interrogés mais ne sont pas entièrement publics. Les CPT d'administration uniquement s'affichent dans l'administration WordPress. Les CPT privés sont complètement cachés de l'accès public."
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "Note: Public CPTs are always available. Select additional visibility types to include in the list below."
+msgstr "Remarque : Les CPT publics sont toujours disponibles. Sélectionnez des types de visibilité supplémentaires à inclure dans la liste ci-dessous."
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "Are you sure you want to delete this API key? This action cannot be undone."
+msgstr "Êtes-vous sûr de vouloir supprimer cette clé API ? Cette action ne peut pas être annulée."
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "Are you sure you want to deactivate all Custom Post Types? This action will uncheck all toggle switches."
+msgstr "Êtes-vous sûr de vouloir désactiver tous les types de publication personnalisés ? Cette action décochera tous les interrupteurs."
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "Resetting..."
+msgstr "Réinitialisation..."
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "Failed to copy to clipboard."
+msgstr "Échec de la copie dans le presse-papiers."
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "Critical Security Update Required"
+msgstr "Mise à jour de sécurité critique requise"
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "API Key Security Migration"
+msgstr "Migration de sécurité des clés API"
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "Important security update available for API key storage."
+msgstr "Mise à jour de sécurité importante disponible pour le stockage des clés API."
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "Review and Migrate Keys"
+msgstr "Examiner et migrer les clés"
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "Your API keys are currently stored in plaintext format. For improved security, they need to be migrated to encrypted storage."
+msgstr "Vos clés API sont actuellement stockées en texte brut. Pour une meilleure sécurité, elles doivent être migrées vers un stockage chiffré."
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "What this means:"
+msgstr "Ce que cela signifie :"
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "Your existing API keys will continue to work"
+msgstr "Vos clés API existantes continueront de fonctionner"
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "Keys will be securely hashed (one-way encryption)"
+msgstr "Les clés seront hachées de manière sécurisée (chiffrement unidirectionnel)"
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "You won't be able to view the full keys after migration"
+msgstr "Vous ne pourrez plus voir les clés complètes après la migration"
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "Existing Keys to be Migrated"
+msgstr "Clés existantes à migrer"
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "Current Key (save these now if needed)"
+msgstr "Clé actuelle (enregistrez-les maintenant si nécessaire)"
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "After migration, you will only see the first 4 characters of each key. Make sure you have saved your keys before proceeding."
+msgstr "Après la migration, vous ne verrez que les 4 premiers caractères de chaque clé. Assurez-vous d'avoir enregistré vos clés avant de continuer."
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "Migrate to Secure Storage"
+msgstr "Migrer vers le stockage sécurisé"
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "API keys have been successfully migrated to secure hashed storage."
+msgstr "Les clés API ont été migrées avec succès vers un stockage haché sécurisé."
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "Settings saved successfully."
+msgstr "Paramètres enregistrés avec succès."
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "API Key Successfully Generated"
+msgstr "Clé API générée avec succès"
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "Your new API key has been generated. Copy it now and store it securely."
+msgstr "Votre nouvelle clé API a été générée. Copiez-la maintenant et stockez-la en toute sécurité."
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "This key will not be shown again."
+msgstr "Cette clé ne sera plus affichée."
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "Your new API key:"
+msgstr "Votre nouvelle clé API :"
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "Documentation"
+msgstr "Documentation"
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "View API Documentation"
+msgstr "Voir la documentation de l'API"
+
+#: src/admin/class-wp-cpt-restapi-admin.php
+msgid "View OpenAPI Specification"
+msgstr "Voir la spécification OpenAPI"
