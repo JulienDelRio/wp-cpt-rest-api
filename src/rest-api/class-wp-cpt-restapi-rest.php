@@ -291,12 +291,14 @@ class WP_CPT_RestAPI_REST {
         }
         $context_string = ! empty( $context_parts ) ? ' | ' . implode( ', ', $context_parts ) : '';
 
-        // Log the event
-        error_log( sprintf(
-            '[CPT REST API Security] %s%s',
-            $message,
-            $context_string
-        ) );
+        // Log the event only when WP_DEBUG is enabled
+        if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+            error_log( sprintf(
+                '[CPT REST API Security] %s%s',
+                $message,
+                $context_string
+            ) );
+        }
     }
 
     /**
