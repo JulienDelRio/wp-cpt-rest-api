@@ -4,7 +4,7 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Custom Post Types RestAPI 1.0.1\n"
+"Project-Id-Version: Custom Post Types RestAPI 1.1.0\n"
 "Report-Msgid-Bugs-To: https://github.com/JulienDelRio/wp-cpt-rest-api/issues\n"
 "POT-Creation-Date: 2025-11-04 12:14+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
