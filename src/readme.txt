@@ -3,13 +3,13 @@ Contributors: juliendelrio
 Donate link: https://juliendelrio.fr
 Tags: RestAPI, Rest, Custom Post Types
 Requires at least: 6.0
-Tested up to: 6.6
-Stable tag: 1.0.0
+Tested up to: 6.8
+Stable tag: 1.1.0
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-A robust WordPress plugin that extends the native REST API functionalities to provide comprehensive endpoints for Custom Post Types and their associated metadata.
+Extends WordPress REST API with comprehensive endpoints for Custom Post Types and metadata. Secure API key authentication included.
 
 == Description ==
 
@@ -47,6 +47,14 @@ After activating the plugin, your Custom Post Types will be available at `/wp-js
 Yes, the plugin provides access to all associated metadata for your Custom Post Types.
 
 == Changelog ==
+
+= 1.0.1 =
+* i18n: Added complete French (fr_FR) translation with 119 translated strings
+* Licensing: Updated from Apache 2.0 to GPLv2 or later for WordPress.org compliance
+* WordPress.org: Fixed all Plugin Check critical issues for plugin directory submission
+* Code Quality: Fixed text domain consistency (wp-cpt-rest-api) across all 137 translation calls
+* Documentation: Updated "Tested up to" WordPress 6.8 for current compatibility
+* Maintenance: Removed hidden .gitkeep file for WordPress.org validation compliance
 
 = 1.0.0 =
 * Official stable release - Production ready

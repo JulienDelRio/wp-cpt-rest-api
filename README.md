@@ -1,10 +1,10 @@
-# WordPress Custom Post Types RestAPI
+# Custom Post Types RestAPI
 
 A robust WordPress plugin that extends the native REST API functionalities to provide comprehensive endpoints for Custom Post Types and their associated metadata.
 
 ## Description
 
-WordPress Custom Post Types RestAPI is a powerful plugin that enhances the WordPress REST API by providing comprehensive endpoints for Custom Post Types and their associated metadata.
+Custom Post Types RestAPI is a powerful plugin that enhances the WordPress REST API by providing comprehensive endpoints for Custom Post Types and their associated metadata.
 
 This plugin allows developers to:
 

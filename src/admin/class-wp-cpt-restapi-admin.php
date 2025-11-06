@@ -94,6 +94,10 @@ class WP_CPT_RestAPI_Admin {
 
         // Add admin notices for configuration guidance
         add_action( 'admin_notices', array( $this, 'display_admin_notices' ) );
+
+        // Add migration hooks for API key security update
+        add_action( 'admin_init', array( $this, 'handle_key_migration' ) );
+        add_action( 'admin_notices', array( $this, 'display_migration_notice' ) );
     }
 
     /**
@@ -108,11 +112,20 @@ class WP_CPT_RestAPI_Admin {
             return;
         }
 
+        // Determine version for cache busting
+        // In development mode: use file modification time for automatic cache invalidation
+        // In production mode: use plugin version for stability
+        $version = WP_CPT_RESTAPI_VERSION;
+        if ( defined( 'WP_CPT_RESTAPI_DEV_MODE' ) && WP_CPT_RESTAPI_DEV_MODE ) {
+            $css_file = WP_CPT_RESTAPI_PLUGIN_DIR . 'assets/css/wp-cpt-restapi-admin.css';
+            $version = file_exists( $css_file ) ? filemtime( $css_file ) : WP_CPT_RESTAPI_VERSION;
+        }
+
         wp_enqueue_style(
             'wp-cpt-restapi-admin',
             WP_CPT_RESTAPI_PLUGIN_URL . 'assets/css/wp-cpt-restapi-admin.css',
             array(),
-            WP_CPT_RESTAPI_VERSION,
+            $version,
             'all'
         );
     }
@@ -129,11 +142,20 @@ class WP_CPT_RestAPI_Admin {
             return;
         }
 
+        // Determine version for cache busting
+        // In development mode: use file modification time for automatic cache invalidation
+        // In production mode: use plugin version for stability
+        $version = WP_CPT_RESTAPI_VERSION;
+        if ( defined( 'WP_CPT_RESTAPI_DEV_MODE' ) && WP_CPT_RESTAPI_DEV_MODE ) {
+            $js_file = WP_CPT_RESTAPI_PLUGIN_DIR . 'assets/js/wp-cpt-restapi-admin.js';
+            $version = file_exists( $js_file ) ? filemtime( $js_file ) : WP_CPT_RESTAPI_VERSION;
+        }
+
         wp_enqueue_script(
             'wp-cpt-restapi-admin',
             WP_CPT_RESTAPI_PLUGIN_URL . 'assets/js/wp-cpt-restapi-admin.js',
             array( 'jquery' ),
-            WP_CPT_RESTAPI_VERSION,
+            $version,
             false
         );
         
@@ -144,13 +166,16 @@ class WP_CPT_RestAPI_Admin {
             array(
                 'nonce'  => wp_create_nonce( 'cpt_rest_api' ),
                 'i18n'   => array(
-                    'emptyLabel'   => esc_js( __( 'Please enter a label for the API key.', 'wp-cpt-restapi' ) ),
-                    'generating'   => esc_js( __( 'Generating...', 'wp-cpt-restapi' ) ),
-                    'generateKey'  => esc_js( __( 'Generate API Key', 'wp-cpt-restapi' ) ),
-                    'copy'         => esc_js( __( 'Copy', 'wp-cpt-restapi' ) ),
-                    'copied'       => esc_js( __( 'Copied!', 'wp-cpt-restapi' ) ),
-                    'copyFailed'   => esc_js( __( 'Failed to copy. Please try again.', 'wp-cpt-restapi' ) ),
-                    'ajaxError'    => esc_js( __( 'An error occurred. Please try again.', 'wp-cpt-restapi' ) ),
+                    'emptyLabel'       => esc_js( __( 'Please enter a label for the API key.', 'wp-cpt-rest-api' ) ),
+                    'generating'       => esc_js( __( 'Generating...', 'wp-cpt-rest-api' ) ),
+                    'generateKey'      => esc_js( __( 'Generate API Key', 'wp-cpt-rest-api' ) ),
+                    'copy'             => esc_js( __( 'Copy', 'wp-cpt-rest-api' ) ),
+                    'copied'           => esc_js( __( 'Copied!', 'wp-cpt-rest-api' ) ),
+                    'copyFailed'       => esc_js( __( 'Failed to copy. Please try again.', 'wp-cpt-rest-api' ) ),
+                    'ajaxError'        => esc_js( __( 'An error occurred. Please try again.', 'wp-cpt-rest-api' ) ),
+                    'resetCptsConfirm' => esc_js( __( 'Are you sure you want to deactivate all Custom Post Types? This action will uncheck all toggle switches.', 'wp-cpt-rest-api' ) ),
+                    'resetting'        => esc_js( __( 'Resetting...', 'wp-cpt-rest-api' ) ),
+                    'resetAll'         => esc_js( __( 'Reset All', 'wp-cpt-rest-api' ) ),
                 ),
             )
         );
@@ -209,7 +234,7 @@ class WP_CPT_RestAPI_Admin {
         // Add settings section for REST API configuration
         add_settings_section(
             'cpt_rest_api_section',                   // ID
-            __( 'REST API Settings', 'wp-cpt-restapi' ), // Title
+            __( 'REST API Settings', 'wp-cpt-rest-api' ), // Title
             array( $this, 'settings_section_callback' ), // Callback
             'cpt-rest-api'                            // Page
         );
@@ -217,7 +242,7 @@ class WP_CPT_RestAPI_Admin {
         // Add settings field for base segment
         add_settings_field(
             'cpt_rest_api_base_segment',              // ID
-            __( 'API Base Segment', 'wp-cpt-restapi' ), // Title
+            __( 'API Base Segment', 'wp-cpt-rest-api' ), // Title
             array( $this, 'base_segment_field_callback' ), // Callback
             'cpt-rest-api',                           // Page
             'cpt_rest_api_section'                    // Section
@@ -226,7 +251,7 @@ class WP_CPT_RestAPI_Admin {
         // Add settings field for Toolset relationship support
         add_settings_field(
             'cpt_rest_api_toolset_relationships',     // ID
-            __( 'Enable Toolset relationship support', 'wp-cpt-restapi' ), // Title
+            __( 'Enable Toolset relationship support', 'wp-cpt-rest-api' ), // Title
             array( $this, 'toolset_relationships_field_callback' ), // Callback
             'cpt-rest-api',                           // Page
             'cpt_rest_api_section'                    // Section
@@ -235,7 +260,7 @@ class WP_CPT_RestAPI_Admin {
         // Add settings field for including non-public CPTs
         add_settings_field(
             'cpt_rest_api_include_nonpublic_cpts',    // ID
-            __( 'Include non-public Custom Post Types', 'wp-cpt-restapi' ), // Title
+            __( 'Include non-public Custom Post Types', 'wp-cpt-rest-api' ), // Title
             array( $this, 'include_nonpublic_cpts_field_callback' ), // Callback
             'cpt-rest-api',                           // Page
             'cpt_rest_api_section'                    // Section
@@ -244,7 +269,7 @@ class WP_CPT_RestAPI_Admin {
         // Add settings section for CPT Management
         add_settings_section(
             'cpt_rest_api_cpts_section',              // ID
-            __( 'Custom Post Types', 'wp-cpt-restapi' ), // Title
+            __( 'Custom Post Types', 'wp-cpt-rest-api' ), // Title
             array( $this, 'cpts_section_callback' ),  // Callback
             'cpt-rest-api'                            // Page
         );
@@ -252,7 +277,7 @@ class WP_CPT_RestAPI_Admin {
         // Add settings field for CPT selection
         add_settings_field(
             'cpt_rest_api_active_cpts',               // ID
-            __( 'Active Post Types', 'wp-cpt-restapi' ), // Title
+            __( 'Active Post Types', 'wp-cpt-rest-api' ), // Title
             array( $this, 'cpts_field_callback' ),    // Callback
             'cpt-rest-api',                           // Page
             'cpt_rest_api_cpts_section'               // Section
@@ -261,7 +286,7 @@ class WP_CPT_RestAPI_Admin {
         // Add settings section for API Keys
         add_settings_section(
             'cpt_rest_api_keys_section',              // ID
-            __( 'API Keys', 'wp-cpt-restapi' ),       // Title
+            __( 'API Keys', 'wp-cpt-rest-api' ),       // Title
             array( $this, 'api_keys_section_callback' ), // Callback
             'cpt-rest-api'                            // Page
         );
@@ -269,7 +294,7 @@ class WP_CPT_RestAPI_Admin {
         // Add settings field for API Keys management
         add_settings_field(
             'cpt_rest_api_keys_management',           // ID
-            __( 'Manage API Keys', 'wp-cpt-restapi' ), // Title
+            __( 'Manage API Keys', 'wp-cpt-rest-api' ), // Title
             array( $this, 'api_keys_field_callback' ), // Callback
             'cpt-rest-api',                           // Page
             'cpt_rest_api_keys_section'               // Section
@@ -282,7 +307,7 @@ class WP_CPT_RestAPI_Admin {
      * @since    0.1
      */
     public function settings_section_callback() {
-        echo '<p>' . esc_html__( 'Configure the base segment for the Custom Post Types REST API.', 'wp-cpt-restapi' ) . '</p>';
+        echo '<p>' . esc_html__( 'Configure the base segment for the Custom Post Types REST API.', 'wp-cpt-rest-api' ) . '</p>';
     }
 
     /**
@@ -307,17 +332,17 @@ class WP_CPT_RestAPI_Admin {
                    class="regular-text" 
                    required
                    pattern="^[a-z0-9-]{1,120}$"
-                   title="<?php echo esc_attr__( 'Must be between 1 and 120 characters long and can only contain lowercase letters, digits, and hyphens.', 'wp-cpt-restapi' ); ?>"
+                   title="<?php echo esc_attr__( 'Must be between 1 and 120 characters long and can only contain lowercase letters, digits, and hyphens.', 'wp-cpt-rest-api' ); ?>"
             />
             <span class="tooltip">
                 <span class="dashicons dashicons-editor-help"></span>
                 <span class="tooltip-text">
-                    <?php echo esc_html__( 'The base segment defines the namespace for your REST API endpoints. It must be between 1 and 120 characters long and can only contain lowercase letters (a-z), digits (0-9), and hyphens (-).', 'wp-cpt-restapi' ); ?>
+                    <?php echo esc_html__( 'The base segment defines the namespace for your REST API endpoints. It must be between 1 and 120 characters long and can only contain lowercase letters (a-z), digits (0-9), and hyphens (-).', 'wp-cpt-rest-api' ); ?>
                 </span>
             </span>
         </div>
         <p class="description">
-            <?php echo esc_html__( 'Full REST API URL:', 'wp-cpt-restapi' ); ?> 
+            <?php echo esc_html__( 'Full REST API URL:', 'wp-cpt-rest-api' ); ?> 
             <code id="rest-api-preview"><?php echo esc_url( $rest_url ); ?></code>
         </p>
         <?php
@@ -343,18 +368,18 @@ class WP_CPT_RestAPI_Admin {
                 />
                 <span class="cpt-rest-api-toggle-slider"></span>
                 <span class="cpt-rest-api-toggle-label">
-                    <?php echo esc_html__( 'Enable', 'wp-cpt-restapi' ); ?>
+                    <?php echo esc_html__( 'Enable', 'wp-cpt-rest-api' ); ?>
                 </span>
             </label>
             <span class="tooltip">
                 <span class="dashicons dashicons-editor-help"></span>
                 <span class="tooltip-text">
-                    <?php echo esc_html__( 'When enabled, this will add REST API endpoints for managing Toolset relationships between Custom Post Types. Requires Toolset Types plugin to be installed and active.', 'wp-cpt-restapi' ); ?>
+                    <?php echo esc_html__( 'When enabled, this will add REST API endpoints for managing Toolset relationships between Custom Post Types. Requires Toolset Types plugin to be installed and active.', 'wp-cpt-rest-api' ); ?>
                 </span>
             </span>
         </div>
         <p class="description">
-            <?php echo esc_html__( 'Enable this option to include Toolset relationship functionality in the REST API endpoints.', 'wp-cpt-restapi' ); ?>
+            <?php echo esc_html__( 'Enable this option to include Toolset relationship functionality in the REST API endpoints.', 'wp-cpt-rest-api' ); ?>
         </p>
         <?php
     }
@@ -372,7 +397,7 @@ class WP_CPT_RestAPI_Admin {
             add_settings_error(
                 $this->option_name,
                 'empty_segment',
-                __( 'The base segment cannot be empty.', 'wp-cpt-restapi' ),
+                __( 'The base segment cannot be empty.', 'wp-cpt-rest-api' ),
                 'error'
             );
             return get_option( $this->option_name, $this->default_segment );
@@ -383,7 +408,7 @@ class WP_CPT_RestAPI_Admin {
             add_settings_error(
                 $this->option_name,
                 'length_error',
-                __( 'The base segment must be between 1 and 120 characters long.', 'wp-cpt-restapi' ),
+                __( 'The base segment must be between 1 and 120 characters long.', 'wp-cpt-rest-api' ),
                 'error'
             );
             return get_option( $this->option_name, $this->default_segment );
@@ -394,7 +419,7 @@ class WP_CPT_RestAPI_Admin {
             add_settings_error(
                 $this->option_name,
                 'invalid_chars',
-                __( 'The base segment can only contain lowercase letters, digits, and hyphens.', 'wp-cpt-restapi' ),
+                __( 'The base segment can only contain lowercase letters, digits, and hyphens.', 'wp-cpt-rest-api' ),
                 'error'
             );
             return get_option( $this->option_name, $this->default_segment );
@@ -404,7 +429,7 @@ class WP_CPT_RestAPI_Admin {
         add_settings_error(
             $this->option_name,
             'settings_updated',
-            __( 'Settings saved successfully.', 'wp-cpt-restapi' ),
+            __( 'Settings saved successfully.', 'wp-cpt-rest-api' ),
             'updated'
         );
 
@@ -439,7 +464,7 @@ class WP_CPT_RestAPI_Admin {
         add_settings_error(
             $this->cpt_option_name,
             'cpts_updated',
-            __( 'Custom Post Types settings saved successfully.', 'wp-cpt-restapi' ),
+            __( 'Custom Post Types settings saved successfully.', 'wp-cpt-rest-api' ),
             'updated'
         );
 
@@ -461,7 +486,7 @@ class WP_CPT_RestAPI_Admin {
         add_settings_error(
             $this->toolset_option_name,
             'toolset_updated',
-            __( 'Toolset relationship settings saved successfully.', 'wp-cpt-restapi' ),
+            __( 'Toolset relationship settings saved successfully.', 'wp-cpt-rest-api' ),
             'updated'
         );
 
@@ -493,7 +518,7 @@ class WP_CPT_RestAPI_Admin {
         add_settings_error(
             $this->include_nonpublic_option_name,
             'nonpublic_updated',
-            __( 'Non-public CPT visibility settings saved successfully.', 'wp-cpt-restapi' ),
+            __( 'Non-public CPT visibility settings saved successfully.', 'wp-cpt-rest-api' ),
             'updated'
         );
 
@@ -514,17 +539,17 @@ class WP_CPT_RestAPI_Admin {
         
         // Define available visibility types
         $visibility_types = array(
-            'publicly_queryable' => __( 'Publicly Queryable', 'wp-cpt-restapi' ),
-            'show_ui'           => __( 'Admin Only (Show UI)', 'wp-cpt-restapi' ),
-            'private'           => __( 'Private', 'wp-cpt-restapi' ),
+            'publicly_queryable' => __( 'Publicly Queryable', 'wp-cpt-rest-api' ),
+            'show_ui'           => __( 'Admin Only (Show UI)', 'wp-cpt-rest-api' ),
+            'private'           => __( 'Private', 'wp-cpt-rest-api' ),
         );
         
         ?>
         <div class="cpt-rest-api-field-container">
             <fieldset>
-                <legend class="screen-reader-text"><?php echo esc_html__( 'Select non-public CPT types to include', 'wp-cpt-restapi' ); ?></legend>
+                <legend class="screen-reader-text"><?php echo esc_html__( 'Select non-public CPT types to include', 'wp-cpt-rest-api' ); ?></legend>
                 <p class="description" style="margin-bottom: 10px;">
-                    <?php echo esc_html__( 'Select which types of non-public Custom Post Types should be available for selection:', 'wp-cpt-restapi' ); ?>
+                    <?php echo esc_html__( 'Select which types of non-public Custom Post Types should be available for selection:', 'wp-cpt-rest-api' ); ?>
                 </p>
                 
                 <?php foreach ( $visibility_types as $type => $label ) : ?>
@@ -539,15 +564,15 @@ class WP_CPT_RestAPI_Admin {
                 <?php endforeach; ?>
                 
                 <p class="description" style="margin-top: 10px;">
-                    <strong><?php echo esc_html__( 'Note:', 'wp-cpt-restapi' ); ?></strong>
-                    <?php echo esc_html__( 'Public CPTs are always available. Select additional visibility types to include in the list below.', 'wp-cpt-restapi' ); ?>
+                    <strong><?php echo esc_html__( 'Note:', 'wp-cpt-rest-api' ); ?></strong>
+                    <?php echo esc_html__( 'Public CPTs are always available. Select additional visibility types to include in the list below.', 'wp-cpt-rest-api' ); ?>
                 </p>
             </fieldset>
             
             <span class="tooltip">
                 <span class="dashicons dashicons-editor-help"></span>
                 <span class="tooltip-text">
-                    <?php echo esc_html__( 'Choose which types of non-public CPTs to make available for API exposure. Publicly Queryable CPTs can be queried but aren\'t fully public. Admin Only CPTs show in WordPress admin. Private CPTs are completely hidden from public access.', 'wp-cpt-restapi' ); ?>
+                    <?php echo esc_html__( 'Choose which types of non-public CPTs to make available for API exposure. Publicly Queryable CPTs can be queried but aren\'t fully public. Admin Only CPTs show in WordPress admin. Private CPTs are completely hidden from public access.', 'wp-cpt-rest-api' ); ?>
                 </span>
             </span>
         </div>
@@ -619,7 +644,7 @@ class WP_CPT_RestAPI_Admin {
      * @since    0.1
      */
     public function cpts_section_callback() {
-        echo '<p>' . esc_html__( 'Select which Custom Post Types should be available through the REST API. Use the option above to include non-public CPTs in the selection.', 'wp-cpt-restapi' ) . '</p>';
+        echo '<p>' . esc_html__( 'Select which Custom Post Types should be available through the REST API. Use the option above to include non-public CPTs in the selection.', 'wp-cpt-rest-api' ) . '</p>';
     }
 
     /**
@@ -635,7 +660,7 @@ class WP_CPT_RestAPI_Admin {
         $active_cpts = get_option( $this->cpt_option_name, array() );
         
         if ( empty( $available_cpts ) ) {
-            echo '<p>' . esc_html__( 'No Custom Post Types found. Custom Post Types will appear here once they are registered.', 'wp-cpt-restapi' ) . '</p>';
+            echo '<p>' . esc_html__( 'No Custom Post Types found. Custom Post Types will appear here once they are registered.', 'wp-cpt-rest-api' ) . '</p>';
             return;
         }
 
@@ -644,11 +669,11 @@ class WP_CPT_RestAPI_Admin {
             <table class="widefat cpt-rest-api-cpts-table">
                 <thead>
                     <tr>
-                        <th><?php echo esc_html__( 'Post Type', 'wp-cpt-restapi' ); ?></th>
-                        <th><?php echo esc_html__( 'Description', 'wp-cpt-restapi' ); ?></th>
-                        <th><?php echo esc_html__( 'Slug', 'wp-cpt-restapi' ); ?></th>
-                        <th><?php echo esc_html__( 'Visibility', 'wp-cpt-restapi' ); ?></th>
-                        <th><?php echo esc_html__( 'Status', 'wp-cpt-restapi' ); ?></th>
+                        <th><?php echo esc_html__( 'Post Type', 'wp-cpt-rest-api' ); ?></th>
+                        <th><?php echo esc_html__( 'Description', 'wp-cpt-rest-api' ); ?></th>
+                        <th><?php echo esc_html__( 'Slug', 'wp-cpt-rest-api' ); ?></th>
+                        <th><?php echo esc_html__( 'Visibility', 'wp-cpt-rest-api' ); ?></th>
+                        <th><?php echo esc_html__( 'Status', 'wp-cpt-rest-api' ); ?></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -661,7 +686,7 @@ class WP_CPT_RestAPI_Admin {
                                 <?php if ( ! empty( $cpt_object->description ) ) : ?>
                                     <?php echo esc_html( $cpt_object->description ); ?>
                                 <?php else : ?>
-                                    <span class="description"><?php echo esc_html__( 'No description available', 'wp-cpt-restapi' ); ?></span>
+                                    <span class="description"><?php echo esc_html__( 'No description available', 'wp-cpt-rest-api' ); ?></span>
                                 <?php endif; ?>
                             </td>
                             <td>
@@ -671,13 +696,13 @@ class WP_CPT_RestAPI_Admin {
                                 <?php
                                 // Determine visibility status
                                 if ( $cpt_object->public ) {
-                                    echo '<span class="cpt-visibility-public">' . esc_html__( 'Public', 'wp-cpt-restapi' ) . '</span>';
+                                    echo '<span class="cpt-visibility-public">' . esc_html__( 'Public', 'wp-cpt-rest-api' ) . '</span>';
                                 } elseif ( $cpt_object->publicly_queryable ) {
-                                    echo '<span class="cpt-visibility-queryable">' . esc_html__( 'Publicly Queryable', 'wp-cpt-restapi' ) . '</span>';
+                                    echo '<span class="cpt-visibility-queryable">' . esc_html__( 'Publicly Queryable', 'wp-cpt-rest-api' ) . '</span>';
                                 } elseif ( $cpt_object->show_ui ) {
-                                    echo '<span class="cpt-visibility-admin">' . esc_html__( 'Admin Only', 'wp-cpt-restapi' ) . '</span>';
+                                    echo '<span class="cpt-visibility-admin">' . esc_html__( 'Admin Only', 'wp-cpt-rest-api' ) . '</span>';
                                 } else {
-                                    echo '<span class="cpt-visibility-private">' . esc_html__( 'Private', 'wp-cpt-restapi' ) . '</span>';
+                                    echo '<span class="cpt-visibility-private">' . esc_html__( 'Private', 'wp-cpt-rest-api' ) . '</span>';
                                 }
                                 ?>
                             </td>
@@ -691,7 +716,7 @@ class WP_CPT_RestAPI_Admin {
                                     />
                                     <span class="cpt-rest-api-toggle-slider"></span>
                                     <span class="cpt-rest-api-toggle-label">
-                                        <?php echo esc_html__( 'Activate', 'wp-cpt-restapi' ); ?>
+                                        <?php echo esc_html__( 'Activate', 'wp-cpt-rest-api' ); ?>
                                     </span>
                                 </label>
                             </td>
@@ -702,10 +727,10 @@ class WP_CPT_RestAPI_Admin {
             
             <div class="cpt-rest-api-cpts-actions">
                 <button type="button" class="button cpt-rest-api-reset-cpts">
-                    <?php echo esc_html__( 'Reset All', 'wp-cpt-restapi' ); ?>
+                    <?php echo esc_html__( 'Reset All', 'wp-cpt-rest-api' ); ?>
                 </button>
                 <p class="description">
-                    <?php echo esc_html__( 'Reset All will deactivate all Custom Post Types.', 'wp-cpt-restapi' ); ?>
+                    <?php echo esc_html__( 'Reset All will deactivate all Custom Post Types.', 'wp-cpt-rest-api' ); ?>
                 </p>
             </div>
         </div>
@@ -725,10 +750,10 @@ class WP_CPT_RestAPI_Admin {
 
         ?>
         <div class="wrap">
-            <h1><?php echo esc_html__( 'CPT REST API', 'wp-cpt-restapi' ); ?></h1>
+            <h1><?php echo esc_html__( 'CPT REST API', 'wp-cpt-rest-api' ); ?></h1>
             
             <!-- Section 1: API Settings -->
-            <h2><?php echo esc_html__( 'API Settings', 'wp-cpt-restapi' ); ?></h2>
+            <h2><?php echo esc_html__( 'API Settings', 'wp-cpt-rest-api' ); ?></h2>
             
             <form action="options.php" method="post">
                 <?php
@@ -737,48 +762,66 @@ class WP_CPT_RestAPI_Admin {
                 ?>
                 
                 <!-- REST API Base Segment Section -->
-                <h3><?php echo esc_html__( 'REST API Base Segment', 'wp-cpt-restapi' ); ?></h3>
-                <p><?php echo esc_html__( 'Configure the base segment for the Custom Post Types REST API.', 'wp-cpt-restapi' ); ?></p>
+                <h3><?php echo esc_html__( 'REST API Base Segment', 'wp-cpt-rest-api' ); ?></h3>
+                <p><?php echo esc_html__( 'Configure the base segment for the Custom Post Types REST API.', 'wp-cpt-rest-api' ); ?></p>
                 <div class="cpt-rest-api-field-wrapper">
                     <?php $this->base_segment_field_callback(); ?>
                 </div>
                 
                 <!-- Toolset Relationships Section -->
-                <h3><?php echo esc_html__( 'Toolset Relationships', 'wp-cpt-restapi' ); ?></h3>
-                <p><?php echo esc_html__( 'Enable support for Toolset relationship functionality in the REST API.', 'wp-cpt-restapi' ); ?></p>
+                <h3><?php echo esc_html__( 'Toolset Relationships', 'wp-cpt-rest-api' ); ?></h3>
+                <p><?php echo esc_html__( 'Enable support for Toolset relationship functionality in the REST API.', 'wp-cpt-rest-api' ); ?></p>
                 <div class="cpt-rest-api-field-wrapper">
                     <?php $this->toolset_relationships_field_callback(); ?>
                 </div>
                 
                 <!-- Include Non-Public CPTs Section -->
-                <h3><?php echo esc_html__( 'Non-Public Custom Post Types', 'wp-cpt-restapi' ); ?></h3>
-                <p><?php echo esc_html__( 'Control whether non-public Custom Post Types should be available for selection.', 'wp-cpt-restapi' ); ?></p>
+                <h3><?php echo esc_html__( 'Non-Public Custom Post Types', 'wp-cpt-rest-api' ); ?></h3>
+                <p><?php echo esc_html__( 'Control whether non-public Custom Post Types should be available for selection.', 'wp-cpt-rest-api' ); ?></p>
                 <div class="cpt-rest-api-field-wrapper">
                     <?php $this->include_nonpublic_cpts_field_callback(); ?>
                 </div>
                 
                 <!-- Custom Post Types Section -->
-                <h3><?php echo esc_html__( 'Custom Post Types', 'wp-cpt-restapi' ); ?></h3>
-                <p><?php echo esc_html__( 'Select which Custom Post Types should be available through the REST API.', 'wp-cpt-restapi' ); ?></p>
+                <h3><?php echo esc_html__( 'Custom Post Types', 'wp-cpt-rest-api' ); ?></h3>
+                <p><?php echo esc_html__( 'Select which Custom Post Types should be available through the REST API.', 'wp-cpt-rest-api' ); ?></p>
                 <div class="cpt-rest-api-field-wrapper">
                     <?php $this->cpts_field_callback(); ?>
                 </div>
                 
                 <?php
                 // Output save settings button
-                submit_button( __( 'Save Settings', 'wp-cpt-restapi' ) );
+                submit_button( __( 'Save Settings', 'wp-cpt-rest-api' ) );
                 ?>
             </form>
-            
+
             <hr>
-            
+
             <!-- Section 2: API Keys Management -->
-            <h2><?php echo esc_html__( 'API Keys Management', 'wp-cpt-restapi' ); ?></h2>
-            
+            <h2><?php echo esc_html__( 'API Keys Management', 'wp-cpt-rest-api' ); ?></h2>
+
+            <?php
+            // Check if migration is needed
+            $keys = $this->api_keys->get_keys();
+            $needs_migration = false;
+            $plaintext_keys = array();
+
+            foreach ($keys as $key_data) {
+                if (isset($key_data['key']) && !isset($key_data['key_hash'])) {
+                    $needs_migration = true;
+                    $plaintext_keys[] = $key_data;
+                }
+            }
+
+            if ($needs_migration) {
+                $this->render_migration_section($plaintext_keys);
+            }
+            ?>
+
             <div class="cpt-rest-api-section-separator">
-                <h3><?php echo esc_html__( 'API Keys', 'wp-cpt-restapi' ); ?></h3>
-                <p><?php echo esc_html__( 'Create and manage API keys for accessing the REST API endpoints.', 'wp-cpt-restapi' ); ?></p>
-                <p><?php echo esc_html__( 'API keys can be used to authenticate requests to the REST API using the Bearer authentication method.', 'wp-cpt-restapi' ); ?></p>
+                <h3><?php echo esc_html__( 'API Keys', 'wp-cpt-rest-api' ); ?></h3>
+                <p><?php echo esc_html__( 'Create and manage API keys for accessing the REST API endpoints.', 'wp-cpt-rest-api' ); ?></p>
+                <p><?php echo esc_html__( 'API keys can be used to authenticate requests to the REST API using the Bearer authentication method.', 'wp-cpt-rest-api' ); ?></p>
                 <div class="cpt-rest-api-field-wrapper">
                     <?php $this->api_keys_field_callback(); ?>
                 </div>
@@ -830,17 +873,17 @@ class WP_CPT_RestAPI_Admin {
      * @since    0.1
      */
     public function api_keys_section_callback() {
-        echo '<p>' . esc_html__( 'Create and manage API keys for accessing the REST API endpoints.', 'wp-cpt-restapi' ) . '</p>';
-        echo '<p>' . esc_html__( 'API keys can be used to authenticate requests to the REST API using the Bearer authentication method.', 'wp-cpt-restapi' ) . '</p>';
+        echo '<p>' . esc_html__( 'Create and manage API keys for accessing the REST API endpoints.', 'wp-cpt-rest-api' ) . '</p>';
+        echo '<p>' . esc_html__( 'API keys can be used to authenticate requests to the REST API using the Bearer authentication method.', 'wp-cpt-rest-api' ) . '</p>';
 
         // Security warning
         echo '<div class="notice notice-warning inline" style="margin: 15px 0; padding: 10px;">';
-        echo '<p><strong>⚠️ ' . esc_html__( 'Security Notice:', 'wp-cpt-restapi' ) . '</strong></p>';
+        echo '<p><strong>⚠️ ' . esc_html__( 'Security Notice:', 'wp-cpt-rest-api' ) . '</strong></p>';
         echo '<ul style="margin-left: 20px; margin-top: 5px;">';
-        echo '<li>' . esc_html__( 'API keys grant full access to all enabled Custom Post Types', 'wp-cpt-restapi' ) . '</li>';
-        echo '<li>' . esc_html__( 'Keys can perform all operations: create, read, update, and delete', 'wp-cpt-restapi' ) . '</li>';
-        echo '<li>' . esc_html__( 'Treat API keys like passwords - never share them publicly or commit them to version control', 'wp-cpt-restapi' ) . '</li>';
-        echo '<li>' . esc_html__( 'Regenerate keys immediately if you suspect they have been compromised', 'wp-cpt-restapi' ) . '</li>';
+        echo '<li>' . esc_html__( 'API keys grant full access to all enabled Custom Post Types', 'wp-cpt-rest-api' ) . '</li>';
+        echo '<li>' . esc_html__( 'Keys can perform all operations: create, read, update, and delete', 'wp-cpt-rest-api' ) . '</li>';
+        echo '<li>' . esc_html__( 'Treat API keys like passwords - never share them publicly or commit them to version control', 'wp-cpt-rest-api' ) . '</li>';
+        echo '<li>' . esc_html__( 'Regenerate keys immediately if you suspect they have been compromised', 'wp-cpt-rest-api' ) . '</li>';
         echo '</ul>';
         echo '</div>';
     }
@@ -858,18 +901,18 @@ class WP_CPT_RestAPI_Admin {
         <div class="cpt-rest-api-keys-container">
             <!-- API Keys List -->
             <div class="cpt-rest-api-keys-list">
-                <h3><?php echo esc_html__( 'Your API Keys', 'wp-cpt-restapi' ); ?></h3>
+                <h3><?php echo esc_html__( 'Your API Keys', 'wp-cpt-rest-api' ); ?></h3>
                 
                 <?php if ( empty( $keys ) ) : ?>
-                    <p class="cpt-rest-api-no-keys"><?php echo esc_html__( 'No API keys found. Create your first key below.', 'wp-cpt-restapi' ); ?></p>
+                    <p class="cpt-rest-api-no-keys"><?php echo esc_html__( 'No API keys found. Create your first key below.', 'wp-cpt-rest-api' ); ?></p>
                 <?php else : ?>
                     <table class="widefat striped">
                         <thead>
                             <tr>
-                                <th><?php echo esc_html__( 'Label', 'wp-cpt-restapi' ); ?></th>
-                                <th><?php echo esc_html__( 'API Key', 'wp-cpt-restapi' ); ?></th>
-                                <th><?php echo esc_html__( 'Created', 'wp-cpt-restapi' ); ?></th>
-                                <th><?php echo esc_html__( 'Actions', 'wp-cpt-restapi' ); ?></th>
+                                <th><?php echo esc_html__( 'Label', 'wp-cpt-rest-api' ); ?></th>
+                                <th><?php echo esc_html__( 'Key Prefix', 'wp-cpt-rest-api' ); ?></th>
+                                <th><?php echo esc_html__( 'Created', 'wp-cpt-rest-api' ); ?></th>
+                                <th><?php echo esc_html__( 'Actions', 'wp-cpt-rest-api' ); ?></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -877,7 +920,15 @@ class WP_CPT_RestAPI_Admin {
                                 <tr>
                                     <td><?php echo esc_html( $key['label'] ); ?></td>
                                     <td>
-                                        <code class="api-key-code"><?php echo esc_html( $key['key'] ); ?></code>
+                                        <code class="api-key-prefix">
+                                            <?php
+                                            $prefix = isset($key['key_prefix']) ? $key['key_prefix'] : '****';
+                                            echo esc_html( $prefix );
+                                            ?>••••••••••••••••••••••••••••
+                                        </code>
+                                        <span class="description" style="display: block; margin-top: 5px; font-style: italic;">
+                                            <?php echo esc_html__( 'Full key hidden for security', 'wp-cpt-rest-api' ); ?>
+                                        </span>
                                     </td>
                                     <td><?php echo esc_html( date_i18n( get_option( 'date_format' ), strtotime( $key['created_at'] ) ) ); ?></td>
                                     <td>
@@ -885,9 +936,9 @@ class WP_CPT_RestAPI_Admin {
                                             type="button"
                                             class="button button-small cpt-rest-api-delete-key"
                                             data-id="<?php echo esc_attr( $key['id'] ); ?>"
-                                            data-confirm="<?php echo esc_attr__( 'Are you sure you want to delete this API key? This action cannot be undone.', 'wp-cpt-restapi' ); ?>"
+                                            data-confirm="<?php echo esc_attr__( 'Are you sure you want to delete this API key? This action cannot be undone.', 'wp-cpt-rest-api' ); ?>"
                                         >
-                                            <?php echo esc_html__( 'Delete', 'wp-cpt-restapi' ); ?>
+                                            <?php echo esc_html__( 'Delete', 'wp-cpt-rest-api' ); ?>
                                         </button>
                                     </td>
                                 </tr>
@@ -899,35 +950,47 @@ class WP_CPT_RestAPI_Admin {
             
             <!-- Create New API Key Form -->
             <div class="cpt-rest-api-create-key">
-                <h3><?php echo esc_html__( 'Create a New API Key', 'wp-cpt-restapi' ); ?></h3>
+                <h3><?php echo esc_html__( 'Create a New API Key', 'wp-cpt-rest-api' ); ?></h3>
                 
                 <div class="cpt-rest-api-create-key-form">
-                    <label for="cpt_rest_api_key_label"><?php echo esc_html__( 'Label', 'wp-cpt-restapi' ); ?></label>
+                    <label for="cpt_rest_api_key_label"><?php echo esc_html__( 'Label', 'wp-cpt-rest-api' ); ?></label>
                     <input
                         type="text"
                         id="cpt_rest_api_key_label"
                         name="cpt_rest_api_key_label"
-                        placeholder="<?php echo esc_attr__( 'Enter a label for your API key', 'wp-cpt-restapi' ); ?>"
+                        placeholder="<?php echo esc_attr__( 'Enter a label for your API key', 'wp-cpt-rest-api' ); ?>"
                         required
                     />
                     <p class="description">
-                        <?php echo esc_html__( 'A descriptive name to help you identify this key.', 'wp-cpt-restapi' ); ?>
+                        <?php echo esc_html__( 'A descriptive name to help you identify this key.', 'wp-cpt-rest-api' ); ?>
                     </p>
                     
                     <button type="button" class="button button-primary cpt-rest-api-generate-key">
-                        <?php echo esc_html__( 'Generate API Key', 'wp-cpt-restapi' ); ?>
+                        <?php echo esc_html__( 'Generate API Key', 'wp-cpt-rest-api' ); ?>
                     </button>
                 </div>
                 
                 <div class="cpt-rest-api-key-generated" style="display: none;">
-                    <h4><?php echo esc_html__( 'API Key Generated', 'wp-cpt-restapi' ); ?></h4>
-                    <p class="description">
-                        <?php echo esc_html__( 'Make sure to copy your API key now. You won\'t be able to see it again!', 'wp-cpt-restapi' ); ?>
-                    </p>
+                    <div class="notice notice-warning inline" style="margin: 0 0 15px 0; padding: 12px;">
+                        <h4 style="margin-top: 0;">
+                            <span class="dashicons dashicons-warning" style="color: #f56e28;"></span>
+                            <?php echo esc_html__( 'Important: Save Your API Key Now', 'wp-cpt-rest-api' ); ?>
+                        </h4>
+                        <p style="margin: 8px 0;">
+                            <strong><?php echo esc_html__( 'This key will only be displayed once and cannot be recovered.', 'wp-cpt-rest-api' ); ?></strong>
+                        </p>
+                        <p style="margin: 8px 0 0 0;">
+                            <?php echo esc_html__( 'Copy it now and store it securely. If you lose this key, you will need to generate a new one.', 'wp-cpt-rest-api' ); ?>
+                        </p>
+                        <p style="margin: 8px 0 0 0;">
+                            <em><?php echo esc_html__( 'Note: Refresh the page to see this key in the list below.', 'wp-cpt-rest-api' ); ?></em>
+                        </p>
+                    </div>
                     <div class="cpt-rest-api-key-display">
-                        <code id="cpt_rest_api_new_key"></code>
-                        <button type="button" class="button cpt-rest-api-copy-key">
-                            <?php echo esc_html__( 'Copy', 'wp-cpt-restapi' ); ?>
+                        <code id="cpt_rest_api_new_key" style="display: block; padding: 10px; background: #f0f0f1; font-size: 14px; word-break: break-all;"></code>
+                        <button type="button" class="button cpt-rest-api-copy-key" style="margin-top: 10px;">
+                            <span class="dashicons dashicons-clipboard"></span>
+                            <?php echo esc_html__( 'Copy Key', 'wp-cpt-rest-api' ); ?>
                         </button>
                     </div>
                 </div>
@@ -944,12 +1007,12 @@ class WP_CPT_RestAPI_Admin {
     public function ajax_add_key() {
         // Check nonce with proper sanitization
         if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'cpt_rest_api' ) ) {
-            wp_send_json_error( array( 'message' => __( 'Security check failed.', 'wp-cpt-restapi' ) ) );
+            wp_send_json_error( array( 'message' => __( 'Security check failed.', 'wp-cpt-rest-api' ) ) );
         }
 
         // Check user capabilities
         if ( ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( array( 'message' => __( 'You do not have permission to perform this action.', 'wp-cpt-restapi' ) ) );
+            wp_send_json_error( array( 'message' => __( 'You do not have permission to perform this action.', 'wp-cpt-rest-api' ) ) );
         }
 
         // Rate limiting: max 10 keys per hour per user
@@ -959,7 +1022,7 @@ class WP_CPT_RestAPI_Admin {
 
         if ( $generation_count && $generation_count >= 10 ) {
             wp_send_json_error( array(
-                'message' => __( 'Rate limit exceeded. Please wait before generating more keys.', 'wp-cpt-restapi' )
+                'message' => __( 'Rate limit exceeded. Please wait before generating more keys.', 'wp-cpt-rest-api' )
             ) );
         }
 
@@ -972,12 +1035,12 @@ class WP_CPT_RestAPI_Admin {
 
         // Validate the label
         if ( empty( $label ) ) {
-            wp_send_json_error( array( 'message' => __( 'Label is required.', 'wp-cpt-restapi' ) ) );
+            wp_send_json_error( array( 'message' => __( 'Label is required.', 'wp-cpt-rest-api' ) ) );
         }
 
         // Validate label length (max 100 characters)
         if ( strlen( $label ) > 100 ) {
-            wp_send_json_error( array( 'message' => __( 'Label must be 100 characters or less.', 'wp-cpt-restapi' ) ) );
+            wp_send_json_error( array( 'message' => __( 'Label must be 100 characters or less.', 'wp-cpt-rest-api' ) ) );
         }
         
         // Add the new key
@@ -993,10 +1056,10 @@ class WP_CPT_RestAPI_Admin {
 
             wp_send_json_success( array(
                 'key' => $new_key,
-                'message' => __( 'API key created successfully.', 'wp-cpt-restapi' ),
+                'message' => __( 'API key created successfully.', 'wp-cpt-rest-api' ),
             ) );
         } else {
-            wp_send_json_error( array( 'message' => __( 'Failed to create API key.', 'wp-cpt-restapi' ) ) );
+            wp_send_json_error( array( 'message' => __( 'Failed to create API key.', 'wp-cpt-rest-api' ) ) );
         }
     }
     
@@ -1008,12 +1071,12 @@ class WP_CPT_RestAPI_Admin {
     public function ajax_delete_key() {
         // Check nonce with proper sanitization
         if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'cpt_rest_api' ) ) {
-            wp_send_json_error( array( 'message' => __( 'Security check failed.', 'wp-cpt-restapi' ) ) );
+            wp_send_json_error( array( 'message' => __( 'Security check failed.', 'wp-cpt-rest-api' ) ) );
         }
 
         // Check user capabilities
         if ( ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( array( 'message' => __( 'You do not have permission to perform this action.', 'wp-cpt-restapi' ) ) );
+            wp_send_json_error( array( 'message' => __( 'You do not have permission to perform this action.', 'wp-cpt-rest-api' ) ) );
         }
         
         // Get the key ID from the request
@@ -1021,7 +1084,7 @@ class WP_CPT_RestAPI_Admin {
         
         // Validate the key ID
         if ( empty( $key_id ) ) {
-            wp_send_json_error( array( 'message' => __( 'Key ID is required.', 'wp-cpt-restapi' ) ) );
+            wp_send_json_error( array( 'message' => __( 'Key ID is required.', 'wp-cpt-rest-api' ) ) );
         }
         
         // Get key info before deletion for logging
@@ -1038,9 +1101,9 @@ class WP_CPT_RestAPI_Admin {
                 'user' => wp_get_current_user()->user_login,
             ) );
 
-            wp_send_json_success( array( 'message' => __( 'API key deleted successfully.', 'wp-cpt-restapi' ) ) );
+            wp_send_json_success( array( 'message' => __( 'API key deleted successfully.', 'wp-cpt-rest-api' ) ) );
         } else {
-            wp_send_json_error( array( 'message' => __( 'Failed to delete API key.', 'wp-cpt-restapi' ) ) );
+            wp_send_json_error( array( 'message' => __( 'Failed to delete API key.', 'wp-cpt-rest-api' ) ) );
         }
     }
 
@@ -1052,21 +1115,21 @@ class WP_CPT_RestAPI_Admin {
     public function ajax_reset_cpts() {
         // Check nonce with proper sanitization
         if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'cpt_rest_api' ) ) {
-            wp_send_json_error( array( 'message' => __( 'Security check failed.', 'wp-cpt-restapi' ) ) );
+            wp_send_json_error( array( 'message' => __( 'Security check failed.', 'wp-cpt-rest-api' ) ) );
         }
 
         // Check user capabilities
         if ( ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( array( 'message' => __( 'You do not have permission to perform this action.', 'wp-cpt-restapi' ) ) );
+            wp_send_json_error( array( 'message' => __( 'You do not have permission to perform this action.', 'wp-cpt-rest-api' ) ) );
         }
         
         // Reset CPTs by saving an empty array
         $updated = update_option( $this->cpt_option_name, array() );
         
         if ( $updated !== false ) {
-            wp_send_json_success( array( 'message' => __( 'All Custom Post Types have been deactivated.', 'wp-cpt-restapi' ) ) );
+            wp_send_json_success( array( 'message' => __( 'All Custom Post Types have been deactivated.', 'wp-cpt-rest-api' ) ) );
         } else {
-            wp_send_json_error( array( 'message' => __( 'Failed to reset Custom Post Types.', 'wp-cpt-restapi' ) ) );
+            wp_send_json_error( array( 'message' => __( 'Failed to reset Custom Post Types.', 'wp-cpt-rest-api' ) ) );
         }
     }
 
@@ -1125,12 +1188,12 @@ class WP_CPT_RestAPI_Admin {
             ?>
             <div class="notice notice-warning is-dismissible" data-notice-id="no_cpts">
                 <p>
-                    <strong><?php esc_html_e( 'CPT REST API:', 'wp-cpt-restapi' ); ?></strong>
+                    <strong><?php esc_html_e( 'CPT REST API:', 'wp-cpt-rest-api' ); ?></strong>
                     <?php
                     printf(
                         /* translators: %s: Settings page URL */
-                        esc_html__( 'No Custom Post Types are currently enabled for the REST API. %s to get started.', 'wp-cpt-restapi' ),
-                        '<a href="' . esc_url( $settings_url ) . '">' . esc_html__( 'Configure settings', 'wp-cpt-restapi' ) . '</a>'
+                        esc_html__( 'No Custom Post Types are currently enabled for the REST API. %s to get started.', 'wp-cpt-rest-api' ),
+                        '<a href="' . esc_url( $settings_url ) . '">' . esc_html__( 'Configure settings', 'wp-cpt-rest-api' ) . '</a>'
                     );
                     ?>
                 </p>
@@ -1145,12 +1208,12 @@ class WP_CPT_RestAPI_Admin {
             ?>
             <div class="notice notice-info is-dismissible" data-notice-id="no_keys">
                 <p>
-                    <strong><?php esc_html_e( 'CPT REST API:', 'wp-cpt-restapi' ); ?></strong>
+                    <strong><?php esc_html_e( 'CPT REST API:', 'wp-cpt-rest-api' ); ?></strong>
                     <?php
                     printf(
                         /* translators: %s: Settings page URL */
-                        esc_html__( 'No API keys have been created yet. You need at least one API key to access the REST API endpoints. %s', 'wp-cpt-restapi' ),
-                        '<a href="' . esc_url( $settings_url ) . '">' . esc_html__( 'Create an API key', 'wp-cpt-restapi' ) . '</a>'
+                        esc_html__( 'No API keys have been created yet. You need at least one API key to access the REST API endpoints. %s', 'wp-cpt-rest-api' ),
+                        '<a href="' . esc_url( $settings_url ) . '">' . esc_html__( 'Create an API key', 'wp-cpt-rest-api' ) . '</a>'
                     );
                     ?>
                 </p>
@@ -1187,19 +1250,19 @@ class WP_CPT_RestAPI_Admin {
     public function ajax_dismiss_notice() {
         // Check nonce
         if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'cpt_rest_api_dismiss_notice' ) ) {
-            wp_die( esc_html__( 'Security check failed.', 'wp-cpt-restapi' ) );
+            wp_die( esc_html__( 'Security check failed.', 'wp-cpt-rest-api' ) );
         }
 
         // Check user capabilities
         if ( ! current_user_can( 'manage_options' ) ) {
-            wp_die( esc_html__( 'You do not have permission to perform this action.', 'wp-cpt-restapi' ) );
+            wp_die( esc_html__( 'You do not have permission to perform this action.', 'wp-cpt-rest-api' ) );
         }
 
         // Get notice ID
         $notice_id = isset( $_POST['notice_id'] ) ? sanitize_text_field( wp_unslash( $_POST['notice_id'] ) ) : '';
 
         if ( empty( $notice_id ) ) {
-            wp_die( esc_html__( 'Invalid notice ID.', 'wp-cpt-restapi' ) );
+            wp_die( esc_html__( 'Invalid notice ID.', 'wp-cpt-rest-api' ) );
         }
 
         // Get current dismissed notices
@@ -1248,12 +1311,169 @@ class WP_CPT_RestAPI_Admin {
         }
         $context_string = ! empty( $context_parts ) ? ' | ' . implode( ', ', $context_parts ) : '';
 
-        // Log the event
-        error_log( sprintf(
-            '[CPT REST API Security] %s%s',
-            $message,
-            $context_string
-        ) );
+        // Log the event only when WP_DEBUG is enabled
+        if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+            error_log( sprintf(
+                '[CPT REST API Security] %s%s',
+                $message,
+                $context_string
+            ) );
+        }
+    }
+
+    /**
+     * Handle key migration form submission.
+     *
+     * @since    0.3
+     */
+    public function handle_key_migration() {
+        if (!isset($_POST['cpt_rest_api_migrate_keys'])) {
+            return;
+        }
+
+        // Verify nonce
+        if (!isset($_POST['cpt_rest_api_migrate_nonce']) ||
+            !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['cpt_rest_api_migrate_nonce'])), 'cpt_rest_api_migrate_keys')) {
+            wp_die(esc_html__('Security check failed.', 'wp-cpt-rest-api'));
+        }
+
+        // Check capabilities
+        if (!current_user_can('manage_options')) {
+            wp_die(esc_html__('Insufficient permissions.', 'wp-cpt-rest-api'));
+        }
+
+        // Perform migration
+        $result = $this->api_keys->migrate_to_hashed_keys();
+
+        // Show result
+        add_settings_error(
+            'cpt_rest_api_migration',
+            'migration_complete',
+            $result['message'],
+            $result['success'] ? 'updated' : 'info'
+        );
+
+        // Redirect
+        wp_redirect(admin_url('options-general.php?page=cpt-rest-api'));
+        exit;
+    }
+
+    /**
+     * Render the migration section on the plugin settings page.
+     *
+     * @since    1.0.1
+     * @param    array    $plaintext_keys    Array of keys that need migration.
+     */
+    private function render_migration_section($plaintext_keys) {
+        ?>
+        <div class="notice notice-error inline" style="margin: 20px 0; padding: 15px;">
+            <h3 style="margin-top: 0;">
+                <span class="dashicons dashicons-shield-alt" style="color: #d63638;"></span>
+                <?php echo esc_html__('Critical Security Update Required', 'wp-cpt-rest-api'); ?>
+            </h3>
+            <p>
+                <strong><?php echo esc_html__('Your API keys are stored insecurely and must be migrated to secure hashed storage.', 'wp-cpt-rest-api'); ?></strong>
+            </p>
+            <p>
+                <?php echo esc_html__('The plugin now uses industry-standard bcrypt hashing for API keys. Your existing keys are stored in plaintext and are vulnerable if your database is compromised.', 'wp-cpt-rest-api'); ?>
+            </p>
+
+            <h4><?php echo esc_html__('Existing Keys to be Removed:', 'wp-cpt-rest-api'); ?></h4>
+            <p><?php echo esc_html__('Review the list of keys below. These will be permanently deleted during migration. Make note of where each key is used so you can update your services with new keys after migration.', 'wp-cpt-rest-api'); ?></p>
+
+            <table class="widefat striped" style="margin: 10px 0; max-width: 600px;">
+                <thead>
+                    <tr>
+                        <th><?php echo esc_html__('Label', 'wp-cpt-rest-api'); ?></th>
+                        <th><?php echo esc_html__('Key Prefix', 'wp-cpt-rest-api'); ?></th>
+                        <th><?php echo esc_html__('Created', 'wp-cpt-rest-api'); ?></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($plaintext_keys as $key_data): ?>
+                        <tr>
+                            <td><strong><?php echo esc_html($key_data['label']); ?></strong></td>
+                            <td><code><?php echo esc_html(substr($key_data['key'], 0, 4)) . '...'; ?></code></td>
+                            <td><?php echo esc_html(date_i18n(get_option('date_format') . ' ' . get_option('time_format'), strtotime($key_data['created_at']))); ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+
+            <h4><?php echo esc_html__('What will happen during migration:', 'wp-cpt-rest-api'); ?></h4>
+            <ul style="list-style: disc; margin-left: 25px;">
+                <li><?php echo esc_html__('All existing API keys listed above will be permanently deleted', 'wp-cpt-rest-api'); ?></li>
+                <li><?php echo esc_html__('You must regenerate new secure keys after migration', 'wp-cpt-rest-api'); ?></li>
+                <li><?php echo esc_html__('All services using the API must be updated with new keys', 'wp-cpt-rest-api'); ?></li>
+                <li><?php echo esc_html__('New keys will only be visible once upon creation (store them securely)', 'wp-cpt-rest-api'); ?></li>
+                <li><?php echo esc_html__('New keys will be stored as secure bcrypt hashes', 'wp-cpt-rest-api'); ?></li>
+            </ul>
+
+            <form method="post" action="" style="margin-top: 20px;">
+                <?php wp_nonce_field('cpt_rest_api_migrate_keys', 'cpt_rest_api_migrate_nonce'); ?>
+                <input type="hidden" name="cpt_rest_api_migrate_keys" value="1">
+                <p>
+                    <button type="submit" class="button button-primary button-large" onclick="return confirm('<?php echo esc_js(__('Are you sure you want to migrate? All existing keys will be deleted and you will need to regenerate new keys.', 'wp-cpt-rest-api')); ?>');">
+                        <span class="dashicons dashicons-update" style="margin-top: 3px;"></span>
+                        <?php echo esc_html__('Migrate to Secure Keys Now', 'wp-cpt-rest-api'); ?>
+                    </button>
+                </p>
+            </form>
+        </div>
+        <?php
+    }
+
+    /**
+     * Display admin notice for required key migration.
+     *
+     * @since    0.3
+     */
+    public function display_migration_notice() {
+        if (!current_user_can('manage_options')) {
+            return;
+        }
+
+        // Don't show on plugin settings page - migration UI is there
+        $screen = get_current_screen();
+        if ($screen && $screen->id === 'settings_page_cpt-rest-api') {
+            return;
+        }
+
+        // Check if migration needed
+        $keys = $this->api_keys->get_keys();
+        $needs_migration = false;
+
+        foreach ($keys as $key_data) {
+            if (isset($key_data['key']) && !isset($key_data['key_hash'])) {
+                $needs_migration = true;
+                break;
+            }
+        }
+
+        if (!$needs_migration) {
+            return;
+        }
+
+        $settings_url = admin_url('options-general.php?page=cpt-rest-api');
+        ?>
+        <div class="notice notice-error">
+            <h3 style="margin-top: 12px;">
+                <span class="dashicons dashicons-shield-alt" style="color: #d63638;"></span>
+                <?php echo esc_html__('Critical Security Update Required - CPT REST API', 'wp-cpt-rest-api'); ?>
+            </h3>
+            <p>
+                <strong><?php echo esc_html__('Your API keys are stored insecurely and must be migrated.', 'wp-cpt-rest-api'); ?></strong>
+            </p>
+            <p>
+                <?php echo esc_html__('This plugin now uses secure hashing for API keys. Your existing keys are stored in plaintext and vulnerable.', 'wp-cpt-rest-api'); ?>
+            </p>
+            <p>
+                <a href="<?php echo esc_url($settings_url); ?>" class="button button-primary button-large">
+                    <?php echo esc_html__('Go to Plugin Settings to Migrate Keys', 'wp-cpt-rest-api'); ?>
+                </a>
+            </p>
+        </div>
+        <?php
     }
 
 }

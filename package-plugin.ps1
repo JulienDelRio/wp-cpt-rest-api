@@ -2,7 +2,23 @@
 # Creates a clean distribution package for wp-cpt-rest-api plugin
 
 $PluginName = "wp-cpt-rest-api"
-$Version = "1.0.0"
+
+# Extract version from readme.txt
+$ReadmePath = "src/readme.txt"
+if (-not (Test-Path $ReadmePath)) {
+    Write-Host "Error: $ReadmePath not found!" -ForegroundColor Red
+    exit 1
+}
+
+$ReadmeContent = Get-Content $ReadmePath -Raw
+if ($ReadmeContent -match 'Stable tag:\s*([0-9]+\.[0-9]+\.[0-9]+)') {
+    $Version = $Matches[1]
+} else {
+    Write-Host "Error: Could not extract version from $ReadmePath" -ForegroundColor Red
+    Write-Host "Please ensure 'Stable tag:' line exists with version number (e.g., 'Stable tag: 1.0.1')" -ForegroundColor Yellow
+    exit 1
+}
+
 $BuildDir = "build"
 $PackageName = "$PluginName-$Version"
 

@@ -103,24 +103,35 @@ class WP_CPT_RestAPI_API_Keys {
         if (empty($label)) {
             return false;
         }
-        
+
         $keys = $this->get_keys();
         $key = $this->generate_key();
-        
+
+        // Hash the key before storage (security improvement for version 0.3)
+        $key_hash = wp_hash_password($key);
+        $key_prefix = substr($key, 0, 4);
+
         // Create a new key entry
         $new_key = array(
             'id'         => uniqid('key_'),
             'label'      => sanitize_text_field($label),
-            'key'        => $key,
+            'key_hash'   => $key_hash,      // Store hash instead of plaintext
+            'key_prefix' => $key_prefix,    // Store prefix for display
             'created_at' => current_time('mysql'),
         );
-        
+
         $keys[] = $new_key;
-        
+
         // Update the option
         $updated = update_option($this->option_name, $keys);
-        
-        return $updated ? $new_key : false;
+
+        if ($updated) {
+            // Return plaintext key ONLY once (not stored in database)
+            $new_key['key'] = $key;
+            return $new_key;
+        }
+
+        return false;
     }
 
     /**
@@ -184,9 +195,8 @@ class WP_CPT_RestAPI_API_Keys {
     /**
      * Validate an API key.
      *
-     * Uses hash_equals() for constant-time comparison to prevent timing attacks.
-     * The parameters to hash_equals() are ordered with known value first, user input second
-     * for best security practices.
+     * Uses wp_check_password() for secure bcrypt hash verification with constant-time comparison
+     * to prevent timing attacks.
      *
      * @since    0.1
      * @param    string    $key    The API key to validate.
@@ -201,12 +211,67 @@ class WP_CPT_RestAPI_API_Keys {
         }
 
         foreach ($keys as $key_data) {
-            // hash_equals parameters: compare known string first, user input second
-            if ( hash_equals( (string) $key_data['key'], (string) $key ) ) {
+            // Use wp_check_password for bcrypt verification (constant-time comparison built-in)
+            if ( isset($key_data['key_hash']) && wp_check_password( $key, $key_data['key_hash'] ) ) {
                 return true;
             }
         }
 
         return false;
+    }
+
+    /**
+     * Migrate existing plaintext keys to hashed format.
+     *
+     * WARNING: This is a destructive operation. All existing plaintext keys
+     * will be deleted. Users must regenerate their API keys.
+     *
+     * @since    0.3
+     * @return   array    Migration results.
+     */
+    public function migrate_to_hashed_keys() {
+        $keys = $this->get_keys();
+        $plaintext_count = 0;
+
+        // Check for old format (plaintext 'key' field)
+        foreach ($keys as $key_data) {
+            if (isset($key_data['key']) && !isset($key_data['key_hash'])) {
+                $plaintext_count++;
+            }
+        }
+
+        // Delete all plaintext keys
+        if ($plaintext_count > 0) {
+            update_option($this->option_name, array());
+
+            // Log migration
+            if (defined('WP_DEBUG_LOG') && WP_DEBUG_LOG) {
+                error_log(sprintf(
+                    '[CPT REST API Security] Migration: Deleted %d plaintext API keys',
+                    $plaintext_count
+                ));
+            }
+
+            return array(
+                'success' => true,
+                'deleted_count' => $plaintext_count,
+                'message' => sprintf(
+                    /* translators: %d: number of plaintext API keys that were deleted */
+                    _n(
+                        'Security update: %d plaintext key was deleted. Please regenerate your API keys.',
+                        'Security update: %d plaintext keys were deleted. Please regenerate your API keys.',
+                        $plaintext_count,
+                        'wp-cpt-rest-api'
+                    ),
+                    $plaintext_count
+                )
+            );
+        }
+
+        return array(
+            'success' => false,
+            'deleted_count' => 0,
+            'message' => __('No migration needed.', 'wp-cpt-rest-api')
+        );
     }
 }

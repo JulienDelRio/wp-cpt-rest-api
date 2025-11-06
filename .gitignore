@@ -68,6 +68,9 @@ Thumbs.db
 .env.*
 !.env.example
 
+# Development configuration (local only, not tracked)
+/src/dev-config.php
+
 # Composer
 composer.phar
 /src/wp-cpt-rest-api.zip

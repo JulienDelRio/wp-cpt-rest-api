@@ -1,0 +1,673 @@
+# Translation template for Custom Post Types RestAPI
+# Copyright (C) 2025 Julien DELRIO
+# This file is distributed under the same license as the Custom Post Types RestAPI plugin.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Custom Post Types RestAPI 1.1.0\n"
+"Report-Msgid-Bugs-To: https://github.com/JulienDelRio/wp-cpt-rest-api/issues\n"
+"POT-Creation-Date: 2025-11-04 12:14+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: src/admin/class-wp-cpt-restapi-admin.php:169
+msgid "Please enter a label for the API key."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:170
+msgid "Generating..."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:171
+#: src/admin/class-wp-cpt-restapi-admin.php:969
+msgid "Generate API Key"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:172
+msgid "Copy"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:173
+msgid "Copied!"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:174
+msgid "Failed to copy. Please try again."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:175
+#: src/rest-api/class-wp-cpt-restapi-rest.php:406
+msgid "An error occurred. Please try again."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:176
+msgid ""
+"Are you sure you want to deactivate all Custom Post Types? This action will "
+"uncheck all toggle switches."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:177
+msgid "Resetting..."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:178
+#: src/admin/class-wp-cpt-restapi-admin.php:730
+msgid "Reset All"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:237
+msgid "REST API Settings"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:245
+msgid "API Base Segment"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:254
+msgid "Enable Toolset relationship support"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:263
+msgid "Include non-public Custom Post Types"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:272
+#: src/admin/class-wp-cpt-restapi-admin.php:786
+msgid "Custom Post Types"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:280
+msgid "Active Post Types"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:289
+#: src/admin/class-wp-cpt-restapi-admin.php:822
+msgid "API Keys"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:297
+msgid "Manage API Keys"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:310
+#: src/admin/class-wp-cpt-restapi-admin.php:766
+msgid "Configure the base segment for the Custom Post Types REST API."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:335
+msgid ""
+"Must be between 1 and 120 characters long and can only contain lowercase "
+"letters, digits, and hyphens."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:340
+msgid ""
+"The base segment defines the namespace for your REST API endpoints. It must "
+"be between 1 and 120 characters long and can only contain lowercase letters "
+"(a-z), digits (0-9), and hyphens (-)."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:345
+msgid "Full REST API URL:"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:371
+msgid "Enable"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:377
+msgid ""
+"When enabled, this will add REST API endpoints for managing Toolset "
+"relationships between Custom Post Types. Requires Toolset Types plugin to be "
+"installed and active."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:382
+msgid ""
+"Enable this option to include Toolset relationship functionality in the REST "
+"API endpoints."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:400
+msgid "The base segment cannot be empty."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:411
+msgid "The base segment must be between 1 and 120 characters long."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:422
+msgid ""
+"The base segment can only contain lowercase letters, digits, and hyphens."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:432
+msgid "Settings saved successfully."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:467
+msgid "Custom Post Types settings saved successfully."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:489
+msgid "Toolset relationship settings saved successfully."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:521
+msgid "Non-public CPT visibility settings saved successfully."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:542
+#: src/admin/class-wp-cpt-restapi-admin.php:701
+msgid "Publicly Queryable"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:543
+msgid "Admin Only (Show UI)"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:544
+#: src/admin/class-wp-cpt-restapi-admin.php:705
+msgid "Private"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:550
+msgid "Select non-public CPT types to include"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:552
+msgid ""
+"Select which types of non-public Custom Post Types should be available for "
+"selection:"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:567
+msgid "Note:"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:568
+msgid ""
+"Public CPTs are always available. Select additional visibility types to "
+"include in the list below."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:575
+msgid ""
+"Choose which types of non-public CPTs to make available for API exposure. "
+"Publicly Queryable CPTs can be queried but aren't fully public. Admin Only "
+"CPTs show in WordPress admin. Private CPTs are completely hidden from public "
+"access."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:647
+msgid ""
+"Select which Custom Post Types should be available through the REST API. Use "
+"the option above to include non-public CPTs in the selection."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:663
+msgid ""
+"No Custom Post Types found. Custom Post Types will appear here once they are "
+"registered."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:672
+msgid "Post Type"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:673
+msgid "Description"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:674
+msgid "Slug"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:675
+msgid "Visibility"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:676
+msgid "Status"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:689
+msgid "No description available"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:699
+msgid "Public"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:703
+msgid "Admin Only"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:719
+msgid "Activate"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:733
+msgid "Reset All will deactivate all Custom Post Types."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:753
+msgid "CPT REST API"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:756
+msgid "API Settings"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:765
+msgid "REST API Base Segment"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:772
+msgid "Toolset Relationships"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:773
+msgid "Enable support for Toolset relationship functionality in the REST API."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:779
+msgid "Non-Public Custom Post Types"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:780
+msgid ""
+"Control whether non-public Custom Post Types should be available for "
+"selection."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:787
+msgid ""
+"Select which Custom Post Types should be available through the REST API."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:794
+msgid "Save Settings"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:801
+msgid "API Keys Management"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:823
+#: src/admin/class-wp-cpt-restapi-admin.php:876
+msgid "Create and manage API keys for accessing the REST API endpoints."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:824
+#: src/admin/class-wp-cpt-restapi-admin.php:877
+msgid ""
+"API keys can be used to authenticate requests to the REST API using the "
+"Bearer authentication method."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:881
+msgid "Security Notice:"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:883
+msgid "API keys grant full access to all enabled Custom Post Types"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:884
+msgid "Keys can perform all operations: create, read, update, and delete"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:885
+msgid ""
+"Treat API keys like passwords - never share them publicly or commit them to "
+"version control"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:886
+msgid "Regenerate keys immediately if you suspect they have been compromised"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:904
+msgid "Your API Keys"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:907
+msgid "No API keys found. Create your first key below."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:912
+#: src/admin/class-wp-cpt-restapi-admin.php:956
+#: src/admin/class-wp-cpt-restapi-admin.php:1385
+msgid "Label"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:913
+#: src/admin/class-wp-cpt-restapi-admin.php:1386
+msgid "Key Prefix"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:914
+#: src/admin/class-wp-cpt-restapi-admin.php:1387
+msgid "Created"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:915
+msgid "Actions"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:930
+msgid "Full key hidden for security"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:939
+msgid ""
+"Are you sure you want to delete this API key? This action cannot be undone."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:941
+msgid "Delete"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:953
+msgid "Create a New API Key"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:961
+msgid "Enter a label for your API key"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:965
+msgid "A descriptive name to help you identify this key."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:977
+msgid "Important: Save Your API Key Now"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:980
+msgid "This key will only be displayed once and cannot be recovered."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:983
+msgid ""
+"Copy it now and store it securely. If you lose this key, you will need to "
+"generate a new one."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:986
+msgid "Note: Refresh the page to see this key in the list below."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:993
+msgid "Copy Key"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:1010
+#: src/admin/class-wp-cpt-restapi-admin.php:1074
+#: src/admin/class-wp-cpt-restapi-admin.php:1118
+#: src/admin/class-wp-cpt-restapi-admin.php:1253
+#: src/admin/class-wp-cpt-restapi-admin.php:1335
+msgid "Security check failed."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:1015
+#: src/admin/class-wp-cpt-restapi-admin.php:1079
+#: src/admin/class-wp-cpt-restapi-admin.php:1123
+#: src/admin/class-wp-cpt-restapi-admin.php:1258
+msgid "You do not have permission to perform this action."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:1025
+msgid "Rate limit exceeded. Please wait before generating more keys."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:1038
+msgid "Label is required."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:1043
+msgid "Label must be 100 characters or less."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:1059
+msgid "API key created successfully."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:1062
+msgid "Failed to create API key."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:1087
+msgid "Key ID is required."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:1104
+msgid "API key deleted successfully."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:1106
+msgid "Failed to delete API key."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:1130
+msgid "All Custom Post Types have been deactivated."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:1132
+msgid "Failed to reset Custom Post Types."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:1191
+#: src/admin/class-wp-cpt-restapi-admin.php:1211
+msgid "CPT REST API:"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:1195
+#, php-format
+msgid ""
+"No Custom Post Types are currently enabled for the REST API. %s to get "
+"started."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:1196
+msgid "Configure settings"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:1215
+#, php-format
+msgid ""
+"No API keys have been created yet. You need at least one API key to access "
+"the REST API endpoints. %s"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:1216
+msgid "Create an API key"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:1265
+msgid "Invalid notice ID."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:1340
+msgid "Insufficient permissions."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:1370
+msgid "Critical Security Update Required"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:1373
+msgid ""
+"Your API keys are stored insecurely and must be migrated to secure hashed "
+"storage."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:1376
+msgid ""
+"The plugin now uses industry-standard bcrypt hashing for API keys. Your "
+"existing keys are stored in plaintext and are vulnerable if your database is "
+"compromised."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:1379
+msgid "Existing Keys to be Removed:"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:1380
+msgid ""
+"Review the list of keys below. These will be permanently deleted during "
+"migration. Make note of where each key is used so you can update your "
+"services with new keys after migration."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:1401
+msgid "What will happen during migration:"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:1403
+msgid "All existing API keys listed above will be permanently deleted"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:1404
+msgid "You must regenerate new secure keys after migration"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:1405
+msgid "All services using the API must be updated with new keys"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:1406
+msgid "New keys will only be visible once upon creation (store them securely)"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:1407
+msgid "New keys will be stored as secure bcrypt hashes"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:1414
+msgid ""
+"Are you sure you want to migrate? All existing keys will be deleted and you "
+"will need to regenerate new keys."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:1416
+msgid "Migrate to Secure Keys Now"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:1460
+msgid "Critical Security Update Required - CPT REST API"
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:1463
+msgid "Your API keys are stored insecurely and must be migrated."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:1466
+msgid ""
+"This plugin now uses secure hashing for API keys. Your existing keys are "
+"stored in plaintext and vulnerable."
+msgstr ""
+
+#: src/admin/class-wp-cpt-restapi-admin.php:1470
+msgid "Go to Plugin Settings to Migrate Keys"
+msgstr ""
+
+#: src/includes/class-wp-cpt-restapi-api-keys.php:260
+#, php-format
+msgid ""
+"Security update: %d plaintext key was deleted. Please regenerate your API "
+"keys."
+msgid_plural ""
+"Security update: %d plaintext keys were deleted. Please regenerate your API "
+"keys."
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/includes/class-wp-cpt-restapi-api-keys.php:273
+msgid "No migration needed."
+msgstr ""
+
+#: src/rest-api/class-wp-cpt-restapi-rest.php:319
+msgid ""
+"Authentication required. Please provide a valid API key in the Authorization "
+"header."
+msgstr ""
+
+#: src/rest-api/class-wp-cpt-restapi-rest.php:324
+msgid "Invalid API key provided."
+msgstr ""
+
+#: src/rest-api/class-wp-cpt-restapi-rest.php:331
+msgid "This Custom Post Type is not enabled for API access."
+msgstr ""
+
+#: src/rest-api/class-wp-cpt-restapi-rest.php:338
+msgid "Invalid post ID provided."
+msgstr ""
+
+#: src/rest-api/class-wp-cpt-restapi-rest.php:343
+msgid "Post ID does not match the specified Custom Post Type."
+msgstr ""
+
+#: src/rest-api/class-wp-cpt-restapi-rest.php:348
+msgid "Access denied. This post is not published."
+msgstr ""
+
+#: src/rest-api/class-wp-cpt-restapi-rest.php:353
+msgid "Failed to create post. Please check your input and try again."
+msgstr ""
+
+#: src/rest-api/class-wp-cpt-restapi-rest.php:358
+msgid "Post operation completed but failed to retrieve post data."
+msgstr ""
+
+#: src/rest-api/class-wp-cpt-restapi-rest.php:363
+msgid "Failed to update post. Please check your input and try again."
+msgstr ""
+
+#: src/rest-api/class-wp-cpt-restapi-rest.php:368
+msgid "Failed to delete post. Please try again."
+msgstr ""
+
+#: src/rest-api/class-wp-cpt-restapi-rest.php:375
+msgid "Toolset plugin is not active or Toolset support is not enabled."
+msgstr ""
+
+#: src/rest-api/class-wp-cpt-restapi-rest.php:380
+msgid "Toolset operation failed."
+msgstr ""
+
+#: src/rest-api/class-wp-cpt-restapi-rest.php:385
+msgid "Relationship already exists between these posts."
+msgstr ""
+
+#: src/rest-api/class-wp-cpt-restapi-rest.php:390
+msgid "Relationship not found or invalid relationship ID."
+msgstr ""
+
+#: src/rest-api/class-wp-cpt-restapi-rest.php:395
+msgid "Invalid relationship ID format."
+msgstr ""
+
+#: src/rest-api/class-wp-cpt-restapi-rest.php:1180
+msgid "WordPress Custom Post Types REST API"
+msgstr ""
+
+#: src/rest-api/class-wp-cpt-restapi-rest.php:1688
+msgid "Relationship created successfully."
+msgstr ""
+
+#: src/rest-api/class-wp-cpt-restapi-rest.php:1695
+msgid "Failed to create relationship."
+msgstr ""
+
+#: src/rest-api/class-wp-cpt-restapi-rest.php:1780
+msgid "Relationship deleted successfully."
+msgstr ""

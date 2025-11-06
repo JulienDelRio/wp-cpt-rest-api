@@ -3,15 +3,15 @@
  * Plugin Name: Custom Post Types RestAPI
  * Plugin URI: https://github.com/JulienDelRio/wp-cpt-rest-api
  * Description: A robust WordPress plugin that extends the native REST API functionalities to provide comprehensive endpoints for Custom Post Types and their associated metadata.
- * Version: 1.0.0
+ * Version: 1.1.0
  * Author: Julien DELRIO
  * Author URI: https://juliendelrio.fr
  * License: GPLv2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Requires at least: 6.0
- * Tested up to: 6.6
+ * Tested up to: 6.8
  * Requires PHP: 7.4
- * Text Domain: wp-cpt-restapi
+ * Text Domain: wp-cpt-rest-api
  * Domain Path: /languages
  *
  * @package WP_CPT_RestAPI
@@ -23,10 +23,21 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define plugin constants
-define( 'WP_CPT_RESTAPI_VERSION', '1.0.0' );
+define( 'WP_CPT_RESTAPI_VERSION', '1.1.0' );
 define( 'WP_CPT_RESTAPI_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'WP_CPT_RESTAPI_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'WP_CPT_RESTAPI_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
+
+// Load development configuration if it exists (not tracked in version control)
+$dev_config_file = WP_CPT_RESTAPI_PLUGIN_DIR . 'dev-config.php';
+if ( file_exists( $dev_config_file ) ) {
+    require_once $dev_config_file;
+}
+
+// Set default development mode if not defined
+if ( ! defined( 'WP_CPT_RESTAPI_DEV_MODE' ) ) {
+    define( 'WP_CPT_RESTAPI_DEV_MODE', false );
+}
 
 /**
  * The code that runs during plugin activation.
@@ -92,16 +103,16 @@ function run_wp_cpt_restapi() {
 }
 
 /**
- * Load plugin text domain for translations.
+ * Note: As of WordPress 4.6+, WordPress.org automatically loads translations
+ * for plugins hosted in the directory. No manual textdomain loading is required
+ * for WordPress.org hosted plugins.
+ *
+ * Translation files are located in the /languages/ directory and are automatically
+ * loaded by WordPress when the plugin is activated from the WordPress.org repository.
+ *
+ * @since 0.1
+ * @since 1.1.1 Removed load_plugin_textdomain() call for WordPress.org compliance
  */
-function wp_cpt_restapi_load_textdomain() {
-	load_plugin_textdomain(
-		'wp-cpt-restapi',
-		false,
-		dirname( plugin_basename( __FILE__ ) ) . '/languages'
-	);
-}
-add_action( 'plugins_loaded', 'wp_cpt_restapi_load_textdomain' );
 
 // Start the plugin
 add_action( 'plugins_loaded', 'run_wp_cpt_restapi' );
