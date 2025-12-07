@@ -11,7 +11,7 @@
  * Requires at least: 6.0
  * Tested up to: 6.8
  * Requires PHP: 7.4
- * Text Domain: wp-cpt-rest-api
+ * Text Domain: custom-post-types-restapi
  * Domain Path: /languages
  *
  * @package CPTREST

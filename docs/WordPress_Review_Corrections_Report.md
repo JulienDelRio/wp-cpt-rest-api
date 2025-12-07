@@ -14,7 +14,7 @@ The WordPress Plugin Review Team has flagged three issues that must be addressed
 | Issue | Severity | Status | Effort |
 |-------|----------|--------|--------|
 | Prefix naming collision | High (Red) | **COMPLETED** | High |
-| Text domain mismatch | Medium | To Do | Medium |
+| Text domain mismatch | Medium | **COMPLETED** | Medium |
 | Permission callback clarification | Low | To Verify | Low |
 
 ---
@@ -90,7 +90,7 @@ Options retained with `cpt_rest_api_` prefix (acceptable to WordPress):
 
 ---
 
-## Issue #2: Text Domain Mismatch
+## Issue #2: Text Domain Mismatch - COMPLETED
 
 ### Problem
 
@@ -100,40 +100,19 @@ The plugin uses text domain `wp-cpt-rest-api` but the WordPress.org plugin slug 
 
 Change ALL text domain references from `wp-cpt-rest-api` to `custom-post-types-restapi`.
 
-### Scope of Changes
+### Changes Applied
 
-| File | Occurrences |
-|------|-------------|
-| `admin/class-cptrest-admin.php` | 143 |
-| `rest-api/class-cptrest-rest.php` | 20 |
-| `includes/class-cptrest-api-keys.php` | 2 |
-| `wp-cpt-rest-api.php` | 2 |
-| `readme.txt` | 3 |
-| `languages/*.pot` | 1 |
-| `languages/*.po` | 1 |
-| **Total** | **~175 occurrences** |
-
-### Files Requiring Changes
-
-1. **Main plugin file header:**
-   ```php
-   // Change in wp-cpt-rest-api.php line 14
-   * Text Domain: custom-post-types-restapi
-   ```
-
-2. **All translation function calls:**
-   ```php
-   // Change all occurrences like:
-   esc_html__( 'text', 'wp-cpt-rest-api' )
-   // To:
-   esc_html__( 'text', 'custom-post-types-restapi' )
-   ```
-
-3. **Language files:**
-   - Rename `wp-cpt-rest-api.pot` to `custom-post-types-restapi.pot`
-   - Rename `wp-cpt-rest-api-fr_FR.po` to `custom-post-types-restapi-fr_FR.po`
-   - Rename any `.mo` files similarly
-   - Update Project-Id-Version and domain references inside files
+| File | Changes |
+|------|---------|
+| `wp-cpt-rest-api.php` | Updated Text Domain header to `custom-post-types-restapi` |
+| `admin/class-cptrest-admin.php` | All 143 text domain occurrences updated |
+| `rest-api/class-cptrest-rest.php` | All 20 text domain occurrences updated |
+| `includes/class-cptrest-api-keys.php` | All 2 text domain occurrences updated |
+| `readme.txt` | Updated text domain reference in changelog |
+| `languages/README.md` | Updated documentation with new text domain |
+| `languages/*.pot` | Renamed from `wp-cpt-rest-api.pot` to `custom-post-types-restapi.pot` |
+| `languages/*.po` | Renamed from `wp-cpt-rest-api-fr_FR.po` to `custom-post-types-restapi-fr_FR.po` |
+| `languages/*.mo` | Renamed from `wp-cpt-rest-api-fr_FR.mo` to `custom-post-types-restapi-fr_FR.mo` |
 
 ---
 
@@ -183,13 +162,13 @@ Using `__return_true` is the correct approach for intentionally public endpoints
 - [x] **Task 1.7:** Update all constant references in all files
 - [ ] **Task 1.8:** Test plugin activation/deactivation
 
-### Phase 2: Text Domain Corrections (Medium Priority)
+### Phase 2: Text Domain Corrections (Medium Priority) - COMPLETED
 
-- [ ] **Task 2.1:** Update text domain in plugin header
-- [ ] **Task 2.2:** Find/replace all text domain occurrences in PHP files
-- [ ] **Task 2.3:** Rename language files
-- [ ] **Task 2.4:** Regenerate POT file with new text domain
-- [ ] **Task 2.5:** Update PO/MO files with new domain
+- [x] **Task 2.1:** Update text domain in plugin header
+- [x] **Task 2.2:** Find/replace all text domain occurrences in PHP files
+- [x] **Task 2.3:** Rename language files
+- [x] **Task 2.4:** Update POT file with new text domain
+- [x] **Task 2.5:** Update PO/MO files with new domain
 
 ### Phase 3: Testing & Verification
 
@@ -216,7 +195,7 @@ Using `__return_true` is the correct approach for intentionally public endpoints
 ### Before Resubmission
 
 - [x] All prefix changes completed
-- [ ] All text domain changes completed
+- [x] All text domain changes completed
 - [ ] Plugin tested on WordPress 6.0+ and 6.8
 - [ ] Plugin tested on PHP 7.4 and 8.x
 - [ ] No PHP errors or warnings
@@ -266,6 +245,7 @@ Julien DELRIO
 |---------|------|---------|
 | 1.0 | 2024-12-07 | Initial report created |
 | 1.1 | 2024-12-07 | Issue #1 (Prefix) completed with `cptrest_` prefix |
+| 1.2 | 2025-12-07 | Issue #2 (Text Domain) completed - changed to `custom-post-types-restapi` |
 
 ---
 

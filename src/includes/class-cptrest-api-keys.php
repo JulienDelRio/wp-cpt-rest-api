@@ -261,7 +261,7 @@ class CPTREST_API_Keys {
                         'Security update: %d plaintext key was deleted. Please regenerate your API keys.',
                         'Security update: %d plaintext keys were deleted. Please regenerate your API keys.',
                         $plaintext_count,
-                        'wp-cpt-rest-api'
+                        'custom-post-types-restapi'
                     ),
                     $plaintext_count
                 )
@@ -271,7 +271,7 @@ class CPTREST_API_Keys {
         return array(
             'success' => false,
             'deleted_count' => 0,
-            'message' => __('No migration needed.', 'wp-cpt-rest-api')
+            'message' => __('No migration needed.', 'custom-post-types-restapi')
         );
     }
 }

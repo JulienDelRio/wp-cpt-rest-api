@@ -52,7 +52,7 @@ Yes, the plugin provides access to all associated metadata for your Custom Post 
 * i18n: Added complete French (fr_FR) translation with 119 translated strings
 * Licensing: Updated from Apache 2.0 to GPLv2 or later for WordPress.org compliance
 * WordPress.org: Fixed all Plugin Check critical issues for plugin directory submission
-* Code Quality: Fixed text domain consistency (wp-cpt-rest-api) across all 137 translation calls
+* Code Quality: Fixed text domain consistency (custom-post-types-restapi) across all 137 translation calls
 * Documentation: Updated "Tested up to" WordPress 6.8 for current compatibility
 * Maintenance: Removed hidden .gitkeep file for WordPress.org validation compliance
 
