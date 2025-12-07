@@ -15,7 +15,7 @@ The WordPress Plugin Review Team has flagged three issues that must be addressed
 |-------|----------|--------|--------|
 | Prefix naming collision | High (Red) | **COMPLETED** | High |
 | Text domain mismatch | Medium | **COMPLETED** | Medium |
-| Permission callback clarification | Low | To Verify | Low |
+| Permission callback clarification | Low | **COMPLETED** | Low |
 
 ---
 
@@ -116,7 +116,7 @@ Change ALL text domain references from `wp-cpt-rest-api` to `custom-post-types-r
 
 ---
 
-## Issue #3: Permission Callback (FALSE POSITIVE)
+## Issue #3: Permission Callback (FALSE POSITIVE) - COMPLETED
 
 ### Problem Reported
 
@@ -135,13 +135,39 @@ register_rest_route($base_segment . '/v1', '/openapi', [...]);
 
 Using `__return_true` is the correct approach for intentionally public endpoints. The namespace info and OpenAPI spec endpoints are meant to be publicly accessible without authentication.
 
-### Action Required
+### Solution Applied (Option B)
 
-- **Option A:** No change needed - explain this in the reply email
-- **Option B:** Add a comment explaining the intentional public access:
-  ```php
-  'permission_callback' => '__return_true' // Intentionally public endpoint
-  ```
+Added explanatory comments to clarify the intentional public access:
+
+```php
+// Register the REST API namespace info endpoint
+// Intentionally public: This endpoint provides API discovery information
+// and does not expose sensitive data. Public access enables API consumers
+// to discover available endpoints without authentication.
+register_rest_route(
+    $base_segment . '/v1',
+    '/',
+    array(
+        'methods'  => 'GET',
+        'callback' => array( $this, 'namespace_info' ),
+        'permission_callback' => '__return_true', // Intentionally public for API discovery
+    )
+);
+
+// Register the OpenAPI specification endpoint
+// Intentionally public: The OpenAPI spec is documentation that helps
+// developers understand and integrate with the API. Public access follows
+// standard practice for API documentation endpoints.
+register_rest_route(
+    $base_segment . '/v1',
+    '/openapi',
+    array(
+        'methods'  => 'GET',
+        'callback' => array( $this, 'get_openapi_spec' ),
+        'permission_callback' => '__return_true', // Intentionally public for API documentation
+    )
+);
+```
 
 ### Suggested Reply to Reviewer
 
@@ -246,6 +272,7 @@ Julien DELRIO
 | 1.0 | 2024-12-07 | Initial report created |
 | 1.1 | 2024-12-07 | Issue #1 (Prefix) completed with `cptrest_` prefix |
 | 1.2 | 2025-12-07 | Issue #2 (Text Domain) completed - changed to `custom-post-types-restapi` |
+| 1.3 | 2025-12-07 | Issue #3 (Permission Callback) completed - added explanatory comments |
 
 ---
 

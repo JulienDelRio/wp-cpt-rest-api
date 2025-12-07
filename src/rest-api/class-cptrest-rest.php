@@ -437,24 +437,30 @@ class CPTREST_REST {
         $base_segment = get_option( $this->option_name, $this->default_segment );
         
         // Register the REST API namespace info endpoint
+        // Intentionally public: This endpoint provides API discovery information
+        // and does not expose sensitive data. Public access enables API consumers
+        // to discover available endpoints without authentication.
         register_rest_route(
             $base_segment . '/v1',
             '/',
             array(
                 'methods'  => 'GET',
                 'callback' => array( $this, 'namespace_info' ),
-                'permission_callback' => '__return_true',
+                'permission_callback' => '__return_true', // Intentionally public for API discovery
             )
         );
-        
+
         // Register the OpenAPI specification endpoint
+        // Intentionally public: The OpenAPI spec is documentation that helps
+        // developers understand and integrate with the API. Public access follows
+        // standard practice for API documentation endpoints.
         register_rest_route(
             $base_segment . '/v1',
             '/openapi',
             array(
                 'methods'  => 'GET',
                 'callback' => array( $this, 'get_openapi_spec' ),
-                'permission_callback' => '__return_true',
+                'permission_callback' => '__return_true', // Intentionally public for API documentation
             )
         );
         
