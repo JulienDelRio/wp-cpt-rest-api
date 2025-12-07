@@ -14,7 +14,7 @@
  * Text Domain: wp-cpt-rest-api
  * Domain Path: /languages
  *
- * @package WP_CPT_RestAPI
+ * @package CPTREST
  */
 
 // If this file is called directly, abort.
@@ -23,26 +23,26 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define plugin constants
-define( 'WP_CPT_RESTAPI_VERSION', '1.1.0' );
-define( 'WP_CPT_RESTAPI_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
-define( 'WP_CPT_RESTAPI_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
-define( 'WP_CPT_RESTAPI_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
+define( 'CPTREST_VERSION', '1.1.0' );
+define( 'CPTREST_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
+define( 'CPTREST_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
+define( 'CPTREST_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
 
 // Load development configuration if it exists (not tracked in version control)
-$dev_config_file = WP_CPT_RESTAPI_PLUGIN_DIR . 'dev-config.php';
+$dev_config_file = CPTREST_PLUGIN_DIR . 'dev-config.php';
 if ( file_exists( $dev_config_file ) ) {
     require_once $dev_config_file;
 }
 
 // Set default development mode if not defined
-if ( ! defined( 'WP_CPT_RESTAPI_DEV_MODE' ) ) {
-    define( 'WP_CPT_RESTAPI_DEV_MODE', false );
+if ( ! defined( 'CPTREST_DEV_MODE' ) ) {
+    define( 'CPTREST_DEV_MODE', false );
 }
 
 /**
  * The code that runs during plugin activation.
  */
-function activate_wp_cpt_restapi() {
+function cptrest_activate() {
     // Activation code here
     
     // Initialize API Keys option
@@ -74,18 +74,18 @@ function activate_wp_cpt_restapi() {
 /**
  * The code that runs during plugin deactivation.
  */
-function deactivate_wp_cpt_restapi() {
+function cptrest_deactivate() {
     // Deactivation code here
 }
 
-register_activation_hook( __FILE__, 'activate_wp_cpt_restapi' );
-register_deactivation_hook( __FILE__, 'deactivate_wp_cpt_restapi' );
+register_activation_hook( __FILE__, 'cptrest_activate' );
+register_deactivation_hook( __FILE__, 'cptrest_deactivate' );
 
 /**
  * The core plugin class that is used to define internationalization,
  * admin-specific hooks, and public-facing site hooks.
  */
-require_once WP_CPT_RESTAPI_PLUGIN_DIR . 'includes/class-wp-cpt-restapi.php';
+require_once CPTREST_PLUGIN_DIR . 'includes/class-cptrest-core.php';
 
 /**
  * Begins execution of the plugin.
@@ -94,10 +94,10 @@ require_once WP_CPT_RESTAPI_PLUGIN_DIR . 'includes/class-wp-cpt-restapi.php';
  * then kicking off the plugin from this point in the file does
  * not affect the page life cycle.
  */
-function run_wp_cpt_restapi() {
+function cptrest_run() {
     // Initialize the plugin
-    if ( class_exists( 'WP_CPT_RestAPI' ) ) {
-        $plugin = new WP_CPT_RestAPI();
+    if ( class_exists( 'CPTREST_Core' ) ) {
+        $plugin = new CPTREST_Core();
         $plugin->run();
     }
 }
@@ -115,4 +115,4 @@ function run_wp_cpt_restapi() {
  */
 
 // Start the plugin
-add_action( 'plugins_loaded', 'run_wp_cpt_restapi' );
+add_action( 'plugins_loaded', 'cptrest_run' );

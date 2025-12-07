@@ -3,7 +3,7 @@
 **Plugin:** Custom Post Types RestAPI
 **Version:** 1.1.0
 **Review Date:** 2024-12-07
-**Status:** Pending Corrections
+**Status:** In Progress
 
 ---
 
@@ -13,13 +13,13 @@ The WordPress Plugin Review Team has flagged three issues that must be addressed
 
 | Issue | Severity | Status | Effort |
 |-------|----------|--------|--------|
-| Prefix naming collision | High (Red) | To Do | High |
+| Prefix naming collision | High (Red) | **COMPLETED** | High |
 | Text domain mismatch | Medium | To Do | Medium |
 | Permission callback clarification | Low | To Verify | Low |
 
 ---
 
-## Issue #1: Prefix Naming Collision (CRITICAL)
+## Issue #1: Prefix Naming Collision (CRITICAL) - COMPLETED
 
 ### Problem
 
@@ -32,80 +32,61 @@ A prefix must be:
 - **Distinct and unique** to the plugin (no common words like "wp", "wordpress", "plugin")
 - Separated by underscore or dash
 
-### Recommended New Prefix
+### Chosen Prefix
 
-**Suggested prefix:** `cptapi_` / `CPTAPI_` / `cptapi-`
+**Selected prefix:** `cptrest_` / `CPTREST_` / `cptrest-`
 
-Alternative options:
-- `custpoty_` (WordPress suggestion)
-- `cptrest_`
-- `jdrcpt_` (author initials + cpt)
+### Changes Applied
 
-### Files Requiring Changes
+#### Constants (5 occurrences) - DONE
+| File | Current | New |
+|------|---------|-----|
+| `wp-cpt-rest-api.php` | `WP_CPT_RESTAPI_VERSION` | `CPTREST_VERSION` |
+| `wp-cpt-rest-api.php` | `WP_CPT_RESTAPI_PLUGIN_DIR` | `CPTREST_PLUGIN_DIR` |
+| `wp-cpt-rest-api.php` | `WP_CPT_RESTAPI_PLUGIN_URL` | `CPTREST_PLUGIN_URL` |
+| `wp-cpt-rest-api.php` | `WP_CPT_RESTAPI_PLUGIN_BASENAME` | `CPTREST_PLUGIN_BASENAME` |
+| `wp-cpt-rest-api.php` | `WP_CPT_RESTAPI_DEV_MODE` | `CPTREST_DEV_MODE` |
 
-#### Constants (4 occurrences)
-| File | Line | Current | New |
-|------|------|---------|-----|
-| `wp-cpt-rest-api.php` | 26 | `WP_CPT_RESTAPI_VERSION` | `CPTAPI_VERSION` |
-| `wp-cpt-rest-api.php` | 27 | `WP_CPT_RESTAPI_PLUGIN_DIR` | `CPTAPI_PLUGIN_DIR` |
-| `wp-cpt-rest-api.php` | 28 | `WP_CPT_RESTAPI_PLUGIN_URL` | `CPTAPI_PLUGIN_URL` |
-| `wp-cpt-rest-api.php` | 29 | `WP_CPT_RESTAPI_PLUGIN_BASENAME` | `CPTAPI_PLUGIN_BASENAME` |
-| `wp-cpt-rest-api.php` | 39 | `WP_CPT_RESTAPI_DEV_MODE` | `CPTAPI_DEV_MODE` |
+#### Classes (6 classes) - DONE
+| Old File | New File | Old Class | New Class |
+|----------|----------|-----------|-----------|
+| `class-wp-cpt-restapi.php` | `class-cptrest-core.php` | `WP_CPT_RestAPI` | `CPTREST_Core` |
+| `class-wp-cpt-restapi-loader.php` | `class-cptrest-loader.php` | `WP_CPT_RestAPI_Loader` | `CPTREST_Loader` |
+| `class-wp-cpt-restapi-api-keys.php` | `class-cptrest-api-keys.php` | `WP_CPT_RestAPI_API_Keys` | `CPTREST_API_Keys` |
+| `class-wp-cpt-restapi-admin.php` | `class-cptrest-admin.php` | `WP_CPT_RestAPI_Admin` | `CPTREST_Admin` |
+| `class-wp-cpt-restapi-rest.php` | `class-cptrest-rest.php` | `WP_CPT_RestAPI_REST` | `CPTREST_REST` |
+| `class-wp-cpt-restapi-openapi.php` | `class-cptrest-openapi.php` | `WP_CPT_RestAPI_OpenAPI` | `CPTREST_OpenAPI` |
 
-#### Classes (5 classes)
-| File | Line | Current | New |
-|------|------|---------|-----|
-| `includes/class-wp-cpt-restapi.php` | 20 | `WP_CPT_RestAPI` | `CPTAPI_Core` |
-| `includes/class-wp-cpt-restapi-loader.php` | 21 | `WP_CPT_RestAPI_Loader` | `CPTAPI_Loader` |
-| `includes/class-wp-cpt-restapi-api-keys.php` | 19 | `WP_CPT_RestAPI_API_Keys` | `CPTAPI_API_Keys` |
-| `admin/class-wp-cpt-restapi-admin.php` | 20 | `WP_CPT_RestAPI_Admin` | `CPTAPI_Admin` |
-| `rest-api/class-wp-cpt-restapi-rest.php` | 20 | `WP_CPT_RestAPI_REST` | `CPTAPI_REST` |
-| `swagger/class-wp-cpt-restapi-openapi.php` | 19 | `WP_CPT_RestAPI_OpenAPI` | `CPTAPI_OpenAPI` |
+#### Functions (3 functions) - DONE
+| File | Old | New |
+|------|-----|-----|
+| `wp-cpt-rest-api.php` | `activate_wp_cpt_restapi()` | `cptrest_activate()` |
+| `wp-cpt-rest-api.php` | `deactivate_wp_cpt_restapi()` | `cptrest_deactivate()` |
+| `wp-cpt-rest-api.php` | `run_wp_cpt_restapi()` | `cptrest_run()` |
 
-#### Functions (3 functions)
-| File | Line | Current | New |
-|------|------|---------|-----|
-| `wp-cpt-rest-api.php` | 45 | `activate_wp_cpt_restapi()` | `cptapi_activate()` |
-| `wp-cpt-rest-api.php` | 77 | `deactivate_wp_cpt_restapi()` | `cptapi_deactivate()` |
-| `wp-cpt-rest-api.php` | 97 | `run_wp_cpt_restapi()` | `cptapi_run()` |
+#### Asset Files - DONE
+| Old Filename | New Filename |
+|--------------|--------------|
+| `wp-cpt-restapi-admin.css` | `cptrest-admin.css` |
+| `wp-cpt-restapi-admin.js` | `cptrest-admin.js` |
 
-#### Enqueued Assets (2 occurrences)
-| File | Line | Current | New |
-|------|------|---------|-----|
-| `admin/class-wp-cpt-restapi-admin.php` | 124 | `wp_enqueue_style('wp-cpt-restapi-admin', ...)` | `wp_enqueue_style('cptapi-admin', ...)` |
-| `admin/class-wp-cpt-restapi-admin.php` | 154 | `wp_enqueue_script('wp-cpt-restapi-admin', ...)` | `wp_enqueue_script('cptapi-admin', ...)` |
+#### Asset Handles - DONE
+| Context | Old Handle | New Handle |
+|---------|------------|------------|
+| CSS | `wp-cpt-restapi-admin` | `cptrest-admin` |
+| JS | `wp-cpt-restapi-admin` | `cptrest-admin` |
 
-#### Localized Script Handle
-| File | Line | Current | New |
-|------|------|---------|-----|
-| `admin/class-wp-cpt-restapi-admin.php` | ~160 | `wp_localize_script('wp-cpt-restapi-admin', ...)` | `wp_localize_script('cptapi-admin', ...)` |
-
-### Files to Rename
-
-| Current Filename | New Filename |
-|-----------------|--------------|
-| `class-wp-cpt-restapi.php` | `class-cptapi-core.php` |
-| `class-wp-cpt-restapi-loader.php` | `class-cptapi-loader.php` |
-| `class-wp-cpt-restapi-api-keys.php` | `class-cptapi-api-keys.php` |
-| `class-wp-cpt-restapi-admin.php` | `class-cptapi-admin.php` |
-| `class-wp-cpt-restapi-rest.php` | `class-cptapi-rest.php` |
-| `class-wp-cpt-restapi-openapi.php` | `class-cptapi-openapi.php` |
-| `wp-cpt-restapi-admin.css` | `cptapi-admin.css` |
-| `wp-cpt-restapi-admin.js` | `cptapi-admin.js` |
+#### Package Names - DONE
+All `@package WP_CPT_RestAPI` changed to `@package CPTREST`
 
 ### Options Naming
 
-Current options use `cpt_rest_api_` prefix which is acceptable but could be updated for consistency:
-
-| Current Option | New Option (Optional) |
-|---------------|----------------------|
-| `cpt_rest_api_base_segment` | Keep as-is or `cptapi_base_segment` |
-| `cpt_rest_api_active_cpts` | Keep as-is or `cptapi_active_cpts` |
-| `cpt_rest_api_keys` | Keep as-is or `cptapi_keys` |
-| `cpt_rest_api_toolset_relationships` | Keep as-is or `cptapi_toolset_relationships` |
-| `cpt_rest_api_include_nonpublic_cpts` | Keep as-is or `cptapi_include_nonpublic_cpts` |
-
-**Note:** If options are renamed, migration code is required to preserve existing user data.
+Options retained with `cpt_rest_api_` prefix (acceptable to WordPress):
+- `cpt_rest_api_base_segment`
+- `cpt_rest_api_active_cpts`
+- `cpt_rest_api_keys`
+- `cpt_rest_api_toolset_relationships`
+- `cpt_rest_api_include_nonpublic_cpts`
 
 ---
 
@@ -123,9 +104,9 @@ Change ALL text domain references from `wp-cpt-rest-api` to `custom-post-types-r
 
 | File | Occurrences |
 |------|-------------|
-| `admin/class-wp-cpt-restapi-admin.php` | 143 |
-| `rest-api/class-wp-cpt-restapi-rest.php` | 20 |
-| `includes/class-wp-cpt-restapi-api-keys.php` | 2 |
+| `admin/class-cptrest-admin.php` | 143 |
+| `rest-api/class-cptrest-rest.php` | 20 |
+| `includes/class-cptrest-api-keys.php` | 2 |
 | `wp-cpt-rest-api.php` | 2 |
 | `readme.txt` | 3 |
 | `languages/*.pot` | 1 |
@@ -191,15 +172,15 @@ Using `__return_true` is the correct approach for intentionally public endpoints
 
 ## Implementation Plan
 
-### Phase 1: Prefix Corrections (High Priority)
+### Phase 1: Prefix Corrections (High Priority) - COMPLETED
 
-- [ ] **Task 1.1:** Choose and document final prefix (`cptapi_` recommended)
-- [ ] **Task 1.2:** Update all constants in main plugin file
-- [ ] **Task 1.3:** Rename and update class files
-- [ ] **Task 1.4:** Update class references throughout codebase
-- [ ] **Task 1.5:** Update function names
-- [ ] **Task 1.6:** Update asset handles and file names
-- [ ] **Task 1.7:** Update all constant references in all files
+- [x] **Task 1.1:** Choose and document final prefix (`cptrest_` selected)
+- [x] **Task 1.2:** Update all constants in main plugin file
+- [x] **Task 1.3:** Rename and update class files
+- [x] **Task 1.4:** Update class references throughout codebase
+- [x] **Task 1.5:** Update function names
+- [x] **Task 1.6:** Update asset handles and file names
+- [x] **Task 1.7:** Update all constant references in all files
 - [ ] **Task 1.8:** Test plugin activation/deactivation
 
 ### Phase 2: Text Domain Corrections (Medium Priority)
@@ -230,44 +211,11 @@ Using `__return_true` is the correct approach for intentionally public endpoints
 
 ---
 
-## Migration Considerations
-
-### Backward Compatibility
-
-If changing option names:
-1. Add migration code to check for old option names
-2. Copy data from old to new option names
-3. Delete old options after successful migration
-4. Consider keeping old options readable for one version
-
-### Example Migration Code
-
-```php
-function cptapi_migrate_options() {
-    $old_to_new = array(
-        'cpt_rest_api_base_segment' => 'cptapi_base_segment',
-        'cpt_rest_api_active_cpts'  => 'cptapi_active_cpts',
-        // ... etc
-    );
-
-    foreach ($old_to_new as $old_key => $new_key) {
-        $old_value = get_option($old_key);
-        if ($old_value !== false && get_option($new_key) === false) {
-            update_option($new_key, $old_value);
-            delete_option($old_key);
-        }
-    }
-}
-register_activation_hook(__FILE__, 'cptapi_migrate_options');
-```
-
----
-
 ## Follow-Up Checklist
 
 ### Before Resubmission
 
-- [ ] All prefix changes completed
+- [x] All prefix changes completed
 - [ ] All text domain changes completed
 - [ ] Plugin tested on WordPress 6.0+ and 6.8
 - [ ] Plugin tested on PHP 7.4 and 8.x
@@ -293,7 +241,7 @@ Hi,
 Thank you for the review feedback. I have addressed all the flagged issues:
 
 1. **Prefix Naming:** Changed all prefixes from `WP_CPT_*` / `wp-cpt-*` to
-   `CPTAPI_*` / `cptapi-*` to avoid collision with WordPress core naming.
+   `CPTREST_*` / `cptrest-*` to avoid collision with WordPress core naming.
 
 2. **Text Domain:** Updated text domain from `wp-cpt-rest-api` to
    `custom-post-types-restapi` to match the plugin slug. Updated all
@@ -317,6 +265,7 @@ Julien DELRIO
 | Version | Date | Changes |
 |---------|------|---------|
 | 1.0 | 2024-12-07 | Initial report created |
+| 1.1 | 2024-12-07 | Issue #1 (Prefix) completed with `cptrest_` prefix |
 
 ---
 

@@ -3,7 +3,7 @@
  * The API Keys management functionality of the plugin.
  *
  * @since      0.1
- * @package    WP_CPT_RestAPI
+ * @package    CPTREST
  */
 
 // If this file is called directly, abort.
@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * Handles the creation, storage, retrieval, and deletion of API keys.
  */
-class WP_CPT_RestAPI_API_Keys {
+class CPTREST_API_Keys {
 
     /**
      * The option name for storing API keys.

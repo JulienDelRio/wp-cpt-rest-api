@@ -15,7 +15,7 @@
  * @link       https://github.com/JulienDelRio/wp-cpt-rest-api
  * @since      0.2
  *
- * @package    WP_CPT_RestAPI
+ * @package    CPTREST
  */
 
 // If uninstall not called from WordPress, then exit.

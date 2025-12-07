@@ -1,9 +1,72 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git add:*)"
+      "Read(./**)",
+      "Write(./**)",
+      "Read(C:/dev/perso/wp-cpt-rest-api/**)",
+      "Write(C:/dev/perso/wp-cpt-rest-api/**)",
+
+      "Bash(mkdir *:.)",
+      "Bash(ls *:.)",
+      "Bash(cat *:.)",
+      "Bash(pwd:.)",
+      "Bash(find *:.)",
+      "Bash(grep *:.)",
+      
+      "Bash(git status:.)",
+      "Bash(git log:.)",
+      "Bash(git log *:.)",
+      "Bash(git diff:.)",
+      "Bash(git diff *:.)",
+      "Bash(git branch:.)",
+      "Bash(git branch *:.)",
+      "Bash(git add *:.)",
+      "Bash(git commit *:.)",
+
+      "Bash(npm run *:.)",
+      "Bash(npm test:.)",
+
+      "Bash(docker ps:.)",
+      "Bash(docker logs *:.)"
     ],
-    "ask": [],
-    "deny": []
+    "ask": [
+      "Bash(git push *:.)",
+      "Bash(git pull *:.)",
+      "Bash(git merge *:.)",
+      "Bash(git rebase *:.)",
+      "Bash(git reset *:.)",
+      "Bash(git clean *:.)",
+      "Bash(git checkout *:.)",
+      "Bash(git switch *:.)",
+
+      "Bash(rm *:.)",
+      "Bash(rm -r *:.)",
+      "Bash(rm -rf *:.)",
+
+      "Bash(docker run *:.)",
+      "Bash(docker-compose *:.)",
+      "Bash(docker compose *:.)",
+      "Bash(sudo *:.)",
+      "Bash(chmod *:.)",
+      "Bash(chown *:.)",
+
+      "Bash(npm install *:.)",
+      "Bash(pip install *:.)",
+      "Bash(yarn *:.)",
+      "Bash(pnpm *:.)",
+      "Bash(node *:.)",
+      "Bash(npx *:.)",
+
+      "Write(.env*)",
+      "Write(config/*.prod*)",
+      "Write(package.json)",
+      "Write(package-lock.json)",
+      "Write(../**)",
+      "Read(../**)"
+    ],
+    "deny": [
+      "Bash(rm -rf /:.)",
+      "Bash(rm -rf ~:.)"
+    ]
   }
 }

@@ -3,7 +3,7 @@
  * The REST API-specific functionality of the plugin.
  *
  * @since      0.1
- * @package    WP_CPT_RestAPI
+ * @package    CPTREST
  */
 
 // If this file is called directly, abort.
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Defines the plugin name, version, and hooks for
  * the REST API functionality of the site.
  */
-class WP_CPT_RestAPI_REST {
+class CPTREST_REST {
 
     /**
      * The option name for the REST API base segment.
@@ -51,7 +51,7 @@ class WP_CPT_RestAPI_REST {
      *
      * @since    0.1
      * @access   private
-     * @var      WP_CPT_RestAPI_API_Keys    $api_keys    Handles API key management.
+     * @var      CPTREST_API_Keys    $api_keys    Handles API key management.
      */
     private $api_keys;
 
@@ -71,7 +71,7 @@ class WP_CPT_RestAPI_REST {
      */
     public function __construct() {
         // Initialize API Keys manager
-        $this->api_keys = new WP_CPT_RestAPI_API_Keys();
+        $this->api_keys = new CPTREST_API_Keys();
         
         // Add filter for REST API authentication
         add_filter( 'rest_authentication_errors', array( $this, 'authenticate_api_key' ), 10, 1 );
@@ -1180,7 +1180,7 @@ class WP_CPT_RestAPI_REST {
         return array(
             'namespace' => get_option( $this->option_name, $this->default_segment ) . '/v1',
             'description' => __( 'WordPress Custom Post Types REST API', 'wp-cpt-rest-api' ),
-            'version' => WP_CPT_RESTAPI_VERSION,
+            'version' => CPTREST_VERSION,
         );
     }
 
@@ -1194,7 +1194,7 @@ class WP_CPT_RestAPI_REST {
      * @return   WP_REST_Response    The OpenAPI specification.
      */
     public function get_openapi_spec() {
-        $openapi_generator = new WP_CPT_RestAPI_OpenAPI();
+        $openapi_generator = new CPTREST_OpenAPI();
         $spec = $openapi_generator->generate_openapi_spec();
         
         $response = rest_ensure_response( $spec );

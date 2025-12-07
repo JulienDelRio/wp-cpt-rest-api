@@ -3,7 +3,7 @@
  * Register all actions and filters for the plugin.
  *
  * @since      0.1
- * @package    WP_CPT_RestAPI
+ * @package    CPTREST
  */
 
 // If this file is called directly, abort.
@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * the plugin, and register them with the WordPress API. Call the
  * run function to execute the list of actions and filters.
  */
-class WP_CPT_RestAPI_Loader {
+class CPTREST_Loader {
 
     /**
      * The array of actions registered with WordPress.

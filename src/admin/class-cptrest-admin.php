@@ -3,7 +3,7 @@
  * The admin-specific functionality of the plugin.
  *
  * @since      0.1
- * @package    WP_CPT_RestAPI
+ * @package    CPTREST
  */
 
 // If this file is called directly, abort.
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Defines the plugin name, version, and hooks for
  * the admin area of the site.
  */
-class WP_CPT_RestAPI_Admin {
+class CPTREST_Admin {
 
     /**
      * The option name for the REST API base segment.
@@ -69,7 +69,7 @@ class WP_CPT_RestAPI_Admin {
      *
      * @since    0.1
      * @access   private
-     * @var      WP_CPT_RestAPI_API_Keys    $api_keys    Handles API key management.
+     * @var      CPTREST_API_Keys    $api_keys    Handles API key management.
      */
     private $api_keys;
 
@@ -80,7 +80,7 @@ class WP_CPT_RestAPI_Admin {
      */
     public function __construct() {
         // Initialize API Keys manager
-        $this->api_keys = new WP_CPT_RestAPI_API_Keys();
+        $this->api_keys = new CPTREST_API_Keys();
 
         // Add AJAX handlers for API key management
         add_action( 'wp_ajax_cpt_rest_api_add_key', array( $this, 'ajax_add_key' ) );
@@ -115,15 +115,15 @@ class WP_CPT_RestAPI_Admin {
         // Determine version for cache busting
         // In development mode: use file modification time for automatic cache invalidation
         // In production mode: use plugin version for stability
-        $version = WP_CPT_RESTAPI_VERSION;
-        if ( defined( 'WP_CPT_RESTAPI_DEV_MODE' ) && WP_CPT_RESTAPI_DEV_MODE ) {
-            $css_file = WP_CPT_RESTAPI_PLUGIN_DIR . 'assets/css/wp-cpt-restapi-admin.css';
-            $version = file_exists( $css_file ) ? filemtime( $css_file ) : WP_CPT_RESTAPI_VERSION;
+        $version = CPTREST_VERSION;
+        if ( defined( 'CPTREST_DEV_MODE' ) && CPTREST_DEV_MODE ) {
+            $css_file = CPTREST_PLUGIN_DIR . 'assets/css/cptrest-admin.css';
+            $version = file_exists( $css_file ) ? filemtime( $css_file ) : CPTREST_VERSION;
         }
 
         wp_enqueue_style(
-            'wp-cpt-restapi-admin',
-            WP_CPT_RESTAPI_PLUGIN_URL . 'assets/css/wp-cpt-restapi-admin.css',
+            'cptrest-admin',
+            CPTREST_PLUGIN_URL . 'assets/css/cptrest-admin.css',
             array(),
             $version,
             'all'
@@ -145,23 +145,23 @@ class WP_CPT_RestAPI_Admin {
         // Determine version for cache busting
         // In development mode: use file modification time for automatic cache invalidation
         // In production mode: use plugin version for stability
-        $version = WP_CPT_RESTAPI_VERSION;
-        if ( defined( 'WP_CPT_RESTAPI_DEV_MODE' ) && WP_CPT_RESTAPI_DEV_MODE ) {
-            $js_file = WP_CPT_RESTAPI_PLUGIN_DIR . 'assets/js/wp-cpt-restapi-admin.js';
-            $version = file_exists( $js_file ) ? filemtime( $js_file ) : WP_CPT_RESTAPI_VERSION;
+        $version = CPTREST_VERSION;
+        if ( defined( 'CPTREST_DEV_MODE' ) && CPTREST_DEV_MODE ) {
+            $js_file = CPTREST_PLUGIN_DIR . 'assets/js/cptrest-admin.js';
+            $version = file_exists( $js_file ) ? filemtime( $js_file ) : CPTREST_VERSION;
         }
 
         wp_enqueue_script(
-            'wp-cpt-restapi-admin',
-            WP_CPT_RESTAPI_PLUGIN_URL . 'assets/js/wp-cpt-restapi-admin.js',
+            'cptrest-admin',
+            CPTREST_PLUGIN_URL . 'assets/js/cptrest-admin.js',
             array( 'jquery' ),
             $version,
             false
         );
-        
+
         // Localize the script with data for AJAX operations
         wp_localize_script(
-            'wp-cpt-restapi-admin',
+            'cptrest-admin',
             'cptRestApiAdmin',
             array(
                 'nonce'  => wp_create_nonce( 'cpt_rest_api' ),
