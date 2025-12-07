@@ -9,7 +9,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Custom Post Types RestAPI is a WordPress plugin that extends the native REST API to provide comprehensive endpoints for Custom Post Types and their metadata. The plugin is currently at version 0.2 and requires WordPress 6.0+ and PHP 7.4+.
+Custom Post Types RestAPI is a WordPress plugin that extends the native REST API to provide comprehensive endpoints for Custom Post Types and their metadata. The plugin is currently at version 1.1.1 and requires WordPress 6.0+ and PHP 7.4+.
 
 ## Development Workflow
 
@@ -29,12 +29,12 @@ This is a WordPress plugin with no build process or dependency management. Devel
 ### Core Components
 
 - **Main Plugin File**: `src/wp-cpt-rest-api.php` - Entry point with activation/deactivation hooks
-- **Core Class**: `src/includes/class-wp-cpt-restapi.php` - Main orchestrator using loader pattern
-- **Admin Interface**: `src/admin/class-wp-cpt-restapi-admin.php` - WordPress admin settings and configuration
-- **REST API**: `src/rest-api/class-wp-cpt-restapi-rest.php` - REST endpoint implementations
-- **API Key Management**: `src/includes/class-wp-cpt-restapi-api-keys.php` - API authentication system
-- **Hook Loader**: `src/includes/class-wp-cpt-restapi-loader.php` - WordPress hooks management
-- **OpenAPI Generation**: `src/swagger/class-wp-cpt-restapi-openapi.php` - Dynamic OpenAPI 3.0.3 spec generation
+- **Core Class**: `src/includes/class-cptrest-core.php` - Main orchestrator using loader pattern
+- **Admin Interface**: `src/admin/class-cptrest-admin.php` - WordPress admin settings and configuration
+- **REST API**: `src/rest-api/class-cptrest-rest.php` - REST endpoint implementations
+- **API Key Management**: `src/includes/class-cptrest-api-keys.php` - API authentication system
+- **Hook Loader**: `src/includes/class-cptrest-loader.php` - WordPress hooks management
+- **OpenAPI Generation**: `src/swagger/class-cptrest-openapi.php` - Dynamic OpenAPI 3.0.3 spec generation
 
 ### Key Features
 
@@ -47,11 +47,19 @@ This is a WordPress plugin with no build process or dependency management. Devel
 
 ### Plugin Options
 
-- `cpt_rest_api_base_segment`: API base URL segment (default: "cpt")
-- `cpt_rest_api_active_cpts`: Array of enabled Custom Post Types
-- `cpt_rest_api_keys`: Array of generated API keys
-- `cpt_rest_api_toolset_relationships`: Boolean for Toolset support
-- `cpt_rest_api_include_nonpublic_cpts`: Array of non-public CPT visibility types to include (can contain: 'publicly_queryable', 'show_ui', 'private')
+- `cptrest_base_segment`: API base URL segment (default: "cpt")
+- `cptrest_active_cpts`: Array of enabled Custom Post Types
+- `cptrest_api_keys`: Array of generated API keys
+- `cptrest_toolset_relationships`: Boolean for Toolset support
+- `cptrest_include_nonpublic_cpts`: Array of non-public CPT visibility types to include (can contain: 'publicly_queryable', 'show_ui', 'private')
+
+### Naming Conventions
+
+The plugin uses the `cptrest_` prefix for all identifiers to avoid conflicts:
+- **Constants**: `CPTREST_VERSION`, `CPTREST_PLUGIN_NAME`, `CPTREST_PLUGIN_FILE`, etc.
+- **Options**: `cptrest_base_segment`, `cptrest_active_cpts`, etc.
+- **CSS/JS handles**: `cptrest-admin-css`, `cptrest-admin-js`
+- **Text Domain**: `custom-post-types-restapi` (matches WordPress.org plugin slug)
 
 ## Available Endpoints
 
@@ -91,7 +99,7 @@ Navigate to **Settings > CPT REST API** in WordPress admin to:
   - This model is intentional for external API integration use cases
 - Private meta fields (starting with `_`) are ignored
 - Only enabled CPTs are accessible via API
-- **API Key Storage** (Version 0.3+):
+- **API Key Storage** (Version 1.0+):
   - Keys are hashed using bcrypt before storage (WordPress `wp_hash_password()`)
   - Plaintext keys are NEVER stored in the database
   - Keys are only visible once upon creation - cannot be recovered later
@@ -117,21 +125,32 @@ The plugin includes multiple fallback methods for Toolset compatibility and only
 wp-cpt-rest-api/
 ├── src/
 │   ├── wp-cpt-rest-api.php (main plugin file)
-│   ├── includes/ (core classes)
-│   ├── admin/ (admin interface)
-│   ├── rest-api/ (REST endpoint handlers)
-│   ├── swagger/ (OpenAPI generation)
+│   ├── includes/
+│   │   ├── class-cptrest-core.php (main orchestrator)
+│   │   ├── class-cptrest-loader.php (hooks management)
+│   │   └── class-cptrest-api-keys.php (API key management)
+│   ├── admin/
+│   │   └── class-cptrest-admin.php (admin interface)
+│   ├── rest-api/
+│   │   └── class-cptrest-rest.php (REST endpoints)
+│   ├── swagger/
+│   │   └── class-cptrest-openapi.php (OpenAPI generation)
 │   ├── assets/
-│   │   ├── css/ (admin styling)
-│   │   │   └── wp-cpt-restapi-admin.css
-│   │   ├── js/ (admin JavaScript)
-│   │   │   └── wp-cpt-restapi-admin.js
+│   │   ├── css/
+│   │   │   └── cptrest-admin.css (admin styling)
+│   │   ├── js/
+│   │   │   └── cptrest-admin.js (admin JavaScript)
 │   │   └── images/ (admin images)
+│   ├── languages/
+│   │   ├── custom-post-types-restapi.pot (translation template)
+│   │   ├── custom-post-types-restapi-fr_FR.po (French translation)
+│   │   └── custom-post-types-restapi-fr_FR.mo (compiled French)
 │   ├── readme.txt (WordPress plugin readme)
 │   ├── API_ENDPOINTS.md (comprehensive API documentation)
 │   └── OPENAPI.md (OpenAPI specification docs)
 ├── docs/ (project documentation)
-│   └── SPECS.md (project specification)
-├── tasks/ (empty directory)
+│   ├── SPECS.md (project specification)
+│   └── WordPress_Review_Corrections_Report.md (review corrections)
+├── CLAUDE.md (this file)
 └── wp-cpt-rest-api.zip (distribution package)
 ```

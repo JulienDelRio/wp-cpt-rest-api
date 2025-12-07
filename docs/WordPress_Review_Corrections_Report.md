@@ -205,12 +205,12 @@ register_rest_route(
 - [x] **Task 3.5:** Run WordPress Plugin Check (if available)
 - [x] **Task 3.6:** Test upgrade path from previous version
 
-### Phase 4: Documentation & Submission
+### Phase 4: Documentation & Submission - COMPLETED
 
-- [ ] **Task 4.1:** Update CLAUDE.md with new naming conventions
-- [ ] **Task 4.2:** Update changelog in readme.txt
-- [ ] **Task 4.3:** Update version number (1.1.1)
-- [ ] **Task 4.4:** Create new distribution ZIP
+- [x] **Task 4.1:** Update CLAUDE.md with new naming conventions
+- [x] **Task 4.2:** Update changelog in readme.txt
+- [x] **Task 4.3:** Update version number (1.1.1)
+- [x] **Task 4.4:** Create new distribution ZIP
 - [ ] **Task 4.5:** Upload to WordPress.org
 - [ ] **Task 4.6:** Reply to review email
 
@@ -274,6 +274,7 @@ Julien DELRIO
 | 1.2 | 2025-12-07 | Issue #2 (Text Domain) completed - changed to `custom-post-types-restapi` |
 | 1.3 | 2025-12-07 | Issue #3 (Permission Callback) completed - added explanatory comments |
 | 1.4 | 2025-12-07 | Phase 3 (Testing & Verification) completed - all tests passed |
+| 1.5 | 2025-12-07 | Phase 4 (Documentation & Submission) completed - version 1.1.1 prepared |
 
 ---
 

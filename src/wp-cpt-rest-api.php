@@ -3,7 +3,7 @@
  * Plugin Name: Custom Post Types RestAPI
  * Plugin URI: https://github.com/JulienDelRio/wp-cpt-rest-api
  * Description: A robust WordPress plugin that extends the native REST API functionalities to provide comprehensive endpoints for Custom Post Types and their associated metadata.
- * Version: 1.1.0
+ * Version: 1.1.1
  * Author: Julien DELRIO
  * Author URI: https://juliendelrio.fr
  * License: GPLv2 or later
@@ -23,7 +23,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define plugin constants
-define( 'CPTREST_VERSION', '1.1.0' );
+define( 'CPTREST_VERSION', '1.1.1' );
 define( 'CPTREST_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'CPTREST_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'CPTREST_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
