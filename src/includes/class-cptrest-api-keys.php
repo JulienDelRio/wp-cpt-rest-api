@@ -244,12 +244,12 @@ class CPTREST_API_Keys {
         if ($plaintext_count > 0) {
             update_option($this->option_name, array());
 
-            // Log migration
-            if (defined('WP_DEBUG_LOG') && WP_DEBUG_LOG) {
-                error_log(sprintf(
+            // Log migration only when WP_DEBUG is enabled
+            if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+                error_log( sprintf(
                     '[CPT REST API Security] Migration: Deleted %d plaintext API keys',
                     $plaintext_count
-                ));
+                ) );
             }
 
             return array(
