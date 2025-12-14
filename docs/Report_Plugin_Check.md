@@ -302,7 +302,7 @@ Below is a suggested action-tracking table. You can adapt Owner and Status field
 | A4 | Redirect safety          | Replace `wp_redirect()` with `wp_safe_redirect()` + `exit`                 | `admin/class-cptrest-admin.php`         | Med–High |       | Not started    | 1.2.0          |
 | A5 | Debug logging            | Wrap `error_log()` calls with `WP_DEBUG` check                             | admin/, includes/, rest-api/            | Medium   |       | Not started    | 1.2.0          |
 | A6 | Unslash before sanitize  | Add `wp_unslash()` to `$_SERVER` values before sanitization                | `rest-api/class-cptrest-rest.php`       | Medium   |       | Not started    | 1.2.0          |
-| A7 | Direct DB queries        | Ensure all queries use prepared statements (caching deferred)              | `rest-api/class-cptrest-rest.php`       | Medium   |       | Not started    | 1.2.0          |
+| A7 | Direct DB queries        | Ensure all queries use prepared statements (caching deferred)              | `rest-api/class-cptrest-rest.php`       | Medium   |       | **VERIFIED**   | 1.2.0          |
 | A8 | Global variables naming  | Prefix global vars with `cptrest_`                                         | `uninstall.php`, main file              | Low–Med  |       | Not started    | 1.2.0          |
 | A9 | Trademark warning (info) | Verify plugin name doesn't use "WordPress" in full                         | `wp-cpt-rest-api.php`, readme           | Low      |       | **OK** (slug is clean) | N/A     |
 
@@ -310,7 +310,7 @@ Below is a suggested action-tracking table. You can adapt Owner and Status field
 - A1 and A2 are false positives – the text domain `custom-post-types-restapi` is correct.
 - A3: WordPress 6.9 compatibility has been verified and is ready to update.
 - A5: Decision confirmed – wrap with `WP_DEBUG` check (keep logging in dev).
-- A7: Focus on prepared statements; object caching added to future improvements in README.
+- A7: All queries verified using `$wpdb->prepare()` or proper format specifiers. Object caching deferred to future.
 - A8: Use `cptrest_` prefix (matches existing codebase conventions).
 - A9: WordPress.org slug (`custom-post-types-restapi`) doesn't contain "wp" – no issue.
 
