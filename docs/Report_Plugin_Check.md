@@ -298,12 +298,12 @@ Below is a suggested action-tracking table. You can adapt Owner and Status field
 | -- | ------------------------ | -------------------------------------------------------------------------- | --------------------------------------- | -------- | ----- | -------------- | -------------- |
 | ~~A1~~ | ~~i18n / Text domain~~ | ~~Text domain mismatch errors~~                                          | ~~All files~~                           | ~~N/A~~  |       | **FALSE POSITIVE** | N/A        |
 | ~~A2~~ | ~~Plugin header~~      | ~~Text domain header alignment~~                                          | ~~`wp-cpt-rest-api.php`~~               | ~~N/A~~  |       | **FALSE POSITIVE** | N/A        |
-| A3 | Readme metadata          | Update `Tested up to: 6.9` (verified compatible)                           | `readme.txt`, `wp-cpt-rest-api.php`     | High     |       | **Ready**      | 1.2.0          |
-| A4 | Redirect safety          | Replace `wp_redirect()` with `wp_safe_redirect()` + `exit`                 | `admin/class-cptrest-admin.php`         | Med–High |       | Not started    | 1.2.0          |
-| A5 | Debug logging            | Wrap `error_log()` calls with `WP_DEBUG` check                             | admin/, includes/, rest-api/            | Medium   |       | Not started    | 1.2.0          |
-| A6 | Unslash before sanitize  | Add `wp_unslash()` to `$_SERVER` values before sanitization                | `rest-api/class-cptrest-rest.php`       | Medium   |       | Not started    | 1.2.0          |
+| A3 | Readme metadata          | Update `Tested up to: 6.9` (verified compatible)                           | `readme.txt`, `wp-cpt-rest-api.php`     | High     |       | **DONE**       | 1.2.0          |
+| A4 | Redirect safety          | Replace `wp_redirect()` with `wp_safe_redirect()` + `exit`                 | `admin/class-cptrest-admin.php`         | Med–High |       | **DONE**       | 1.2.0          |
+| A5 | Debug logging            | Wrap `error_log()` calls with `WP_DEBUG` check                             | admin/, includes/, rest-api/            | Medium   |       | **DONE**       | 1.2.0          |
+| A6 | Unslash before sanitize  | Add `wp_unslash()` to `$_SERVER` values before sanitization                | `rest-api/class-cptrest-rest.php`       | Medium   |       | **DONE**       | 1.2.0          |
 | A7 | Direct DB queries        | Ensure all queries use prepared statements (caching deferred)              | `rest-api/class-cptrest-rest.php`       | Medium   |       | **VERIFIED**   | 1.2.0          |
-| A8 | Global variables naming  | Prefix global vars with `cptrest_`                                         | `uninstall.php`, main file              | Low–Med  |       | Not started    | 1.2.0          |
+| A8 | Global variables naming  | Prefix global vars with `cptrest_`                                         | `uninstall.php`, main file              | Low–Med  |       | **DONE**       | 1.2.0          |
 | A9 | Trademark warning (info) | Verify plugin name doesn't use "WordPress" in full                         | `wp-cpt-rest-api.php`, readme           | Low      |       | **OK** (slug is clean) | N/A     |
 
 **Notes:**
