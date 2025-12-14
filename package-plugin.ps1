@@ -1,7 +1,7 @@
 # WordPress Plugin Packaging Script
-# Creates a clean distribution package for wp-cpt-rest-api plugin
+# Creates a clean distribution package for custom-post-types-restapi plugin
 
-$PluginName = "wp-cpt-rest-api"
+$PluginName = "custom-post-types-restapi"
 
 # Extract version from readme.txt
 $ReadmePath = "src/readme.txt"
