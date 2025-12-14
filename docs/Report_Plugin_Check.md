@@ -74,13 +74,13 @@ If you want to eliminate these warnings entirely, you could rename the plugin di
 
 **Corrective actions:**
 1. **Text Domain**: No action needed – already correct
-2. **Update readme "Tested up to"** (when applicable):
-   - After testing with the latest WordPress version, update in both:
-     - `readme.txt`: `Tested up to: X.X`
-     - `wp-cpt-rest-api.php` header: `Tested up to: X.X`
-   - Only update after actually verifying compatibility
+2. **Update readme "Tested up to"**:
+   - Update in both files to `6.9`:
+     - `readme.txt`: `Tested up to: 6.9`
+     - `wp-cpt-rest-api.php` header: `Tested up to: 6.9`
+   - **Status: VERIFIED** – Compatibility with WordPress 6.9 confirmed
 
-**Priority:** Medium (update "Tested up to" when new WP version is released and tested)
+**Priority:** High (ready to implement)
 
 ---
 
@@ -134,19 +134,16 @@ If you want to eliminate these warnings entirely, you could rename the plugin di
 
 **Corrective actions:**
 
-1. **Remove or conditionally wrap `error_log()` calls**:
+1. **Wrap `error_log()` calls with `WP_DEBUG` check**:
 
-   * Either remove entirely, or:
-   * Guard them with a debug constant / environment flag:
+   * Guard all `error_log()` calls with a debug constant:
 
      ```php
      if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
          error_log( 'Your debug message here' );
      }
      ```
-2. For permanent logging needs, consider using:
-
-   * A more structured error-handling mechanism or custom logger.
+   * **Decision: CONFIRMED** – Keep logging for development, disable in production
 
 **Priority:** Medium
 
@@ -210,15 +207,18 @@ If you want to eliminate these warnings entirely, you could rename the plugin di
 
    * Ensure they use **prepared statements** via `$wpdb->prepare()`.
    * Confirm **proper escaping** and **type handling**.
-2. **Introduce caching where beneficial**:
+   * **Decision: CONFIRMED** – Focus on proper preparation, not caching
 
-   * Use `wp_cache_get()`, `wp_cache_set()`, and `wp_cache_delete()` for repeated reads.
-   * Cache keys should be prefixed with the plugin slug, e.g. `wp_cpt_rest_api_...`.
+2. **Caching** (deferred to future release):
+
+   * Object caching (`wp_cache_*`) is a future improvement, not required now.
+   * Add to README.md improvements/roadmap section.
+
 3. **Where possible, replace direct SQL with high-level APIs**:
 
    * For posts, terms, users, options, etc., prefer built-in WordPress functions.
 
-**Priority:** Medium (Medium–High if any query uses user-supplied data directly).
+**Priority:** Medium
 
 ---
 
@@ -245,14 +245,16 @@ If you want to eliminate these warnings entirely, you could rename the plugin di
 
 **Corrective actions:**
 
-1. Rename globals to include plugin prefix:
+1. Rename globals to include plugin prefix `cptrest_`:
 
    * Example:
 
      ```php
-     global $wp_cpt_rest_api_blog_ids;
-     global $wp_cpt_rest_api_dev_config_file;
+     $cptrest_blog_ids;
+     $cptrest_dev_config_file;
      ```
+   * **Decision: CONFIRMED** – Use `cptrest_` prefix (matches existing codebase conventions)
+
 2. Update all references accordingly within the plugin.
 
 **Priority:** Low–Medium (standards & maintainability).
@@ -296,36 +298,48 @@ Below is a suggested action-tracking table. You can adapt Owner and Status field
 | -- | ------------------------ | -------------------------------------------------------------------------- | --------------------------------------- | -------- | ----- | -------------- | -------------- |
 | ~~A1~~ | ~~i18n / Text domain~~ | ~~Text domain mismatch errors~~                                          | ~~All files~~                           | ~~N/A~~  |       | **FALSE POSITIVE** | N/A        |
 | ~~A2~~ | ~~Plugin header~~      | ~~Text domain header alignment~~                                          | ~~`wp-cpt-rest-api.php`~~               | ~~N/A~~  |       | **FALSE POSITIVE** | N/A        |
-| A3 | Readme metadata          | Update `Tested up to` when new WP version is verified                      | `readme.txt`, `wp-cpt-rest-api.php`     | Medium   |       | Pending        | Next release   |
+| A3 | Readme metadata          | Update `Tested up to: 6.9` (verified compatible)                           | `readme.txt`, `wp-cpt-rest-api.php`     | High     |       | **Ready**      | 1.2.0          |
 | A4 | Redirect safety          | Replace `wp_redirect()` with `wp_safe_redirect()` + `exit`                 | `admin/class-cptrest-admin.php`         | Med–High |       | Not started    | 1.2.0          |
-| A5 | Debug logging            | Remove / guard `error_log()` calls in production code                      | admin/, includes/, rest-api/            | Medium   |       | Not started    | 1.2.0          |
+| A5 | Debug logging            | Wrap `error_log()` calls with `WP_DEBUG` check                             | admin/, includes/, rest-api/            | Medium   |       | Not started    | 1.2.0          |
 | A6 | Unslash before sanitize  | Add `wp_unslash()` to `$_SERVER` values before sanitization                | `rest-api/class-cptrest-rest.php`       | Medium   |       | Not started    | 1.2.0          |
-| A7 | Direct DB queries        | Ensure all queries are prepared, optionally cached, and/or use WP APIs     | `rest-api/class-cptrest-rest.php`       | Medium   |       | Not started    | 1.2.0          |
+| A7 | Direct DB queries        | Ensure all queries use prepared statements (caching deferred)              | `rest-api/class-cptrest-rest.php`       | Medium   |       | Not started    | 1.2.0          |
 | A8 | Global variables naming  | Prefix global vars with `cptrest_`                                         | `uninstall.php`, main file              | Low–Med  |       | Not started    | 1.2.0          |
-| A9 | Trademark warning (info) | Verify plugin name doesn't use "WordPress" in full                         | `wp-cpt-rest-api.php`, readme           | Low      |       | Not started    | 1.2.0          |
+| A9 | Trademark warning (info) | Verify plugin name doesn't use "WordPress" in full                         | `wp-cpt-rest-api.php`, readme           | Low      |       | **OK** (slug is clean) | N/A     |
 
-**Note:** A1 and A2 are struck through because they were identified as false positives – the text domain `custom-post-types-restapi` is correct and matches the WordPress.org plugin slug.
+**Notes:**
+- A1 and A2 are false positives – the text domain `custom-post-types-restapi` is correct.
+- A3: WordPress 6.9 compatibility has been verified and is ready to update.
+- A5: Decision confirmed – wrap with `WP_DEBUG` check (keep logging in dev).
+- A7: Focus on prepared statements; object caching added to future improvements in README.
+- A8: Use `cptrest_` prefix (matches existing codebase conventions).
+- A9: WordPress.org slug (`custom-post-types-restapi`) doesn't contain "wp" – no issue.
 
 ### 3.2 Suggested Workflow
 
-1. **Immediate (if applicable)**
+1. **Immediate** (v1.2.0)
 
-   * A3: Update "Tested up to" after verifying compatibility with the latest WordPress version.
+   * A3: Update "Tested up to: 6.9" – **VERIFIED & READY**
 
-2. **First pass (Security & best practices)**
+2. **First pass (Security & best practices)** (v1.2.0)
 
-   * Implement A4 (safe redirects), A5 (debug logging), A6 (unslash).
-   * Re-run Plugin Check and basic functional tests (especially redirects and any error-handling flows).
+   * A4: Replace `wp_redirect()` with `wp_safe_redirect()` + `exit`
+   * A5: Wrap `error_log()` calls with `WP_DEBUG` check
+   * A6: Add `wp_unslash()` to `$_SERVER` values
+   * Re-run Plugin Check and basic functional tests
 
-3. **Second pass (Performance & cleanliness)**
+3. **Second pass (Code quality)** (v1.2.0)
 
-   * Implement A7 (DB queries & caching) and A8 (global naming).
-   * Decide if any additional refactoring is needed based on performance tests.
+   * A7: Verify all DB queries use prepared statements
+   * A8: Rename global vars with `cptrest_` prefix
+   * Add object caching to README improvements/roadmap
 
 4. **Final review**
 
-   * Confirm that only acceptable warnings remain (e.g. A9 trademark info, text domain false positives).
-   * Note: Text domain mismatch warnings will persist due to directory name vs. slug difference – these can be safely ignored.
-   * Prepare a changelog and bump plugin version.
+   * Confirm only acceptable warnings remain (text domain false positives)
+   * Prepare changelog and release v1.2.0
 
-**Important:** The text domain errors (A1, A2) are FALSE POSITIVES and should NOT be "fixed" – the current text domain `custom-post-types-restapi` is correct.
+**Decisions confirmed:**
+- Text domain errors (A1, A2) are FALSE POSITIVES – do not "fix"
+- Debug logging: Wrap with `WP_DEBUG` (keep for development)
+- DB caching: Deferred to future release, add to README roadmap
+- Global prefix: Use `cptrest_`
