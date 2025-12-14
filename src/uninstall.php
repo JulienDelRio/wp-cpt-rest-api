@@ -32,8 +32,8 @@ delete_option( 'cpt_rest_api_include_nonpublic_cpts' );
 
 // For multisite installations
 if ( is_multisite() ) {
-	$blog_ids = get_sites( array( 'fields' => 'ids' ) );
-	foreach ( $blog_ids as $blog_id ) {
+	$cptrest_blog_ids = get_sites( array( 'fields' => 'ids' ) );
+	foreach ( $cptrest_blog_ids as $blog_id ) {
 		switch_to_blog( $blog_id );
 		delete_option( 'cpt_rest_api_base_segment' );
 		delete_option( 'cpt_rest_api_active_cpts' );
