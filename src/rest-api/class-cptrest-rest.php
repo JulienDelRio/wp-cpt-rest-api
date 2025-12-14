@@ -240,19 +240,24 @@ class CPTREST_REST {
     private function get_client_ip() {
         $ip = '';
 
+        // Get and unslash server values first for consistent handling
+        $client_ip     = isset( $_SERVER['HTTP_CLIENT_IP'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_CLIENT_IP'] ) ) : '';
+        $forwarded_for = isset( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) : '';
+        $remote_addr   = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
+
         // Check for shared internet/ISP IP
-        if ( ! empty( $_SERVER['HTTP_CLIENT_IP'] ) && filter_var( $_SERVER['HTTP_CLIENT_IP'], FILTER_VALIDATE_IP ) ) {
-            $ip = sanitize_text_field( wp_unslash( $_SERVER['HTTP_CLIENT_IP'] ) );
+        if ( ! empty( $client_ip ) && filter_var( $client_ip, FILTER_VALIDATE_IP ) ) {
+            $ip = $client_ip;
         }
         // Check for IPs passing through proxies
-        elseif ( ! empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
+        elseif ( ! empty( $forwarded_for ) ) {
             // Can contain multiple IPs (client, proxy1, proxy2)
-            $ip_list = explode( ',', sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) );
+            $ip_list = explode( ',', $forwarded_for );
             $ip = trim( $ip_list[0] );
         }
         // Standard REMOTE_ADDR
-        elseif ( ! empty( $_SERVER['REMOTE_ADDR'] ) && filter_var( $_SERVER['REMOTE_ADDR'], FILTER_VALIDATE_IP ) ) {
-            $ip = sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) );
+        elseif ( ! empty( $remote_addr ) && filter_var( $remote_addr, FILTER_VALIDATE_IP ) ) {
+            $ip = $remote_addr;
         }
 
         return $ip ? $ip : 'unknown';
