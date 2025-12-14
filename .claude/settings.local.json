@@ -3,16 +3,16 @@
     "allow": [
       "Read(./**)",
       "Write(./**)",
-      "Read(C:/dev/perso/wp-cpt-rest-api/**)",
-      "Write(C:/dev/perso/wp-cpt-rest-api/**)",
-
+      "Read(.././**)",
+      "Write(.././**)",
       "Bash(mkdir *:.)",
       "Bash(ls *:.)",
       "Bash(cat *:.)",
       "Bash(pwd:.)",
       "Bash(find *:.)",
       "Bash(grep *:.)",
-      
+      "Bash(git -C . status)",
+      "Bash(git -C . diff)",
       "Bash(git status:.)",
       "Bash(git log:.)",
       "Bash(git log *:.)",
@@ -22,10 +22,8 @@
       "Bash(git branch *:.)",
       "Bash(git add *:.)",
       "Bash(git commit *:.)",
-
       "Bash(npm run *:.)",
       "Bash(npm test:.)",
-
       "Bash(docker ps:.)",
       "Bash(docker logs *:.)"
     ],
@@ -38,25 +36,21 @@
       "Bash(git clean *:.)",
       "Bash(git checkout *:.)",
       "Bash(git switch *:.)",
-
       "Bash(rm *:.)",
       "Bash(rm -r *:.)",
       "Bash(rm -rf *:.)",
-
       "Bash(docker run *:.)",
       "Bash(docker-compose *:.)",
       "Bash(docker compose *:.)",
       "Bash(sudo *:.)",
       "Bash(chmod *:.)",
       "Bash(chown *:.)",
-
       "Bash(npm install *:.)",
       "Bash(pip install *:.)",
       "Bash(yarn *:.)",
       "Bash(pnpm *:.)",
       "Bash(node *:.)",
       "Bash(npx *:.)",
-
       "Write(.env*)",
       "Write(config/*.prod*)",
       "Write(package.json)",

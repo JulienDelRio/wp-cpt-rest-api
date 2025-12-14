@@ -1,5 +1,19 @@
 # Rapport Plugin Check – wp-cpt-rest-api
 
+> ⚠️ **IMPORTANT NOTE ON TEXT DOMAIN ERRORS**
+>
+> The `WordPress.WP.I18n.TextDomainMismatch` errors below are **FALSE POSITIVES**.
+>
+> - **Plugin Check expects:** `wp-cpt-rest-api` (inferred from directory name)
+> - **Actual text domain:** `custom-post-types-restapi` (correct – matches WordPress.org slug)
+>
+> The text domain `custom-post-types-restapi` is correctly configured in the plugin header
+> and matches the WordPress.org plugin slug. No action required for these errors.
+>
+> See `Report_Plugin_Check.md` for full analysis.
+
+---
+
 ## FILE: `includes/class-cptrest-api-keys.php`
 
 - Line 264, Column 25 — **ERROR** `WordPress.WP.I18n.TextDomainMismatch`  

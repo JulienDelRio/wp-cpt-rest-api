@@ -4,20 +4,20 @@
 
 The Plugin Check report highlights several categories of issues:
 
-1. **Internationalization (i18n) / Text domain mismatches** in multiple files.
-2. **Plugin header/readme metadata issues**, including mismatched text domain and outdated “Tested up to”.
+1. **Internationalization (i18n) / Text domain mismatches** – **FALSE POSITIVES** (see section 2.1)
+2. **Plugin header/readme metadata issues**, including outdated "Tested up to".
 3. **Security and best-practice issues**, such as `wp_redirect()`, `error_log()` usage, and missing `wp_unslash()`.
 4. **Direct database queries without caching** in the REST API layer.
 5. **Global variables missing plugin prefix**, which violates naming conventions.
-6. **Informational warning about the slug containing “wp”**.
+6. **Informational warning about the slug containing "wp"**.
 
-Overall, the issues are mostly **correctable with limited code refactoring** and do not indicate fundamental architectural problems. The main blocker for WordPress.org acceptance is proper **i18n handling and metadata alignment**.
+Overall, the issues are mostly **correctable with limited code refactoring** and do not indicate fundamental architectural problems. **The text domain errors are FALSE POSITIVES** – the plugin correctly uses `custom-post-types-restapi` which matches the WordPress.org plugin slug.
 
 ## 2. Detailed Issue Analysis & Corrective Actions
 
-### 2.1 Internationalization – Text Domain Mismatches
+### 2.1 Internationalization – Text Domain Mismatches ⚠️ FALSE POSITIVES
 
-**Files involved (non-exhaustive):**
+**Files flagged:**
 - `includes/class-cptrest-api-keys.php`
 - `admin/class-cptrest-admin.php`
 - `rest-api/class-cptrest-rest.php`
@@ -25,65 +25,62 @@ Overall, the issues are mostly **correctable with limited code refactoring** and
 
 **Symptoms:**
 - Numerous `WordPress.WP.I18n.TextDomainMismatch` errors.
-- The expected text domain is: **`wp-cpt-rest-api`**  
-- The actual text domain in many translation calls is: **`custom-post-types-restapi`**.
+- Plugin Check expects: **`wp-cpt-rest-api`** (inferred from directory name)
+- Actual text domain in code: **`custom-post-types-restapi`**
 
-**Impact:**
-- Translatable strings may **not be picked up by translation tools** (e.g. GlotPress, Poedit).
-- Localization/internationalization will be incomplete or broken.
-- This is a **hard requirement** for WordPress.org.
+**Why These Are FALSE POSITIVES:**
 
-**Corrective actions:**
-1. **Standardize the text domain across the codebase**:
-   - Replace every occurrence of `'custom-post-types-restapi'` with `'wp-cpt-rest-api'` in:
-     - `__()`
-     - `_e()`
-     - `_x()`
-     - `esc_html__()`, `esc_html_e()`, etc.
-2. **Synchronize the plugin header**:
-   - In `wp-cpt-rest-api.php` ensure:
-     ```php
-     /**
-      * Plugin Name: ...
-      * Text Domain: wp-cpt-rest-api
-      * Domain Path: /languages
-      */
-     ```
-3. **Regenerate language files (if used)**:
-   - Update `.pot`, `.po`, `.mo` files so they are based on the **new text domain**.
+The plugin correctly uses `custom-post-types-restapi` as the text domain, which:
+- **Matches the WordPress.org plugin slug** (the authoritative identifier)
+- **Is correctly declared** in the plugin header: `Text Domain: custom-post-types-restapi`
+- **Matches the translation files** in `/languages/` directory
 
-**Priority:** High (blocking for WordPress.org acceptance)
+The Plugin Check tool incorrectly infers the expected text domain from the **directory name** (`wp-cpt-rest-api`) rather than the actual WordPress.org slug. This is a known limitation of the Plugin Check tool when the directory name differs from the plugin slug.
+
+**Why Directory Name ≠ Plugin Slug:**
+- **Directory name**: `wp-cpt-rest-api` (repository/development name)
+- **WordPress.org slug**: `custom-post-types-restapi` (official plugin identifier)
+
+This is a valid configuration – many plugins have development directory names that differ from their WordPress.org slugs.
+
+**Impact:** None. The internationalization is correctly implemented.
+
+**Corrective actions:** None required. These warnings can be safely ignored.
+
+**Alternative (not recommended):**
+If you want to eliminate these warnings entirely, you could rename the plugin directory to match the slug (`custom-post-types-restapi`), but this:
+- Would require updating repository structure
+- Is unnecessary since the plugin functions correctly
+- May cause issues for existing installations
+
+**Priority:** None (false positive – no action needed)
 
 ---
 
 ### 2.2 Plugin Header & Readme Metadata
 
 **Issues:**
-- `textdomain_mismatch` in the plugin main file:
-  - Header uses `"custom-post-types-restapi"` instead of `"wp-cpt-rest-api"`.
+- `textdomain_mismatch` – **FALSE POSITIVE** (see section 2.1)
+  - Header correctly uses `"custom-post-types-restapi"` which matches the WordPress.org slug
 - `outdated_tested_upto_header` in `readme.txt`:
-  - `Tested up to: 6.8 < 6.9`.
+  - Current: `Tested up to: 6.8`
+  - Plugin Check may flag this if a newer WordPress version exists
 
 **Impact:**
-- Mismatched text domain header contributes to i18n issues.
-- Outdated “Tested up to”:
-  - The plugin **will not appear in search results** on WordPress.org.
-  - It signals that the plugin is **not maintained** for the latest version.
+- Text domain: No impact (correctly configured)
+- Outdated "Tested up to":
+  - May affect plugin visibility on WordPress.org
+  - Signals that the plugin needs compatibility verification with latest WP version
 
 **Corrective actions:**
-1. **Align the Text Domain header**:
-   - In `wp-cpt-rest-api.php`:
-     ```php
-     Text Domain: wp-cpt-rest-api
-     ```
-2. **Update readme “Tested up to”**:
-   - In `readme.txt`, set:
-     ```text
-     Tested up to: 6.9
-     ```
-   - Keep this updated for future WordPress core releases when compatibility is verified.
+1. **Text Domain**: No action needed – already correct
+2. **Update readme "Tested up to"** (when applicable):
+   - After testing with the latest WordPress version, update in both:
+     - `readme.txt`: `Tested up to: X.X`
+     - `wp-cpt-rest-api.php` header: `Tested up to: X.X`
+   - Only update after actually verifying compatibility
 
-**Priority:** High
+**Priority:** Medium (update "Tested up to" when new WP version is released and tested)
 
 ---
 
@@ -295,37 +292,40 @@ Below is a suggested action-tracking table. You can adapt Owner and Status field
 
 ### 3.1 Action Tracking Table
 
-| ID | Category                 | Description                                                                | Files (main)                            | Priority | Owner | Status      | Target Version |
-| -- | ------------------------ | -------------------------------------------------------------------------- | --------------------------------------- | -------- | ----- | ----------- | -------------- |
-| A1 | i18n / Text domain       | Replace all `custom-post-types-restapi` occurrences with `wp-cpt-rest-api` | admin/, includes/, rest-api/, main file | High     |       | Not started | 1.0.1          |
-| A2 | Plugin header            | Align `Text Domain` header with slug `wp-cpt-rest-api`                     | `wp-cpt-rest-api.php`                   | High     |       | Not started | 1.0.1          |
-| A3 | Readme metadata          | Update `Tested up to` from 6.8 to 6.9 (or latest tested version)           | `readme.txt`                            | High     |       | Not started | 1.0.1          |
-| A4 | Redirect safety          | Replace `wp_redirect()` with `wp_safe_redirect()` + `exit`                 | `admin/class-cptrest-admin.php`         | Med–High |       | Not started | 1.0.1          |
-| A5 | Debug logging            | Remove / guard `error_log()` calls in production code                      | admin/, includes/, rest-api/            | Medium   |       | Not started | 1.0.1          |
-| A6 | Unslash before sanitize  | Add `wp_unslash()` to `$_SERVER` values before sanitization                | `rest-api/class-cptrest-rest.php`       | Medium   |       | Not started | 1.0.1          |
-| A7 | Direct DB queries        | Ensure all queries are prepared, optionally cached, and/or use WP APIs     | `rest-api/class-cptrest-rest.php`       | Medium   |       | Not started | 1.0.2          |
-| A8 | Global variables naming  | Prefix global vars with `wp_cpt_rest_api_`                                 | `uninstall.php`, main file              | Low–Med  |       | Not started | 1.0.2          |
-| A9 | Trademark warning (info) | Verify plugin name doesn’t use “WordPress” in full                         | `wp-cpt-rest-api.php`, readme           | Low      |       | Not started | 1.0.2          |
+| ID | Category                 | Description                                                                | Files (main)                            | Priority | Owner | Status         | Target Version |
+| -- | ------------------------ | -------------------------------------------------------------------------- | --------------------------------------- | -------- | ----- | -------------- | -------------- |
+| ~~A1~~ | ~~i18n / Text domain~~ | ~~Text domain mismatch errors~~                                          | ~~All files~~                           | ~~N/A~~  |       | **FALSE POSITIVE** | N/A        |
+| ~~A2~~ | ~~Plugin header~~      | ~~Text domain header alignment~~                                          | ~~`wp-cpt-rest-api.php`~~               | ~~N/A~~  |       | **FALSE POSITIVE** | N/A        |
+| A3 | Readme metadata          | Update `Tested up to` when new WP version is verified                      | `readme.txt`, `wp-cpt-rest-api.php`     | Medium   |       | Pending        | Next release   |
+| A4 | Redirect safety          | Replace `wp_redirect()` with `wp_safe_redirect()` + `exit`                 | `admin/class-cptrest-admin.php`         | Med–High |       | Not started    | 1.2.0          |
+| A5 | Debug logging            | Remove / guard `error_log()` calls in production code                      | admin/, includes/, rest-api/            | Medium   |       | Not started    | 1.2.0          |
+| A6 | Unslash before sanitize  | Add `wp_unslash()` to `$_SERVER` values before sanitization                | `rest-api/class-cptrest-rest.php`       | Medium   |       | Not started    | 1.2.0          |
+| A7 | Direct DB queries        | Ensure all queries are prepared, optionally cached, and/or use WP APIs     | `rest-api/class-cptrest-rest.php`       | Medium   |       | Not started    | 1.2.0          |
+| A8 | Global variables naming  | Prefix global vars with `cptrest_`                                         | `uninstall.php`, main file              | Low–Med  |       | Not started    | 1.2.0          |
+| A9 | Trademark warning (info) | Verify plugin name doesn't use "WordPress" in full                         | `wp-cpt-rest-api.php`, readme           | Low      |       | Not started    | 1.2.0          |
+
+**Note:** A1 and A2 are struck through because they were identified as false positives – the text domain `custom-post-types-restapi` is correct and matches the WordPress.org plugin slug.
 
 ### 3.2 Suggested Workflow
 
-1. **First pass (High priority)**
+1. **Immediate (if applicable)**
 
-   * Implement A1, A2, A3 (text domain & metadata).
-   * Re-run Plugin Check to confirm all i18n and header-related errors are resolved.
+   * A3: Update "Tested up to" after verifying compatibility with the latest WordPress version.
 
-2. **Second pass (Security & best practices)**
+2. **First pass (Security & best practices)**
 
-   * Implement A4, A5, A6.
+   * Implement A4 (safe redirects), A5 (debug logging), A6 (unslash).
    * Re-run Plugin Check and basic functional tests (especially redirects and any error-handling flows).
 
-3. **Third pass (Performance & cleanliness)**
+3. **Second pass (Performance & cleanliness)**
 
    * Implement A7 (DB queries & caching) and A8 (global naming).
    * Decide if any additional refactoring is needed based on performance tests.
 
 4. **Final review**
 
-   * Confirm that only acceptable warnings remain (e.g. A9).
-   * Prepare a changelog and bump plugin version (e.g., 1.0.1 / 1.0.2 as defined above).
-   * Resubmit to WordPress.org, if applicable.
+   * Confirm that only acceptable warnings remain (e.g. A9 trademark info, text domain false positives).
+   * Note: Text domain mismatch warnings will persist due to directory name vs. slug difference – these can be safely ignored.
+   * Prepare a changelog and bump plugin version.
+
+**Important:** The text domain errors (A1, A2) are FALSE POSITIVES and should NOT be "fixed" – the current text domain `custom-post-types-restapi` is correct.
