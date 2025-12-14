@@ -3,7 +3,7 @@
  * OpenAPI 3.0.3 specification generator for the Custom Post Types REST API plugin.
  *
  * @since      0.1
- * @package    WP_CPT_RestAPI
+ * @package    CPTREST
  */
 
 // If this file is called directly, abort.
@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * Generates dynamic OpenAPI 3.0.3 specifications based on active CPTs and plugin settings.
  */
-class WP_CPT_RestAPI_OpenAPI {
+class CPTREST_OpenAPI {
 
     /**
      * The option name for the REST API base segment.
@@ -69,7 +69,7 @@ class WP_CPT_RestAPI_OpenAPI {
             'info' => array(
                 'title' => 'WordPress Custom Post Types REST API',
                 'description' => 'A robust WordPress plugin that extends the native REST API functionalities to provide comprehensive endpoints for Custom Post Types and their associated metadata.',
-                'version' => WP_CPT_RESTAPI_VERSION,
+                'version' => CPTREST_VERSION,
                 'contact' => array(
                     'name' => 'Julien DELRIO',
                     'url' => 'https://juliendelrio.fr'

@@ -3,8 +3,8 @@ Contributors: juliendelrio
 Donate link: https://juliendelrio.fr
 Tags: RestAPI, Rest, Custom Post Types
 Requires at least: 6.0
-Tested up to: 6.8
-Stable tag: 1.1.0
+Tested up to: 6.9
+Stable tag: 1.1.1
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -48,11 +48,19 @@ Yes, the plugin provides access to all associated metadata for your Custom Post 
 
 == Changelog ==
 
+= 1.1.1 =
+* WordPress.org Review: Fixed prefix naming collision - renamed all classes, constants, and options to use `cptrest_` prefix
+* WordPress.org Review: Fixed text domain mismatch - changed from `wp-cpt-rest-api` to `custom-post-types-restapi`
+* WordPress.org Review: Added clarifying comments for intentionally public REST endpoints
+* Code Quality: Renamed all class files to follow `class-cptrest-*.php` naming convention
+* Code Quality: Renamed asset files to use `cptrest-` prefix
+* i18n: Renamed language files to match new text domain
+
 = 1.0.1 =
 * i18n: Added complete French (fr_FR) translation with 119 translated strings
 * Licensing: Updated from Apache 2.0 to GPLv2 or later for WordPress.org compliance
 * WordPress.org: Fixed all Plugin Check critical issues for plugin directory submission
-* Code Quality: Fixed text domain consistency (wp-cpt-rest-api) across all 137 translation calls
+* Code Quality: Fixed text domain consistency (custom-post-types-restapi) across all 137 translation calls
 * Documentation: Updated "Tested up to" WordPress 6.8 for current compatibility
 * Maintenance: Removed hidden .gitkeep file for WordPress.org validation compliance
 
@@ -93,6 +101,9 @@ Yes, the plugin provides access to all associated metadata for your Custom Post 
 
 == Upgrade Notice ==
 
+= 1.1.1 =
+WordPress.org Plugin Review compliance release. All review issues resolved: prefix naming collision fixed, text domain corrected, and public endpoint documentation added. Recommended upgrade for all users.
+
 = 1.0.0 =
 Official stable release! Production-ready with all security improvements, professional error handling, security event logging, and enhanced user experience. Fixed packaging for proper WordPress installation. Recommended for all users.
 
@@ -124,3 +135,12 @@ Please provide as much detail as possible when reporting issues, including:
 * Plugin version
 * Steps to reproduce the issue
 * Expected behavior vs actual behavior
+
+== Roadmap ==
+
+Planned improvements for future releases:
+
+* Object caching support for database queries (wp_cache_* functions) to improve performance under high load
+* Rate limiting for API endpoints
+* Enhanced filtering and sorting options
+* Batch operations support

@@ -15,17 +15,17 @@ The `languages` directory stores translation files (`.po`, `.mo`, `.pot`) for in
 ## Translation Files
 
 Translation files should follow this naming convention:
-- `wp-cpt-restapi-{locale}.po`
-- `wp-cpt-restapi-{locale}.mo`
+- `custom-post-types-restapi-{locale}.po`
+- `custom-post-types-restapi-{locale}.mo`
 
 Examples:
-- `wp-cpt-restapi-fr_FR.po` / `wp-cpt-restapi-fr_FR.mo` (French)
-- `wp-cpt-restapi-es_ES.po` / `wp-cpt-restapi-es_ES.mo` (Spanish)
-- `wp-cpt-restapi-de_DE.po` / `wp-cpt-restapi-de_DE.mo` (German)
+- `custom-post-types-restapi-fr_FR.po` / `custom-post-types-restapi-fr_FR.mo` (French)
+- `custom-post-types-restapi-es_ES.po` / `custom-post-types-restapi-es_ES.mo` (Spanish)
+- `custom-post-types-restapi-de_DE.po` / `custom-post-types-restapi-de_DE.mo` (German)
 
 ## How Translations Work
 
-1. The plugin text domain `wp-cpt-restapi` is loaded in the main plugin file
+1. The plugin text domain `custom-post-types-restapi` is loaded in the main plugin file
 2. WordPress looks for translation files in this directory
 3. All strings wrapped in `__()`, `_e()`, `esc_html__()`, etc. can be translated
 4. The WordPress.org translation system can automatically generate translations
@@ -34,7 +34,7 @@ Examples:
 
 ### Using WordPress.org
 When the plugin is published on WordPress.org, translators can contribute translations through the WordPress.org translation system at:
-`https://translate.wordpress.org/projects/wp-plugins/wp-cpt-rest-api`
+`https://translate.wordpress.org/projects/wp-plugins/custom-post-types-restapi`
 
 ### Manual Translation
 1. Generate the `.pot` file using WP-CLI or Poedit
@@ -44,11 +44,11 @@ When the plugin is published on WordPress.org, translators can contribute transl
 
 ## Text Domain
 
-The plugin uses the text domain: `wp-cpt-restapi`
+The plugin uses the text domain: `custom-post-types-restapi`
 
 This is defined in the plugin header and loaded via:
 ```php
-load_plugin_textdomain( 'wp-cpt-restapi', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
+load_plugin_textdomain( 'custom-post-types-restapi', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
 ```
 
 ## Resources

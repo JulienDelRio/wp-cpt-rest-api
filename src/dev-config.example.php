@@ -5,7 +5,7 @@
  * Copy this file to 'dev-config.php' and modify as needed for local development.
  * The 'dev-config.php' file is ignored by git and will not be committed.
  *
- * @package WP_CPT_RestAPI
+ * @package CPTREST
  */
 
 // If this file is called directly, abort.
@@ -28,9 +28,9 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * Usage:
  * 1. Copy this file to 'dev-config.php' in the same directory
- * 2. Set WP_CPT_RESTAPI_DEV_MODE to true for development
- * 3. Set WP_CPT_RESTAPI_DEV_MODE to false (or delete the file) for production
+ * 2. Set CPTREST_DEV_MODE to true for development
+ * 3. Set CPTREST_DEV_MODE to false (or delete the file) for production
  *
  * @var bool
  */
-define( 'WP_CPT_RESTAPI_DEV_MODE', true );
+define( 'CPTREST_DEV_MODE', true );

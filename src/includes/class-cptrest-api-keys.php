@@ -3,7 +3,7 @@
  * The API Keys management functionality of the plugin.
  *
  * @since      0.1
- * @package    WP_CPT_RestAPI
+ * @package    CPTREST
  */
 
 // If this file is called directly, abort.
@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * Handles the creation, storage, retrieval, and deletion of API keys.
  */
-class WP_CPT_RestAPI_API_Keys {
+class CPTREST_API_Keys {
 
     /**
      * The option name for storing API keys.
@@ -244,12 +244,12 @@ class WP_CPT_RestAPI_API_Keys {
         if ($plaintext_count > 0) {
             update_option($this->option_name, array());
 
-            // Log migration
-            if (defined('WP_DEBUG_LOG') && WP_DEBUG_LOG) {
-                error_log(sprintf(
+            // Log migration only when WP_DEBUG is enabled
+            if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+                error_log( sprintf(
                     '[CPT REST API Security] Migration: Deleted %d plaintext API keys',
                     $plaintext_count
-                ));
+                ) );
             }
 
             return array(
@@ -261,7 +261,7 @@ class WP_CPT_RestAPI_API_Keys {
                         'Security update: %d plaintext key was deleted. Please regenerate your API keys.',
                         'Security update: %d plaintext keys were deleted. Please regenerate your API keys.',
                         $plaintext_count,
-                        'wp-cpt-rest-api'
+                        'custom-post-types-restapi'
                     ),
                     $plaintext_count
                 )
@@ -271,7 +271,7 @@ class WP_CPT_RestAPI_API_Keys {
         return array(
             'success' => false,
             'deleted_count' => 0,
-            'message' => __('No migration needed.', 'wp-cpt-rest-api')
+            'message' => __('No migration needed.', 'custom-post-types-restapi')
         );
     }
 }

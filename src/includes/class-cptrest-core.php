@@ -6,7 +6,7 @@
  * and REST API functionality.
  *
  * @since      0.1
- * @package    WP_CPT_RestAPI
+ * @package    CPTREST
  */
 
 // If this file is called directly, abort.
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * The core plugin class.
  */
-class WP_CPT_RestAPI {
+class CPTREST_Core {
 
     /**
      * The loader that's responsible for maintaining and registering all hooks that power
@@ -25,7 +25,7 @@ class WP_CPT_RestAPI {
      *
      * @since    0.1
      * @access   protected
-     * @var      WP_CPT_RestAPI_Loader    $loader    Maintains and registers all hooks for the plugin.
+     * @var      CPTREST_Loader    $loader    Maintains and registers all hooks for the plugin.
      */
     protected $loader;
 
@@ -34,7 +34,7 @@ class WP_CPT_RestAPI {
      *
      * @since    0.1
      * @access   protected
-     * @var      WP_CPT_RestAPI_API_Keys    $api_keys    Handles API key management.
+     * @var      CPTREST_API_Keys    $api_keys    Handles API key management.
      */
     protected $api_keys;
 
@@ -58,9 +58,9 @@ class WP_CPT_RestAPI {
      *
      * Include the following files that make up the plugin:
      *
-     * - WP_CPT_RestAPI_Loader. Orchestrates the hooks of the plugin.
-     * - WP_CPT_RestAPI_Admin. Defines all hooks for the admin area.
-     * - WP_CPT_RestAPI_REST. Defines all hooks for the REST API functionality.
+     * - CPTREST_Loader. Orchestrates the hooks of the plugin.
+     * - CPTREST_Admin. Defines all hooks for the admin area.
+     * - CPTREST_REST. Defines all hooks for the REST API functionality.
      *
      * @since    0.1
      * @access   private
@@ -70,30 +70,30 @@ class WP_CPT_RestAPI {
          * The class responsible for orchestrating the actions and filters of the
          * core plugin.
          */
-        require_once WP_CPT_RESTAPI_PLUGIN_DIR . 'includes/class-wp-cpt-restapi-loader.php';
+        require_once CPTREST_PLUGIN_DIR . 'includes/class-cptrest-loader.php';
 
         /**
          * The class responsible for defining all actions that occur in the admin area.
          */
-        require_once WP_CPT_RESTAPI_PLUGIN_DIR . 'admin/class-wp-cpt-restapi-admin.php';
+        require_once CPTREST_PLUGIN_DIR . 'admin/class-cptrest-admin.php';
 
         /**
          * The class responsible for defining all REST API functionality.
          */
-        require_once WP_CPT_RESTAPI_PLUGIN_DIR . 'rest-api/class-wp-cpt-restapi-rest.php';
+        require_once CPTREST_PLUGIN_DIR . 'rest-api/class-cptrest-rest.php';
 
         /**
          * The class responsible for API key management.
          */
-        require_once WP_CPT_RESTAPI_PLUGIN_DIR . 'includes/class-wp-cpt-restapi-api-keys.php';
+        require_once CPTREST_PLUGIN_DIR . 'includes/class-cptrest-api-keys.php';
 
         /**
          * The class responsible for OpenAPI specification generation.
          */
-        require_once WP_CPT_RESTAPI_PLUGIN_DIR . 'swagger/class-wp-cpt-restapi-openapi.php';
+        require_once CPTREST_PLUGIN_DIR . 'swagger/class-cptrest-openapi.php';
 
-        $this->loader = new WP_CPT_RestAPI_Loader();
-        $this->api_keys = new WP_CPT_RestAPI_API_Keys();
+        $this->loader = new CPTREST_Loader();
+        $this->api_keys = new CPTREST_API_Keys();
     }
 
     /**
@@ -104,7 +104,7 @@ class WP_CPT_RestAPI {
      * @access   private
      */
     private function define_admin_hooks() {
-        $plugin_admin = new WP_CPT_RestAPI_Admin();
+        $plugin_admin = new CPTREST_Admin();
 
         $this->loader->add_action( 'admin_menu', $plugin_admin, 'add_settings_page' );
         $this->loader->add_action( 'admin_init', $plugin_admin, 'register_settings' );
@@ -120,7 +120,7 @@ class WP_CPT_RestAPI {
      * @access   private
      */
     private function define_rest_api_hooks() {
-        $plugin_rest = new WP_CPT_RestAPI_REST();
+        $plugin_rest = new CPTREST_REST();
 
         $this->loader->add_action( 'rest_api_init', $plugin_rest, 'register_rest_namespace' );
     }

@@ -1,8 +1,8 @@
 #!/bin/bash
 # WordPress Plugin Packaging Script
-# Creates a clean distribution package for wp-cpt-rest-api plugin
+# Creates a clean distribution package for custom-post-types-restapi plugin
 
-PLUGIN_NAME="wp-cpt-rest-api"
+PLUGIN_NAME="custom-post-types-restapi"
 
 # Extract version from readme.txt
 README_PATH="src/readme.txt"

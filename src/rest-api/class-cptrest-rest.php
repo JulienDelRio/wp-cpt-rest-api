@@ -3,7 +3,7 @@
  * The REST API-specific functionality of the plugin.
  *
  * @since      0.1
- * @package    WP_CPT_RestAPI
+ * @package    CPTREST
  */
 
 // If this file is called directly, abort.
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Defines the plugin name, version, and hooks for
  * the REST API functionality of the site.
  */
-class WP_CPT_RestAPI_REST {
+class CPTREST_REST {
 
     /**
      * The option name for the REST API base segment.
@@ -51,7 +51,7 @@ class WP_CPT_RestAPI_REST {
      *
      * @since    0.1
      * @access   private
-     * @var      WP_CPT_RestAPI_API_Keys    $api_keys    Handles API key management.
+     * @var      CPTREST_API_Keys    $api_keys    Handles API key management.
      */
     private $api_keys;
 
@@ -71,7 +71,7 @@ class WP_CPT_RestAPI_REST {
      */
     public function __construct() {
         // Initialize API Keys manager
-        $this->api_keys = new WP_CPT_RestAPI_API_Keys();
+        $this->api_keys = new CPTREST_API_Keys();
         
         // Add filter for REST API authentication
         add_filter( 'rest_authentication_errors', array( $this, 'authenticate_api_key' ), 10, 1 );
@@ -240,19 +240,24 @@ class WP_CPT_RestAPI_REST {
     private function get_client_ip() {
         $ip = '';
 
+        // Get and unslash server values first for consistent handling
+        $client_ip     = isset( $_SERVER['HTTP_CLIENT_IP'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_CLIENT_IP'] ) ) : '';
+        $forwarded_for = isset( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) : '';
+        $remote_addr   = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
+
         // Check for shared internet/ISP IP
-        if ( ! empty( $_SERVER['HTTP_CLIENT_IP'] ) && filter_var( $_SERVER['HTTP_CLIENT_IP'], FILTER_VALIDATE_IP ) ) {
-            $ip = sanitize_text_field( wp_unslash( $_SERVER['HTTP_CLIENT_IP'] ) );
+        if ( ! empty( $client_ip ) && filter_var( $client_ip, FILTER_VALIDATE_IP ) ) {
+            $ip = $client_ip;
         }
         // Check for IPs passing through proxies
-        elseif ( ! empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
+        elseif ( ! empty( $forwarded_for ) ) {
             // Can contain multiple IPs (client, proxy1, proxy2)
-            $ip_list = explode( ',', sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) );
+            $ip_list = explode( ',', $forwarded_for );
             $ip = trim( $ip_list[0] );
         }
         // Standard REMOTE_ADDR
-        elseif ( ! empty( $_SERVER['REMOTE_ADDR'] ) && filter_var( $_SERVER['REMOTE_ADDR'], FILTER_VALIDATE_IP ) ) {
-            $ip = sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) );
+        elseif ( ! empty( $remote_addr ) && filter_var( $remote_addr, FILTER_VALIDATE_IP ) ) {
+            $ip = $remote_addr;
         }
 
         return $ip ? $ip : 'unknown';
@@ -318,83 +323,83 @@ class WP_CPT_RestAPI_REST {
             'auth' => array(
                 'no_auth' => array(
                     'code' => 'cpt_rest_api_auth_missing',
-                    'message' => __( 'Authentication required. Please provide a valid API key in the Authorization header.', 'wp-cpt-rest-api' ),
+                    'message' => __( 'Authentication required. Please provide a valid API key in the Authorization header.', 'custom-post-types-restapi' ),
                     'status' => 401,
                 ),
                 'invalid_key' => array(
                     'code' => 'cpt_rest_api_auth_invalid',
-                    'message' => __( 'Invalid API key provided.', 'wp-cpt-rest-api' ),
+                    'message' => __( 'Invalid API key provided.', 'custom-post-types-restapi' ),
                     'status' => 403,
                 ),
             ),
             'cpt' => array(
                 'not_available' => array(
                     'code' => 'cpt_rest_api_cpt_forbidden',
-                    'message' => __( 'This Custom Post Type is not enabled for API access.', 'wp-cpt-rest-api' ),
+                    'message' => __( 'This Custom Post Type is not enabled for API access.', 'custom-post-types-restapi' ),
                     'status' => 403,
                 ),
             ),
             'post' => array(
                 'invalid_id' => array(
                     'code' => 'cpt_rest_api_post_invalid',
-                    'message' => __( 'Invalid post ID provided.', 'wp-cpt-rest-api' ),
+                    'message' => __( 'Invalid post ID provided.', 'custom-post-types-restapi' ),
                     'status' => 404,
                 ),
                 'wrong_type' => array(
                     'code' => 'cpt_rest_api_post_type_mismatch',
-                    'message' => __( 'Post ID does not match the specified Custom Post Type.', 'wp-cpt-rest-api' ),
+                    'message' => __( 'Post ID does not match the specified Custom Post Type.', 'custom-post-types-restapi' ),
                     'status' => 404,
                 ),
                 'not_published' => array(
                     'code' => 'cpt_rest_api_post_forbidden',
-                    'message' => __( 'Access denied. This post is not published.', 'wp-cpt-rest-api' ),
+                    'message' => __( 'Access denied. This post is not published.', 'custom-post-types-restapi' ),
                     'status' => 403,
                 ),
                 'cannot_create' => array(
                     'code' => 'cpt_rest_api_post_create_failed',
-                    'message' => __( 'Failed to create post. Please check your input and try again.', 'wp-cpt-rest-api' ),
+                    'message' => __( 'Failed to create post. Please check your input and try again.', 'custom-post-types-restapi' ),
                     'status' => 500,
                 ),
                 'cannot_read' => array(
                     'code' => 'cpt_rest_api_post_read_failed',
-                    'message' => __( 'Post operation completed but failed to retrieve post data.', 'wp-cpt-rest-api' ),
+                    'message' => __( 'Post operation completed but failed to retrieve post data.', 'custom-post-types-restapi' ),
                     'status' => 500,
                 ),
                 'cannot_update' => array(
                     'code' => 'cpt_rest_api_post_update_failed',
-                    'message' => __( 'Failed to update post. Please check your input and try again.', 'wp-cpt-rest-api' ),
+                    'message' => __( 'Failed to update post. Please check your input and try again.', 'custom-post-types-restapi' ),
                     'status' => 500,
                 ),
                 'cannot_delete' => array(
                     'code' => 'cpt_rest_api_post_delete_failed',
-                    'message' => __( 'Failed to delete post. Please try again.', 'wp-cpt-rest-api' ),
+                    'message' => __( 'Failed to delete post. Please try again.', 'custom-post-types-restapi' ),
                     'status' => 500,
                 ),
             ),
             'toolset' => array(
                 'not_available' => array(
                     'code' => 'cpt_rest_api_toolset_unavailable',
-                    'message' => __( 'Toolset plugin is not active or Toolset support is not enabled.', 'wp-cpt-rest-api' ),
+                    'message' => __( 'Toolset plugin is not active or Toolset support is not enabled.', 'custom-post-types-restapi' ),
                     'status' => 503,
                 ),
                 'error' => array(
                     'code' => 'cpt_rest_api_toolset_error',
-                    'message' => __( 'Toolset operation failed.', 'wp-cpt-rest-api' ),
+                    'message' => __( 'Toolset operation failed.', 'custom-post-types-restapi' ),
                     'status' => 500,
                 ),
                 'exists' => array(
                     'code' => 'cpt_rest_api_relationship_exists',
-                    'message' => __( 'Relationship already exists between these posts.', 'wp-cpt-rest-api' ),
+                    'message' => __( 'Relationship already exists between these posts.', 'custom-post-types-restapi' ),
                     'status' => 409,
                 ),
                 'not_found' => array(
                     'code' => 'cpt_rest_api_relationship_not_found',
-                    'message' => __( 'Relationship not found or invalid relationship ID.', 'wp-cpt-rest-api' ),
+                    'message' => __( 'Relationship not found or invalid relationship ID.', 'custom-post-types-restapi' ),
                     'status' => 404,
                 ),
                 'invalid_id' => array(
                     'code' => 'cpt_rest_api_relationship_invalid_id',
-                    'message' => __( 'Invalid relationship ID format.', 'wp-cpt-rest-api' ),
+                    'message' => __( 'Invalid relationship ID format.', 'custom-post-types-restapi' ),
                     'status' => 400,
                 ),
             ),
@@ -405,7 +410,7 @@ class WP_CPT_RestAPI_REST {
             // Fallback to generic error
             return new WP_Error(
                 'cpt_rest_api_error',
-                __( 'An error occurred. Please try again.', 'wp-cpt-rest-api' ),
+                __( 'An error occurred. Please try again.', 'custom-post-types-restapi' ),
                 array( 'status' => 500 )
             );
         }
@@ -437,24 +442,30 @@ class WP_CPT_RestAPI_REST {
         $base_segment = get_option( $this->option_name, $this->default_segment );
         
         // Register the REST API namespace info endpoint
+        // Intentionally public: This endpoint provides API discovery information
+        // and does not expose sensitive data. Public access enables API consumers
+        // to discover available endpoints without authentication.
         register_rest_route(
             $base_segment . '/v1',
             '/',
             array(
                 'methods'  => 'GET',
                 'callback' => array( $this, 'namespace_info' ),
-                'permission_callback' => '__return_true',
+                'permission_callback' => '__return_true', // Intentionally public for API discovery
             )
         );
-        
+
         // Register the OpenAPI specification endpoint
+        // Intentionally public: The OpenAPI spec is documentation that helps
+        // developers understand and integrate with the API. Public access follows
+        // standard practice for API documentation endpoints.
         register_rest_route(
             $base_segment . '/v1',
             '/openapi',
             array(
                 'methods'  => 'GET',
                 'callback' => array( $this, 'get_openapi_spec' ),
-                'permission_callback' => '__return_true',
+                'permission_callback' => '__return_true', // Intentionally public for API documentation
             )
         );
         
@@ -1179,8 +1190,8 @@ class WP_CPT_RestAPI_REST {
     public function namespace_info() {
         return array(
             'namespace' => get_option( $this->option_name, $this->default_segment ) . '/v1',
-            'description' => __( 'WordPress Custom Post Types REST API', 'wp-cpt-rest-api' ),
-            'version' => WP_CPT_RESTAPI_VERSION,
+            'description' => __( 'WordPress Custom Post Types REST API', 'custom-post-types-restapi' ),
+            'version' => CPTREST_VERSION,
         );
     }
 
@@ -1194,7 +1205,7 @@ class WP_CPT_RestAPI_REST {
      * @return   WP_REST_Response    The OpenAPI specification.
      */
     public function get_openapi_spec() {
-        $openapi_generator = new WP_CPT_RestAPI_OpenAPI();
+        $openapi_generator = new CPTREST_OpenAPI();
         $spec = $openapi_generator->generate_openapi_spec();
         
         $response = rest_ensure_response( $spec );
@@ -1687,14 +1698,14 @@ class WP_CPT_RestAPI_REST {
                     'parent_id' => $parent_id,
                     'child_id' => $child_id,
                     'relation_slug' => $relation_slug,
-                    'message' => __( 'Relationship created successfully.', 'wp-cpt-rest-api' ),
+                    'message' => __( 'Relationship created successfully.', 'custom-post-types-restapi' ),
                 );
                 
                 $rest_response = rest_ensure_response( $response );
                 $rest_response->set_status( 201 );
                 return $rest_response;
             } else {
-                return $this->create_error_response( 'toolset', 'error', array( 'details' => __( 'Failed to create relationship.', 'wp-cpt-rest-api' ) ) );
+                return $this->create_error_response( 'toolset', 'error', array( 'details' => __( 'Failed to create relationship.', 'custom-post-types-restapi' ) ) );
             }
             
         } catch ( Exception $e ) {
@@ -1779,7 +1790,7 @@ class WP_CPT_RestAPI_REST {
                     'parent_id' => $parent_id,
                     'child_id' => $child_id,
                     'relation_slug' => $relation_slug,
-                    'message' => __( 'Relationship deleted successfully.', 'wp-cpt-rest-api' ),
+                    'message' => __( 'Relationship deleted successfully.', 'custom-post-types-restapi' ),
                 );
                 
                 return rest_ensure_response( $response );

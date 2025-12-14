@@ -73,5 +73,5 @@ Thumbs.db
 
 # Composer
 composer.phar
-/src/wp-cpt-rest-api.zip
-/wp-cpt-rest-api*.zip
+/src/custom-post-types-restapi.zip
+/custom-post-types-restapi*.zip
