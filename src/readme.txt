@@ -135,3 +135,12 @@ Please provide as much detail as possible when reporting issues, including:
 * Plugin version
 * Steps to reproduce the issue
 * Expected behavior vs actual behavior
+
+== Roadmap ==
+
+Planned improvements for future releases:
+
+* Object caching support for database queries (wp_cache_* functions) to improve performance under high load
+* Rate limiting for API endpoints
+* Enhanced filtering and sorting options
+* Batch operations support
