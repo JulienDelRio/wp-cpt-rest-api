@@ -1353,8 +1353,8 @@ class CPTREST_Admin {
             $result['success'] ? 'updated' : 'info'
         );
 
-        // Redirect
-        wp_redirect(admin_url('options-general.php?page=cpt-rest-api'));
+        // Redirect safely to admin page
+        wp_safe_redirect(admin_url('options-general.php?page=cpt-rest-api'));
         exit;
     }
 
